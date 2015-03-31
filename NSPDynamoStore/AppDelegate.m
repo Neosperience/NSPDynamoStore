@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#import "NSPDynamoStore.h"
+#import "Item.h"
 
 @interface AppDelegate ()
 
@@ -17,6 +19,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Item"];
+    fetchRequest.returnsObjectsAsFaults = NO;
+    NSError* error = nil;
+    Item* result = [[self.managedObjectContext executeFetchRequest:fetchRequest error:&error] firstObject];
+
+    NSLog(@"result: %@, error: %@", result, error);
+    NSLog(@"result name: %@", result.name);
+
+
     return YES;
 }
 
@@ -77,7 +89,11 @@
     NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"NSPDynamoStore.sqlite"];
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:[NSPDynamoStore storeType]
+                                                   configuration:nil
+                                                             URL:storeURL
+                                                         options:nil
+                                                           error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         dict[NSLocalizedDescriptionKey] = @"Failed to initialize the application's saved data";

@@ -1,0 +1,1 @@
+../../../AWSKinesis/Kinesis/AWSKinesisService.h

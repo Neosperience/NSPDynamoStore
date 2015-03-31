@@ -1,0 +1,1 @@
+../../../AWSCore/AWSCore/MobileAnalytics/Internal/AWSMobileAnalyticsLogInterceptor.h
