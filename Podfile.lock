@@ -1,0 +1,148 @@
+PODS:
+  - AWSAutoScaling (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSCloudWatch (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSCognito (2.1.0):
+    - AWSCore (~> 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+    - Reachability (~> 3.1)
+    - UICKeyChainStore (~> 2.0)
+  - AWSCognitoSync (2.1.0):
+    - AWSCognito (= 2.1.0)
+    - AWSCore (~> 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSCore (2.1.0):
+    - Bolts (~> 1.1.0)
+    - GZIP (~> 1.0.3)
+    - Mantle (~> 1.4)
+    - Reachability (~> 3.1)
+    - UICKeyChainStore (~> 2.0)
+    - XMLDictionary (~> 1.4.0)
+  - AWSDynamoDB (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSEC2 (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSElasticLoadBalancing (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSiOSSDKv2 (2.1.0):
+    - AWSiOSSDKv2/AutoScaling (= 2.1.0)
+    - AWSiOSSDKv2/AWSCore (= 2.1.0)
+    - AWSiOSSDKv2/CloudWatch (= 2.1.0)
+    - AWSiOSSDKv2/DynamoDB (= 2.1.0)
+    - AWSiOSSDKv2/EC2 (= 2.1.0)
+    - AWSiOSSDKv2/ElasticLoadBalancing (= 2.1.0)
+    - AWSiOSSDKv2/Kinesis (= 2.1.0)
+    - AWSiOSSDKv2/S3 (= 2.1.0)
+    - AWSiOSSDKv2/SES (= 2.1.0)
+    - AWSiOSSDKv2/SimpleDB (= 2.1.0)
+    - AWSiOSSDKv2/SNS (= 2.1.0)
+    - AWSiOSSDKv2/SQS (= 2.1.0)
+  - AWSiOSSDKv2/AutoScaling (2.1.0):
+    - AWSAutoScaling (= 2.1.0)
+  - AWSiOSSDKv2/AWSCore (2.1.0):
+    - AWSCore (= 2.1.0)
+  - AWSiOSSDKv2/CloudWatch (2.1.0):
+    - AWSCloudWatch (= 2.1.0)
+  - AWSiOSSDKv2/DynamoDB (2.1.0):
+    - AWSDynamoDB (= 2.1.0)
+  - AWSiOSSDKv2/EC2 (2.1.0):
+    - AWSEC2 (= 2.1.0)
+  - AWSiOSSDKv2/ElasticLoadBalancing (2.1.0):
+    - AWSElasticLoadBalancing (= 2.1.0)
+  - AWSiOSSDKv2/Kinesis (2.1.0):
+    - AWSKinesis (= 2.1.0)
+  - AWSiOSSDKv2/S3 (2.1.0):
+    - AWSS3 (= 2.1.0)
+  - AWSiOSSDKv2/SES (2.1.0):
+    - AWSSES (= 2.1.0)
+  - AWSiOSSDKv2/SimpleDB (2.1.0):
+    - AWSSimpleDB (= 2.1.0)
+  - AWSiOSSDKv2/SNS (2.1.0):
+    - AWSSNS (= 2.1.0)
+  - AWSiOSSDKv2/SQS (2.1.0):
+    - AWSSQS (= 2.1.0)
+  - AWSKinesis (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - FMDB (~> 2.4)
+    - Mantle (~> 1.4)
+    - TMCache (~> 1.2.1)
+  - AWSS3 (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+    - TMCache (~> 1.2.1)
+  - AWSSES (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSSimpleDB (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSSNS (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - AWSSQS (2.1.0):
+    - AWSCore (= 2.1.0)
+    - Bolts (~> 1.1.0)
+    - Mantle (~> 1.4)
+  - Bolts (1.1.4)
+  - FMDB (2.5):
+    - FMDB/standard (= 2.5)
+  - FMDB/common (2.5)
+  - FMDB/standard (2.5):
+    - FMDB/common
+  - GZIP (1.0.3)
+  - Mantle (1.5.4):
+    - Mantle/extobjc (= 1.5.4)
+  - Mantle/extobjc (1.5.4)
+  - Reachability (3.2)
+  - TMCache (1.2.3)
+  - UICKeyChainStore (2.0.4)
+  - XMLDictionary (1.4)
+
+DEPENDENCIES:
+  - AWSCognitoSync
+  - AWSiOSSDKv2
+
+SPEC CHECKSUMS:
+  AWSAutoScaling: ae69a4df6b168305fd672756556941287d8a8e1d
+  AWSCloudWatch: 0f75654832387dae2d5874ead9f8a7645be67d33
+  AWSCognito: 0d0a4579e1176766e21d6ff18d857d59f6ab7e76
+  AWSCognitoSync: aa6e9f40fa11da2758edc2d442268ba9cd69de75
+  AWSCore: c9a0899e0e01ebcd30a9d51f195f6df184726bd7
+  AWSDynamoDB: bbf017e4a149b02b08285b3e86c25a7b02a1dd13
+  AWSEC2: 04e5549ebd4f6b23df0e53cb7fb0b37870e050b6
+  AWSElasticLoadBalancing: 2d12a26aea5e7f1ca831b8554f7fb27244d43926
+  AWSiOSSDKv2: e51da91a90c2cb4dc63ae6105e5f80b812fe8aa1
+  AWSKinesis: 8813227b4c861e157c587c710517440a2b8ac546
+  AWSS3: 41cd78d7ad621d9ba54af1fac428f360d46a910d
+  AWSSES: cf73f42292798621bb9102ad0cc875ce5afbf7d8
+  AWSSimpleDB: d73c1b8a8d40c270a807c3618b7560849793d45c
+  AWSSNS: d48ff8a6c77b9671f7793b1d9bf523e05ed4f23a
+  AWSSQS: aa92931e13f4e49baf0cc486c113386a21ed995d
+  Bolts: f8e2f94edbf9fec7bb8de5ecaaa3aa6b7de6f64e
+  FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
+  GZIP: f0863fda354e8f83316508c0a2c7bbe385e39129
+  Mantle: 60acd0cd363e27d945bda0a6b8e90577112d28f3
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
+  TMCache: 5f68bc38d741aa8df4c63131b847522783665d81
+  UICKeyChainStore: 69eb0c3a6f669bccf16ba88de3b9069b71501361
+  XMLDictionary: f9f51601ba76678b594ab485f2b00ec1fed23724
+
+COCOAPODS: 0.36.1
