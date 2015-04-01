@@ -22,12 +22,28 @@
 
     NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Item"];
     fetchRequest.returnsObjectsAsFaults = NO;
-    NSError* error = nil;
-    Item* result = [[self.managedObjectContext executeFetchRequest:fetchRequest error:&error] firstObject];
 
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"section", @"church"];
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K in %@", @"section", @[@"culture", @"church"]];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"longitude < 9.18"];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"tel == NULL"];
+
+//    Compund predicates are not supported yet
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
+
+    fetchRequest.predicate = predicate;
+
+    NSError* error = nil;
+    NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+
+    Item* result = [results firstObject];
+
+    NSLog(@"results: %@", results);
     NSLog(@"result: %@, error: %@", result, error);
     NSLog(@"result name: %@", result.name);
-
 
     return YES;
 }
