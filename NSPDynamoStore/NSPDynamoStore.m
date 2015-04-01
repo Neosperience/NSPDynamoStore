@@ -11,6 +11,7 @@
 #import "NSArray+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
+#import "NSPropertyDescription+NSPDynamoStore.h"
 
 #import "AWSItem.h"
 #import "Item.h"
@@ -22,6 +23,32 @@
 NSString* const kAWSAccountID = @"754753050238";
 NSString* const kCognitoPoolID = @"us-east-1:60afae78-f8b8-43d8-bcb3-001d8a1b9f6a";
 NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_HelloCognitoPoolUnauth_DefaultRole";
+
+AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorType predicateOperatorType)
+{
+    switch (predicateOperatorType) {
+        case NSLessThanPredicateOperatorType:               return AWSDynamoDBComparisonOperatorLT;
+        case NSLessThanOrEqualToPredicateOperatorType:      return AWSDynamoDBComparisonOperatorLE;
+        case NSGreaterThanPredicateOperatorType:            return AWSDynamoDBComparisonOperatorGT;
+        case NSGreaterThanOrEqualToPredicateOperatorType:   return AWSDynamoDBComparisonOperatorGE;
+        case NSEqualToPredicateOperatorType:                return AWSDynamoDBComparisonOperatorEQ;
+        case NSNotEqualToPredicateOperatorType:             return AWSDynamoDBComparisonOperatorNE;
+
+        case NSBeginsWithPredicateOperatorType:             return AWSDynamoDBComparisonOperatorBeginsWith;
+        case NSInPredicateOperatorType:                     return AWSDynamoDBComparisonOperatorIN;
+        case NSContainsPredicateOperatorType:               return AWSDynamoDBComparisonOperatorContains;
+        case NSBetweenPredicateOperatorType:                return AWSDynamoDBComparisonOperatorBetween;
+
+        case NSCustomSelectorPredicateOperatorType:
+        case NSEndsWithPredicateOperatorType:
+        case NSLikePredicateOperatorType:
+        case NSMatchesPredicateOperatorType:
+        default:
+            NSCAssert(NO, @"NSPDynamoStore: predicate operator type %@ not supported", @(predicateOperatorType));
+            return AWSDynamoDBComparisonOperatorUnknown;
+    }
+}
+
 
 @interface NSPDynamoStore ()
 
@@ -140,6 +167,56 @@ NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_He
     return nil;
 }
 
+-(NSDictionary*)scanFilterForPredicate:(NSPredicate*)predicate
+{
+    NSMutableDictionary* scanFilter = [NSMutableDictionary dictionary];
+
+    NSComparisonPredicate* comparisionPredicate = [NSComparisonPredicate typeCastOrNil:predicate];
+    if (comparisionPredicate) {
+
+        if (!(comparisionPredicate.leftExpression.expressionType == NSKeyPathExpressionType &&
+              comparisionPredicate.rightExpression.expressionType == NSConstantValueExpressionType)) {
+            NSAssert(NO, @"NSPDynamoStore: only keyPath - constant type predicates are supported");
+            return nil;
+        }
+
+        if ((comparisionPredicate.options & NSCaseInsensitivePredicateOption) ||
+            (comparisionPredicate.options & NSDiacriticInsensitivePredicateOption)) {
+            NSAssert(NO, @"NSPDynamoStore: case insesitive search is not supported");
+            return nil;
+        }
+
+        AWSDynamoDBComparisonOperator dynamoOperator = NSPAWSOperatorFromNSOperator(comparisionPredicate.predicateOperatorType);
+        NSMutableArray* dynamoRightAttributes = [NSMutableArray array];
+        id rightAttribute = comparisionPredicate.rightExpression.constantValue;
+        if (!rightAttribute) {
+            if (comparisionPredicate.predicateOperatorType == NSEqualToPredicateOperatorType) {
+                dynamoOperator = AWSDynamoDBComparisonOperatorNull;
+            } else {
+                NSAssert(NO, @"NULL attribute value is supported only with \"equal to\" operator type");
+            }
+        } else if ([rightAttribute respondsToSelector:@selector(countByEnumeratingWithState:objects:count:)]) {
+            for (id element in rightAttribute) {
+                AWSDynamoDBAttributeValue* dynamoElement = [AWSDynamoDBAttributeValue new];
+                [dynamoElement nsp_setAttributeValue:element];
+                [dynamoRightAttributes addObject:dynamoElement];
+            }
+        } else {
+            AWSDynamoDBAttributeValue* dynamoRightAttribute = [AWSDynamoDBAttributeValue new];
+            [dynamoRightAttribute nsp_setAttributeValue:rightAttribute];
+            [dynamoRightAttributes addObject:dynamoRightAttribute];
+        }
+
+        NSString* key = comparisionPredicate.leftExpression.keyPath; // TODO: convert to dynamo attribute names or reject keyPaths with period
+        AWSDynamoDBCondition* condition = [AWSDynamoDBCondition new];
+        condition.comparisonOperator = dynamoOperator;
+        condition.attributeValueList = [dynamoRightAttributes count] > 0 ? dynamoRightAttributes : nil;
+        scanFilter[key] = condition;
+    }
+
+    return [scanFilter count] > 0 ? scanFilter : nil;
+}
+
 -(NSArray*)fetchRemoteObjectsWithRequest:(NSFetchRequest*)fetchRequest
                                  context:(NSManagedObjectContext*)context
 {
@@ -150,13 +227,22 @@ NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_He
     NSUInteger limit = fetchRequest.fetchLimit;
 
     AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
+
     scanInput.tableName = tableName;
+
     if (limit > 0) scanInput.limit = @(limit);
-    if (fetchRequest.returnsObjectsAsFaults) {
+
+    if (!fetchRequest.includesPropertyValues) {
         scanInput.projectionExpression = hashKeyName;
+    } else if (fetchRequest.propertiesToFetch) {
+        NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) { return [property nsp_dynamoName]; }];
+        scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
     }
+
 //    scanInput.exclusiveStartKey = expression.exclusiveStartKey;
-//    scanInput.scanFilter = expression.scanFilter;
+    if (fetchRequest.predicate) {
+        scanInput.scanFilter = [self scanFilterForPredicate:fetchRequest.predicate];
+    }
 
      [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
          AWSDynamoDBScanOutput *scanOutput = task.result;
@@ -164,7 +250,7 @@ NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_He
          for (NSDictionary* dynamoAttributes in scanOutput.items) {
              NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
                                                              dynamoAttributes:dynamoAttributes
-                                                                   putToCache:!fetchRequest.returnsObjectsAsFaults];
+                                                                   putToCache:fetchRequest.includesPropertyValues];
              if (fetchRequest.resultType == NSManagedObjectResultType) {
                  NSManagedObject* object = [context objectWithID:objectId];
                  [results addObject:object];
@@ -189,8 +275,8 @@ NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_He
         NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceId];
 
         if (putToCache) {
-            NSDictionary* transformedValues = [entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes];
-            [self.cache setObject:transformedValues forKey:objectId];
+            NSDictionary* nativeAttributes = [entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes];
+            [self.cache setObject:nativeAttributes forKey:objectId];
         }
 
         return objectId;

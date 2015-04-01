@@ -7,6 +7,7 @@
 //
 
 #import "NSEntityDescription+NSPDynamoStore.h"
+#import "NSPropertyDescription+NSPDynamoStore.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 
 #import <AWSDynamoDB.h>
@@ -14,8 +15,6 @@
 NSString* const kNSPDynamoStoreEntityHashKeyAttributeNameKey = @"NSPDynamoStoreEntityHashKeyAttributeName";
 NSString* const kNSPDynamoStoreEntityRangeKeyAttributeNameKey = @"NSPDynamoStoreEntityRangeKeyAttributeName";
 NSString* const kNSPDynamoStoreEntityDynamoDBTableNameKey = @"NSPDynamoStoreEntityDynamoDBTableName";
-
-NSString* const kNSPDynamoStoreAttributeNameKey = @"NSPDynamoStoreAttributeName";
 
 @implementation NSEntityDescription (NSPDynamoStore)
 
@@ -39,12 +38,12 @@ NSString* const kNSPDynamoStoreAttributeNameKey = @"NSPDynamoStoreAttributeName"
     NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
 
     [self.attributesByName enumerateKeysAndObjectsUsingBlock:^(NSString* attributeName, NSAttributeDescription* attribute, BOOL *stop) {
-        NSString* dynamoAttributeName = attribute.userInfo[kNSPDynamoStoreAttributeNameKey] ? : attributeName;
+        NSString* dynamoAttributeName = [attribute nsp_dynamoName];
         AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
         if (dynamoAttribute) {
-            [transformedValues setValue:[dynamoAttribute nsp_getAttributeValue] forKey:attributeName];
+            [transformedValues setValue:[dynamoAttribute nsp_getAttributeValue] forKey:attribute.name];
         }
-     }];
+    }];
 
     return transformedValues;
 }
