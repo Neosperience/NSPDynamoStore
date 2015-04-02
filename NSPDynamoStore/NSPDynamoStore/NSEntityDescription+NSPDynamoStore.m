@@ -33,19 +33,4 @@ NSString* const kNSPDynamoStoreEntityDynamoDBTableNameKey = @"NSPDynamoStoreEnti
     return self.userInfo[kNSPDynamoStoreEntityDynamoDBTableNameKey] ? : self.name;
 }
 
--(NSDictionary*)nsp_dynamoDBAttributesToNativeAttributes:(NSDictionary*)dynamoAttributes
-{
-    NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
-
-    [self.attributesByName enumerateKeysAndObjectsUsingBlock:^(NSString* attributeName, NSAttributeDescription* attribute, BOOL *stop) {
-        NSString* dynamoAttributeName = [attribute nsp_dynamoName];
-        AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
-        if (dynamoAttribute) {
-            [transformedValues setValue:[dynamoAttribute nsp_getAttributeValue] forKey:attribute.name];
-        }
-    }];
-
-    return transformedValues;
-}
-
 @end

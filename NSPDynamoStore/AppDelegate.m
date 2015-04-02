@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "NSPDynamoStore.h"
 #import "Item.h"
+#import "Person.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 
@@ -43,16 +44,22 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
 
     fetchRequest.predicate = predicate;
-    fetchRequest.resultType = NSDictionaryResultType;
+    fetchRequest.resultType = NSManagedObjectResultType;
 
     NSError* error = nil;
     NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
 
-    id result = [results firstObject];
+    Item* firstItem = [results firstObject];
 
-    NSLog(@"results: %@", results);
-    NSLog(@"result: %@, error: %@", result, error);
-    NSLog(@"result name: %@", [result valueForKey:@"name"]);
+    if (error) {
+        NSLog(@"ERROR: %@", error);
+    } else {
+        Person* person = firstItem.person;
+        NSLog(@"results count: %@", @([results count]));
+        NSLog(@"firstItem: %@", firstItem);
+        NSLog(@"firstItem.person: %@", person);
+        NSLog(@"firstItem.person.name: %@", person.name);
+    }
 
     return YES;
 }
