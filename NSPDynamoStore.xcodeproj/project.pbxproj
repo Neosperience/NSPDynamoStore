@@ -58,6 +58,7 @@
 		1B4EBDC61ACACD4800BCC188 /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
 		1B63ABAB1ACD72F000A3F6DA /* NSPDynamoStoreExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoStoreExpression.h; sourceTree = "<group>"; };
 		1B63ABAC1ACD72F000A3F6DA /* NSPDynamoStoreExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreExpression.m; sourceTree = "<group>"; };
+		1BA999941ACD7ED500C398E8 /* NSPDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDefines.h; sourceTree = "<group>"; };
 		1BE297C11ACAD56900E94ED6 /* AWSItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSItem.h; sourceTree = "<group>"; };
 		1BE297C21ACAD56900E94ED6 /* AWSItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSItem.m; sourceTree = "<group>"; };
 		1BE297C41ACAE8E100E94ED6 /* NSObject+NSPTypeCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSPTypeCheck.h"; sourceTree = "<group>"; };
@@ -144,6 +145,7 @@
 				1BE297CE1ACB439800E94ED6 /* NSEntityDescription+NSPDynamoStore.m */,
 				1BE297D01ACBDD9600E94ED6 /* NSPropertyDescription+NSPDynamoStore.h */,
 				1BE297D11ACBDD9600E94ED6 /* NSPropertyDescription+NSPDynamoStore.m */,
+				1BA999941ACD7ED500C398E8 /* NSPDefines.h */,
 			);
 			path = NSPDynamoStore;
 			sourceTree = "<group>";
