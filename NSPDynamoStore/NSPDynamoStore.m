@@ -12,7 +12,7 @@
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
-#import "NSPDynamoStoreConditionElement.h"
+#import "NSPDynamoStoreExpression.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
@@ -130,17 +130,6 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
                    withContext:(NSManagedObjectContext *)context
                          error:(NSError *__autoreleasing *)error
 {
-    if (fetchRequest.resultType == NSManagedObjectResultType) {
-        return [self fetchRemoteObjectsWithRequest:fetchRequest context:context];
-    } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
-        return [self fetchRemoteObjectsWithRequest:fetchRequest context:context];
-    }
-    return nil;
-}
-
--(NSArray*)fetchRemoteObjectsWithRequest:(NSFetchRequest*)fetchRequest
-                                 context:(NSManagedObjectContext*)context
-{
     NSMutableArray* results = [NSMutableArray array];
     NSEntityDescription* entity = fetchRequest.entity;
     NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
@@ -151,8 +140,6 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
 
     scanInput.tableName = tableName;
 
-    if (limit > 0) scanInput.limit = @(limit);
-
     if (!fetchRequest.includesPropertyValues) {
         scanInput.projectionExpression = hashKeyName;
     } else if (fetchRequest.propertiesToFetch) {
@@ -160,14 +147,17 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
         scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
     }
 
-//    scanInput.exclusiveStartKey = expression.exclusiveStartKey;
+//  TODO: support limit and skip
+//  scanInput.exclusiveStartKey = expression.exclusiveStartKey;
+    if (limit > 0) scanInput.limit = @(limit);
+
     if (fetchRequest.predicate) {
-        NSPDynamoStoreFilterElement* filter = [NSPDynamoStoreFilterElement elementWithPredicate:fetchRequest.predicate];
-        if ([filter operatorSupported:NSPDynamoStoreElementOperatorOR]) {
-            scanInput.scanFilter = [filter awsConditions];
+        NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
+        if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
+            scanInput.scanFilter = [expression dynamoConditions];
             scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
-        } else if ([filter operatorSupported:NSPDynamoStoreElementOperatorAND]) {
-            scanInput.scanFilter = [filter awsConditions];
+        } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
+            scanInput.scanFilter = [expression dynamoConditions];
             scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
         } else {
             NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
@@ -182,10 +172,11 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
                                                              dynamoAttributes:dynamoAttributes
                                                                    putToCache:fetchRequest.includesPropertyValues];
              if (fetchRequest.resultType == NSManagedObjectResultType) {
-                 NSManagedObject* object = [context objectWithID:objectId];
-                 [results addObject:object];
+                 [results addObject:[context objectWithID:objectId]];
              } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
                  [results addObject:objectId];
+             } else if (fetchRequest.resultType == NSDictionaryResultType) {
+                 [results addObject:[fetchRequest.entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes]];
              }
          }
          return nil;

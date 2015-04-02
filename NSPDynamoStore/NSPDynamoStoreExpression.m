@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
-#import "NSPDynamoStoreConditionElement.h"
+#import "NSPDynamoStoreExpression.h"
 #import "NSArray+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 
@@ -60,43 +60,43 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     }
 }
 
-@implementation NSPDynamoStoreFilterElement
+@implementation NSPDynamoStoreExpression
 
-+(NSPDynamoStoreFilterElement*)elementWithPredicate:(NSPredicate *)predicate
++(NSPDynamoStoreExpression*)elementWithPredicate:(NSPredicate *)predicate
 {
     NSParameterAssert([predicate isKindOfClass:[NSComparisonPredicate class]] || [predicate isKindOfClass:[NSCompoundPredicate class]]);
 
     if ([predicate isKindOfClass:[NSComparisonPredicate class]]) {
         NSComparisonPredicate* comparisonPredicate = (NSComparisonPredicate*)predicate;
-        return [NSPDynamoStoreConditionElement elementWithComparisonPredicate:comparisonPredicate];
+        return [NSPDynamoStoreComparisonExpression expressionWithComparisonPredicate:comparisonPredicate];
     } else if ([predicate isKindOfClass:[NSCompoundPredicate class]]) {
         NSCompoundPredicate* compoundPredicate = (NSCompoundPredicate*)predicate;
 
         if (compoundPredicate.compoundPredicateType == NSNotPredicateType) {
             NSAssert([compoundPredicate.subpredicates count] == 1, @"NSPDynamoStore: NOT expressions must have exactly one operand");
             NSPredicate* subPredicate = [compoundPredicate.subpredicates firstObject];
-            return [[NSPDynamoStoreFilterElement elementWithPredicate:subPredicate] negatedElement];
+            return [[NSPDynamoStoreExpression elementWithPredicate:subPredicate] negatedElement];
         } else {
-            return [NSPDynamoStoreCompoundElement elementWithCompoundPredicate:compoundPredicate];
+            return [NSPDynamoStoreCompoundExpression expressionWithCompoundPredicate:compoundPredicate];
         }
     }
 
     return nil;
 }
 
--(NSPDynamoStoreFilterElement*)negatedElement
+-(NSPDynamoStoreExpression*)negatedElement
 {
     NSAssert(NO, @"NSPDynamoStore: abstract function called");
     return nil;
 }
 
--(NSDictionary*)awsConditions
+-(NSDictionary*)dynamoConditions
 {
     NSAssert(NO, @"NSPDynamoStore: abstract function called");
     return nil;
 }
 
--(BOOL)operatorSupported:(NSPDynamoStoreElementOperator)elementOperator
+-(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator
 {
     NSAssert(NO, @"NSPDynamoStore: abstract function called");
     return NO;
@@ -104,9 +104,9 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
 
 @end
 
-@implementation NSPDynamoStoreConditionElement
+@implementation NSPDynamoStoreComparisonExpression
 
-- (instancetype)initWithCondition:(AWSDynamoDBCondition *)condition key:(NSString *)key
+- (instancetype)initWithDynamoCondition:(AWSDynamoDBCondition *)condition key:(NSString *)key
 {
     self = [self init];
     if (self) {
@@ -116,9 +116,9 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return self;
 }
 
-+(instancetype)conditionElementWithCondition:(AWSDynamoDBCondition *)condition key:(NSString *)key
++(instancetype)expressionWithDynamoCondition:(AWSDynamoDBCondition *)condition key:(NSString *)key
 {
-    return [[self alloc] initWithCondition:condition key:key];
+    return [[self alloc] initWithDynamoCondition:condition key:key];
 }
 
 -(instancetype)initWithComparisonPredicate:(NSComparisonPredicate*)comparisionPredicate
@@ -130,7 +130,7 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return self;
 }
 
-+(instancetype)elementWithComparisonPredicate:(NSComparisonPredicate *)comparisionPredicate
++(instancetype)expressionWithComparisonPredicate:(NSComparisonPredicate *)comparisionPredicate
 {
     return [[self alloc] initWithComparisonPredicate:comparisionPredicate];
 }
@@ -200,10 +200,10 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     AWSDynamoDBCondition* negatedCondition = [AWSDynamoDBCondition new];
     negatedCondition.attributeValueList = self.condition.attributeValueList;
     negatedCondition.comparisonOperator = NSPAWSOperatorInverse(self.condition.comparisonOperator);
-    return [[self class] conditionElementWithCondition:negatedCondition key:self.key];
+    return [[self class] expressionWithDynamoCondition:negatedCondition key:self.key];
 }
 
--(NSDictionary *)awsConditions
+-(NSDictionary *)dynamoConditions
 {
     if (self.key) {
         return @{ self.key : self.condition };
@@ -212,16 +212,16 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     }
 }
 
--(BOOL)operatorSupported:(NSPDynamoStoreElementOperator)elementOperator
+-(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator
 {
-    return (elementOperator == NSPDynamoStoreElementOperatorAND) || (elementOperator == NSPDynamoStoreElementOperatorOR);
+    return (elementOperator == NSPDynamoStoreExpressionOperatorAND) || (elementOperator == NSPDynamoStoreExpressionOperatorOR);
 }
 
 @end
 
-@implementation NSPDynamoStoreCompoundElement
+@implementation NSPDynamoStoreCompoundExpression
 
-- (instancetype)initWithOperator:(NSPDynamoStoreElementOperator)compoundElementOperator subElements:(NSArray *)subElements
+- (instancetype)initWithOperator:(NSPDynamoStoreExpressionOperator)compoundElementOperator subElements:(NSArray *)subElements
 {
     self = [self init];
     if (self) {
@@ -231,28 +231,28 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return self;
 }
 
-+(instancetype)compoundElementWithOperator:(NSPDynamoStoreElementOperator)compoundElementOperator subElements:(NSArray *)subElements
++(instancetype)expressionWithOperator:(NSPDynamoStoreExpressionOperator)compoundElementOperator subElements:(NSArray *)subElements
 {
     return [[self alloc] initWithOperator:compoundElementOperator subElements:subElements];
 }
 
 -(instancetype)negatedElement
 {
-    NSArray* negatedSubElements = [self.subElements map:^id(NSPDynamoStoreFilterElement* filterElement) {
+    NSArray* negatedSubElements = [self.subElements map:^id(NSPDynamoStoreExpression* filterElement) {
         return [filterElement negatedElement];
     }];
 
-    NSPDynamoStoreElementOperator negatedOperator = NSPDynamoStoreElementOperatorUnknown;
+    NSPDynamoStoreExpressionOperator negatedOperator = NSPDynamoStoreExpressionOperatorUnknown;
     switch (self.elementOperator) {
-        case NSPDynamoStoreElementOperatorOR:       negatedOperator = NSPDynamoStoreElementOperatorAND; break;
-        case NSPDynamoStoreElementOperatorAND:      negatedOperator = NSPDynamoStoreElementOperatorOR; break;
-        case NSPDynamoStoreElementOperatorUnknown:
+        case NSPDynamoStoreExpressionOperatorOR:       negatedOperator = NSPDynamoStoreExpressionOperatorAND; break;
+        case NSPDynamoStoreExpressionOperatorAND:      negatedOperator = NSPDynamoStoreExpressionOperatorOR; break;
+        case NSPDynamoStoreExpressionOperatorUnknown:
         default:
             NSAssert(NO, @"NSPDynamoStore: invalid compound operator in NSPDynamoStoreCompoundElement: %@", @(self.elementOperator));
             break;
     }
 
-    return [[self class] compoundElementWithOperator:negatedOperator subElements:negatedSubElements];
+    return [[self class] expressionWithOperator:negatedOperator subElements:negatedSubElements];
 }
 
 -(void)setupWithCompoundPredicate:(NSCompoundPredicate *)compoundPredicate
@@ -261,13 +261,13 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
                       compoundPredicate.compoundPredicateType == NSAndPredicateType);
 
     self.subElements = [compoundPredicate.subpredicates map:^id(NSPredicate* subPredicate) {
-        return [NSPDynamoStoreFilterElement elementWithPredicate:subPredicate];
+        return [NSPDynamoStoreExpression elementWithPredicate:subPredicate];
     }];
 
     if (compoundPredicate.compoundPredicateType == NSOrPredicateType) {
-        self.elementOperator = NSPDynamoStoreElementOperatorOR;
+        self.elementOperator = NSPDynamoStoreExpressionOperatorOR;
     } else if (compoundPredicate.compoundPredicateType == NSAndPredicateType) {
-        self.elementOperator = NSPDynamoStoreElementOperatorAND;
+        self.elementOperator = NSPDynamoStoreExpressionOperatorAND;
     }
 }
 
@@ -280,30 +280,30 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return self;
 }
 
-+(instancetype)elementWithCompoundPredicate:(NSCompoundPredicate *)compoundPredicate
++(instancetype)expressionWithCompoundPredicate:(NSCompoundPredicate *)compoundPredicate
 {
     return [[self alloc] initWithCompoundPredicate:compoundPredicate];
 }
 
--(BOOL)operatorSupported:(NSPDynamoStoreElementOperator)elementOperator
+-(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator
 {
     BOOL operatorSupported = NO;
     if (self.elementOperator == elementOperator) {
         operatorSupported = YES;
-        for (NSPDynamoStoreFilterElement* element in self.subElements) {
+        for (NSPDynamoStoreExpression* element in self.subElements) {
             operatorSupported &= [element operatorSupported:elementOperator];
         }
     }
     return operatorSupported;
 }
 
--(NSDictionary *)awsConditions
+-(NSDictionary *)dynamoConditions
 {
     NSMutableDictionary* conditions = [NSMutableDictionary dictionary];
 
-    for (NSPDynamoStoreFilterElement* element in self.subElements) {
+    for (NSPDynamoStoreExpression* element in self.subElements) {
 
-        NSDictionary* elementConditions = [element awsConditions];
+        NSDictionary* elementConditions = [element dynamoConditions];
 
         NSMutableSet* conditionsKeys = [NSMutableSet setWithArray:[conditions allKeys]];
         NSSet* elementConditionsKeys = [NSSet setWithArray:[elementConditions allKeys]];
