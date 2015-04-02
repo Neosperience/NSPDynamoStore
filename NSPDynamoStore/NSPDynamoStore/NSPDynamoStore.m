@@ -103,7 +103,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
             return nil;
         }] waitUntilFinished];
 
-        nativeAttributes = [objectID.entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes];
+        nativeAttributes = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:objectID.entity];
         [self.cache setObject:nativeAttributes forKey:objectID];
     }
 
@@ -176,13 +176,42 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
                 [results addObject:objectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                [results addObject:[fetchRequest.entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes]];
+                NSDictionary* result = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:fetchRequest.entity];
+                [results addObject:result];
             }
          }
          return nil;
     }] waitUntilFinished];
 
     return results;
+}
+
+-(NSDictionary*)dynamoAttributesToNativeAttributes:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
+{
+    NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
+
+    [entity.attributesByName enumerateKeysAndObjectsUsingBlock:^(NSString* attributeName, NSAttributeDescription* attribute, BOOL *stop) {
+        NSString* dynamoAttributeName = [attribute nsp_dynamoName];
+        AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
+        if (dynamoAttribute) {
+            [transformedValues setValue:[dynamoAttribute nsp_getAttributeValue] forKey:attribute.name];
+        }
+    }];
+
+    [entity.relationshipsByName enumerateKeysAndObjectsUsingBlock:^(NSString* relationshipName, NSRelationshipDescription* relationship, BOOL *stop) {
+        NSString* dynamoAttributeName = [relationship nsp_dynamoName];
+        AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
+        id referenceObject = [dynamoAttribute nsp_getAttributeValue];
+
+        // Only to-one relationships are handled here. To-many relationships are handled in newValueForRelationship
+        if (referenceObject && ([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]])) {
+            NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:referenceObject];
+            [transformedValues setValue:objectId forKey:relationship.name];
+        }
+
+    }];
+
+    return transformedValues;
 }
 
 -(NSManagedObjectID*)objectIdForNewObjectOfEntity:(NSEntityDescription*)entity
@@ -196,7 +225,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
         NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceId];
 
         if (putToCache) {
-            NSDictionary* nativeAttributes = [entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes];
+            NSDictionary* nativeAttributes = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:entity];
             [self.cache setObject:nativeAttributes forKey:objectId];
         }
 

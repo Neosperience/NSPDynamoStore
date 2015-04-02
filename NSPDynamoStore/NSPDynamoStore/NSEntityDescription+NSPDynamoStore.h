@@ -14,6 +14,4 @@
 -(NSString*)nsp_dynamoRangeKeyName;
 -(NSString*)nsp_dynamoTableName;
 
--(NSDictionary*)nsp_dynamoDBAttributesToNativeAttributes:(NSDictionary*)dynamoAttributes;
-
 @end

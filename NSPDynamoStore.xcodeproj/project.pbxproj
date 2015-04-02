@@ -15,7 +15,6 @@
 		1B4EBDAA1ACAAD2B00BCC188 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */; };
 		1B4EBDAD1ACAAD2B00BCC188 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */; };
 		1B4EBDB91ACAAD2B00BCC188 /* NSPDynamoStoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */; };
-		1B4EBDC71ACACD4800BCC188 /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDC61ACACD4800BCC188 /* Item.m */; };
 		1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B750D1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m */; };
 		1B6B75171ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B750F1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m */; };
 		1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75111ACD928F00F3EE2E /* NSPDynamoStore.m */; };
@@ -23,6 +22,8 @@
 		1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75151ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m */; };
 		1B6B75211ACD92B000F3EE2E /* NSArray+NSPCollectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B751D1ACD92B000F3EE2E /* NSArray+NSPCollectionUtils.m */; };
 		1B6B75221ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B751F1ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m */; };
+		1B6B75251ACD94C800F3EE2E /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75241ACD94C800F3EE2E /* Person.m */; };
+		1B6B75281ACD94C800F3EE2E /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75271ACD94C800F3EE2E /* Item.m */; };
 		2FD7126C5691B33A774CF97F /* libPods-NSPDynamoStore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */; };
 /* End PBXBuildFile section */
 
@@ -51,8 +52,6 @@
 		1B4EBDB21ACAAD2B00BCC188 /* NSPDynamoStoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NSPDynamoStoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B4EBDB71ACAAD2B00BCC188 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreTests.m; sourceTree = "<group>"; };
-		1B4EBDC51ACACD4800BCC188 /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Item.h; sourceTree = "<group>"; };
-		1B4EBDC61ACACD4800BCC188 /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
 		1B6B750C1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AWSDynamoDBAttributeValue+NSPDynamoStore.h"; sourceTree = "<group>"; };
 		1B6B750D1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AWSDynamoDBAttributeValue+NSPDynamoStore.m"; sourceTree = "<group>"; };
 		1B6B750E1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSEntityDescription+NSPDynamoStore.h"; sourceTree = "<group>"; };
@@ -68,6 +67,10 @@
 		1B6B751E1ACD92B000F3EE2E /* NSObject+NSPTypeCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSPTypeCheck.h"; sourceTree = "<group>"; };
 		1B6B751F1ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+NSPTypeCheck.m"; sourceTree = "<group>"; };
 		1B6B75201ACD92B000F3EE2E /* NSPDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDefines.h; sourceTree = "<group>"; };
+		1B6B75231ACD94C800F3EE2E /* Person.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
+		1B6B75241ACD94C800F3EE2E /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
+		1B6B75261ACD94C800F3EE2E /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Item.h; sourceTree = "<group>"; };
+		1B6B75271ACD94C800F3EE2E /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
 		6AA7DF1A53149253BE8BD47A /* Pods-NSPDynamoStore.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.debug.xcconfig"; sourceTree = "<group>"; };
 		81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NSPDynamoStore.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F90992F0DDCC886C9EF12A58 /* Pods-NSPDynamoStore.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.release.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.release.xcconfig"; sourceTree = "<group>"; };
@@ -115,6 +118,10 @@
 		1B4EBD981ACAAD2A00BCC188 /* NSPDynamoStore */ = {
 			isa = PBXGroup;
 			children = (
+				1B6B75261ACD94C800F3EE2E /* Item.h */,
+				1B6B75271ACD94C800F3EE2E /* Item.m */,
+				1B6B75231ACD94C800F3EE2E /* Person.h */,
+				1B6B75241ACD94C800F3EE2E /* Person.m */,
 				1B6B751B1ACD92B000F3EE2E /* Utils */,
 				1B6B750B1ACD928F00F3EE2E /* NSPDynamoStore */,
 				1B4EBD9D1ACAAD2B00BCC188 /* AppDelegate.h */,
@@ -125,8 +132,6 @@
 				1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */,
 				1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */,
 				1B4EBDA01ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld */,
-				1B4EBDC51ACACD4800BCC188 /* Item.h */,
-				1B4EBDC61ACACD4800BCC188 /* Item.m */,
 				1B4EBD991ACAAD2B00BCC188 /* Supporting Files */,
 			);
 			path = NSPDynamoStore;
@@ -161,12 +166,12 @@
 		1B6B750B1ACD928F00F3EE2E /* NSPDynamoStore */ = {
 			isa = PBXGroup;
 			children = (
+				1B6B75101ACD928F00F3EE2E /* NSPDynamoStore.h */,
+				1B6B75111ACD928F00F3EE2E /* NSPDynamoStore.m */,
 				1B6B750C1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.h */,
 				1B6B750D1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m */,
 				1B6B750E1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.h */,
 				1B6B750F1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m */,
-				1B6B75101ACD928F00F3EE2E /* NSPDynamoStore.h */,
-				1B6B75111ACD928F00F3EE2E /* NSPDynamoStore.m */,
 				1B6B75121ACD928F00F3EE2E /* NSPDynamoStoreExpression.h */,
 				1B6B75131ACD928F00F3EE2E /* NSPDynamoStoreExpression.m */,
 				1B6B75141ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.h */,
@@ -339,13 +344,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B4EBDC71ACACD4800BCC188 /* Item.m in Sources */,
+				1B6B75281ACD94C800F3EE2E /* Item.m in Sources */,
 				1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */,
 				1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */,
 				1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */,
 				1B6B75221ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m in Sources */,
 				1B6B75211ACD92B000F3EE2E /* NSArray+NSPCollectionUtils.m in Sources */,
 				1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */,
+				1B6B75251ACD94C800F3EE2E /* Person.m in Sources */,
 				1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */,
 				1B4EBDA51ACAAD2B00BCC188 /* ViewController.m in Sources */,
 				1B4EBD9C1ACAAD2B00BCC188 /* main.m in Sources */,
