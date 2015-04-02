@@ -24,12 +24,12 @@
     fetchRequest.returnsObjectsAsFaults = NO;
 
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"section", @"church"];
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K in %@", @"section", @[@"culture", @"church"]];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K in %@", @"section", @[@"culture", @"church"]];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"longitude < 9.18"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"tel == NULL"];
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'church' AND address BEGINSWITH 'Corso' AND NOT url == NULL"];
 
 //    Compund predicates are not supported yet
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
