@@ -10,7 +10,15 @@
 #import "NSPDynamoStore.h"
 #import "Item.h"
 
+#import <AWSDynamoDB/AWSDynamoDB.h>
+
+NSString* const kAWSAccountID = @"[AWS account ID here]";
+NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";
+NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
+
 @interface AppDelegate ()
+
+@property (nonatomic, strong) AWSServiceConfiguration* serviceConfiguration;
 
 @end
 
@@ -73,6 +81,24 @@
     [self saveContext];
 }
 
+-(AWSServiceConfiguration *)serviceConfiguration
+{
+    if (!_serviceConfiguration) {
+        AWSCognitoCredentialsProvider *credentialsProvider = [AWSCognitoCredentialsProvider credentialsWithRegionType:AWSRegionUSEast1
+                                                                                                            accountId:kAWSAccountID
+                                                                                                       identityPoolId:kCognitoPoolID
+                                                                                                        unauthRoleArn:kCognitoRoleUnauth
+                                                                                                          authRoleArn:nil];
+
+        _serviceConfiguration = [AWSServiceConfiguration configurationWithRegion:AWSRegionUSEast1
+                                                             credentialsProvider:credentialsProvider];
+
+        [AWSServiceManager defaultServiceManager].defaultServiceConfiguration = _serviceConfiguration;
+    }
+
+    return _serviceConfiguration;
+}
+
 #pragma mark - Core Data stack
 
 @synthesize managedObjectContext = _managedObjectContext;
@@ -103,13 +129,12 @@
     // Create the coordinator and store
     
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"NSPDynamoStore.sqlite"];
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
     if (![_persistentStoreCoordinator addPersistentStoreWithType:[NSPDynamoStore storeType]
                                                    configuration:nil
-                                                             URL:storeURL
-                                                         options:nil
+                                                             URL:nil
+                                                         options:@{ NSPDynamoStoreAWSServiceConfigurationKey : self.serviceConfiguration }
                                                            error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];

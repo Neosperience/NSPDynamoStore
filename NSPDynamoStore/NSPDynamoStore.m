@@ -17,13 +17,8 @@
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 
-NSString* const kAWSAccountID = @"[AWS account ID here]";
-NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";
-NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
-
 @interface NSPDynamoStore ()
 
-@property (nonatomic, strong) AWSDynamoDBObjectMapper* dynamoDBObjectMapper;
 @property (nonatomic, strong) AWSServiceConfiguration* serviceConfiguration;
 @property (nonatomic, strong) AWSDynamoDB* dynamoDB;
 @property (nonatomic, strong) NSCache* cache;
@@ -51,28 +46,17 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
 {
     self = [super initWithPersistentStoreCoordinator:root configurationName:name URL:url options:options];
     if (self) {
-        [self setupObjectMapper];
+        self.serviceConfiguration = options[NSPDynamoStoreAWSServiceConfigurationKey] ? :
+                                    [AWSServiceManager defaultServiceManager].defaultServiceConfiguration;
+
+        NSAssert(self.serviceConfiguration,
+                 @"NSPDynamoStore: You must specify a service configuration in the options dictionary with NSPDynamoStoreAWSServiceConfiguration key "
+                 "or you must ensure [AWSServiceManager defaultServiceManager].defaultServiceConfiguration returns a valid service configuration.");
+
+        self.dynamoDB = [[AWSDynamoDB alloc] initWithConfiguration:self.serviceConfiguration];
         self.cache = [NSCache new];
     }
     return self;
-}
-
--(void)setupObjectMapper
-{
-    AWSCognitoCredentialsProvider *credentialsProvider = [AWSCognitoCredentialsProvider credentialsWithRegionType:AWSRegionUSEast1
-                                                                                                        accountId:kAWSAccountID
-                                                                                                   identityPoolId:kCognitoPoolID
-                                                                                                    unauthRoleArn:kCognitoRoleUnauth
-                                                                                                      authRoleArn:nil];
-
-    self.serviceConfiguration = [AWSServiceConfiguration configurationWithRegion:AWSRegionUSEast1
-                                                             credentialsProvider:credentialsProvider];
-
-    [AWSServiceManager defaultServiceManager].defaultServiceConfiguration = self.serviceConfiguration;
-
-    self.dynamoDBObjectMapper = [AWSDynamoDBObjectMapper defaultDynamoDBObjectMapper];
-    self.dynamoDB = [[AWSDynamoDB alloc] initWithConfiguration:self.serviceConfiguration];
-
 }
 
 -(BOOL)loadMetadata:(NSError *__autoreleasing *)error
@@ -121,7 +105,16 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
         [self.cache setObject:nativeAttributes forKey:objectID];
     }
 
+    // TODO: use for example lastModified timestamp as version field to help Core Data to resolve conflicts
     return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:nativeAttributes version:1];
+}
+
+-(id)newValueForRelationship:(NSRelationshipDescription *)relationship
+             forObjectWithID:(NSManagedObjectID *)objectID
+                 withContext:(NSManagedObjectContext *)context
+                       error:(NSError *__autoreleasing *)error
+{
+    return nil;
 }
 
 #pragma mark - Private
@@ -136,6 +129,9 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
     NSString* tableName = [entity nsp_dynamoTableName];
     NSUInteger limit = fetchRequest.fetchLimit;
 
+    // TODO: examine the possibility to support sort descriptors if they refer to Global Secondary Indices
+    NSAssert([fetchRequest.sortDescriptors count] == 0, @"NSPDynamoStore: sort descriptors are not supported.");
+
     AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
 
     scanInput.tableName = tableName;
@@ -147,8 +143,9 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
         scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
     }
 
-//  TODO: support limit and skip
-//  scanInput.exclusiveStartKey = expression.exclusiveStartKey;
+    // TODO: support limit and skip if possible with exclusiveStartKey
+    // scanInput.exclusiveStartKey = expression.exclusiveStartKey;
+
     if (limit > 0) scanInput.limit = @(limit);
 
     if (fetchRequest.predicate) {
@@ -164,20 +161,21 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
         }
     }
 
-     [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
-         AWSDynamoDBScanOutput *scanOutput = task.result;
+    // TODO: decide in a best-effort way if we can use query operation
+    [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
+        AWSDynamoDBScanOutput *scanOutput = task.result;
 
-         for (NSDictionary* dynamoAttributes in scanOutput.items) {
-             NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
+        for (NSDictionary* dynamoAttributes in scanOutput.items) {
+            NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
                                                              dynamoAttributes:dynamoAttributes
                                                                    putToCache:fetchRequest.includesPropertyValues];
-             if (fetchRequest.resultType == NSManagedObjectResultType) {
-                 [results addObject:[context objectWithID:objectId]];
-             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
-                 [results addObject:objectId];
-             } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                 [results addObject:[fetchRequest.entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes]];
-             }
+            if (fetchRequest.resultType == NSManagedObjectResultType) {
+                [results addObject:[context objectWithID:objectId]];
+            } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
+                [results addObject:objectId];
+            } else if (fetchRequest.resultType == NSDictionaryResultType) {
+                [results addObject:[fetchRequest.entity nsp_dynamoDBAttributesToNativeAttributes:dynamoAttributes]];
+            }
          }
          return nil;
     }] waitUntilFinished];

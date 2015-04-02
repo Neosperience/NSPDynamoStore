@@ -8,6 +8,10 @@
 
 #import <CoreData/CoreData.h>
 
+#import "NSPDefines.h"
+
+NSP_EXTERN NSString* const NSPDynamoStoreAWSServiceConfigurationKey;
+
 @interface NSPDynamoStore : NSIncrementalStore
 
 + (NSString *)storeType;
