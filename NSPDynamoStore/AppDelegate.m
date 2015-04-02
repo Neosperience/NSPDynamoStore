@@ -35,15 +35,16 @@
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
 
     fetchRequest.predicate = predicate;
+    fetchRequest.resultType = NSDictionaryResultType;
 
     NSError* error = nil;
     NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
 
-    Item* result = [results firstObject];
+    id result = [results firstObject];
 
     NSLog(@"results: %@", results);
     NSLog(@"result: %@, error: %@", result, error);
-    NSLog(@"result name: %@", result.name);
+    NSLog(@"result name: %@", [result valueForKey:@"name"]);
 
     return YES;
 }
