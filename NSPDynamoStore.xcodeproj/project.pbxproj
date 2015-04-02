@@ -17,6 +17,7 @@
 		1B4EBDB91ACAAD2B00BCC188 /* NSPDynamoStoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */; };
 		1B4EBDC41ACACA6300BCC188 /* NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDC31ACACA6300BCC188 /* NSPDynamoStore.m */; };
 		1B4EBDC71ACACD4800BCC188 /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDC61ACACD4800BCC188 /* Item.m */; };
+		1B63ABA41ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B63ABA31ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.m */; };
 		1BE297C31ACAD56900E94ED6 /* AWSItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BE297C21ACAD56900E94ED6 /* AWSItem.m */; };
 		1BE297C61ACAE8E100E94ED6 /* NSObject+NSPTypeCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BE297C51ACAE8E100E94ED6 /* NSObject+NSPTypeCheck.m */; };
 		1BE297C91ACAF19400E94ED6 /* NSArray+NSPCollectionUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BE297C81ACAF19400E94ED6 /* NSArray+NSPCollectionUtils.m */; };
@@ -55,6 +56,8 @@
 		1B4EBDC31ACACA6300BCC188 /* NSPDynamoStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStore.m; sourceTree = "<group>"; };
 		1B4EBDC51ACACD4800BCC188 /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Item.h; sourceTree = "<group>"; };
 		1B4EBDC61ACACD4800BCC188 /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
+		1B63ABA21ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoStoreConditionElement.h; sourceTree = "<group>"; };
+		1B63ABA31ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreConditionElement.m; sourceTree = "<group>"; };
 		1BE297C11ACAD56900E94ED6 /* AWSItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AWSItem.h; sourceTree = "<group>"; };
 		1BE297C21ACAD56900E94ED6 /* AWSItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AWSItem.m; sourceTree = "<group>"; };
 		1BE297C41ACAE8E100E94ED6 /* NSObject+NSPTypeCheck.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+NSPTypeCheck.h"; sourceTree = "<group>"; };
@@ -139,6 +142,8 @@
 				1BE297CE1ACB439800E94ED6 /* NSEntityDescription+NSPDynamoStore.m */,
 				1BE297D01ACBDD9600E94ED6 /* NSPropertyDescription+NSPDynamoStore.h */,
 				1BE297D11ACBDD9600E94ED6 /* NSPropertyDescription+NSPDynamoStore.m */,
+				1B63ABA21ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.h */,
+				1B63ABA31ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.m */,
 			);
 			path = NSPDynamoStore;
 			sourceTree = "<group>";
@@ -323,6 +328,7 @@
 			files = (
 				1BE297CC1ACB412600E94ED6 /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */,
 				1B4EBDC71ACACD4800BCC188 /* Item.m in Sources */,
+				1B63ABA41ACD373D00A3F6DA /* NSPDynamoStoreConditionElement.m in Sources */,
 				1BE297CF1ACB439800E94ED6 /* NSEntityDescription+NSPDynamoStore.m in Sources */,
 				1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */,
 				1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */,

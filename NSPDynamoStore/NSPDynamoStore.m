@@ -12,43 +12,14 @@
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
-
-#import "AWSItem.h"
-#import "Item.h"
+#import "NSPDynamoStoreConditionElement.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
-#import <Mantle/Mantle.h>
 
 NSString* const kAWSAccountID = @"[AWS account ID here]";
 NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";
 NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here";
-
-AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorType predicateOperatorType)
-{
-    switch (predicateOperatorType) {
-        case NSLessThanPredicateOperatorType:               return AWSDynamoDBComparisonOperatorLT;
-        case NSLessThanOrEqualToPredicateOperatorType:      return AWSDynamoDBComparisonOperatorLE;
-        case NSGreaterThanPredicateOperatorType:            return AWSDynamoDBComparisonOperatorGT;
-        case NSGreaterThanOrEqualToPredicateOperatorType:   return AWSDynamoDBComparisonOperatorGE;
-        case NSEqualToPredicateOperatorType:                return AWSDynamoDBComparisonOperatorEQ;
-        case NSNotEqualToPredicateOperatorType:             return AWSDynamoDBComparisonOperatorNE;
-
-        case NSBeginsWithPredicateOperatorType:             return AWSDynamoDBComparisonOperatorBeginsWith;
-        case NSInPredicateOperatorType:                     return AWSDynamoDBComparisonOperatorIN;
-        case NSContainsPredicateOperatorType:               return AWSDynamoDBComparisonOperatorContains;
-        case NSBetweenPredicateOperatorType:                return AWSDynamoDBComparisonOperatorBetween;
-
-        case NSCustomSelectorPredicateOperatorType:
-        case NSEndsWithPredicateOperatorType:
-        case NSLikePredicateOperatorType:
-        case NSMatchesPredicateOperatorType:
-        default:
-            NSCAssert(NO, @"NSPDynamoStore: predicate operator type %@ not supported", @(predicateOperatorType));
-            return AWSDynamoDBComparisonOperatorUnknown;
-    }
-}
-
 
 @interface NSPDynamoStore ()
 
@@ -167,56 +138,6 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return nil;
 }
 
--(NSDictionary*)scanFilterForPredicate:(NSPredicate*)predicate
-{
-    NSMutableDictionary* scanFilter = [NSMutableDictionary dictionary];
-
-    NSComparisonPredicate* comparisionPredicate = [NSComparisonPredicate typeCastOrNil:predicate];
-    if (comparisionPredicate) {
-
-        if (!(comparisionPredicate.leftExpression.expressionType == NSKeyPathExpressionType &&
-              comparisionPredicate.rightExpression.expressionType == NSConstantValueExpressionType)) {
-            NSAssert(NO, @"NSPDynamoStore: only keyPath - constant type predicates are supported");
-            return nil;
-        }
-
-        if ((comparisionPredicate.options & NSCaseInsensitivePredicateOption) ||
-            (comparisionPredicate.options & NSDiacriticInsensitivePredicateOption)) {
-            NSAssert(NO, @"NSPDynamoStore: case insesitive search is not supported");
-            return nil;
-        }
-
-        AWSDynamoDBComparisonOperator dynamoOperator = NSPAWSOperatorFromNSOperator(comparisionPredicate.predicateOperatorType);
-        NSMutableArray* dynamoRightAttributes = [NSMutableArray array];
-        id rightAttribute = comparisionPredicate.rightExpression.constantValue;
-        if (!rightAttribute) {
-            if (comparisionPredicate.predicateOperatorType == NSEqualToPredicateOperatorType) {
-                dynamoOperator = AWSDynamoDBComparisonOperatorNull;
-            } else {
-                NSAssert(NO, @"NULL attribute value is supported only with \"equal to\" operator type");
-            }
-        } else if ([rightAttribute respondsToSelector:@selector(countByEnumeratingWithState:objects:count:)]) {
-            for (id element in rightAttribute) {
-                AWSDynamoDBAttributeValue* dynamoElement = [AWSDynamoDBAttributeValue new];
-                [dynamoElement nsp_setAttributeValue:element];
-                [dynamoRightAttributes addObject:dynamoElement];
-            }
-        } else {
-            AWSDynamoDBAttributeValue* dynamoRightAttribute = [AWSDynamoDBAttributeValue new];
-            [dynamoRightAttribute nsp_setAttributeValue:rightAttribute];
-            [dynamoRightAttributes addObject:dynamoRightAttribute];
-        }
-
-        NSString* key = comparisionPredicate.leftExpression.keyPath; // TODO: convert to dynamo attribute names or reject keyPaths with period
-        AWSDynamoDBCondition* condition = [AWSDynamoDBCondition new];
-        condition.comparisonOperator = dynamoOperator;
-        condition.attributeValueList = [dynamoRightAttributes count] > 0 ? dynamoRightAttributes : nil;
-        scanFilter[key] = condition;
-    }
-
-    return [scanFilter count] > 0 ? scanFilter : nil;
-}
-
 -(NSArray*)fetchRemoteObjectsWithRequest:(NSFetchRequest*)fetchRequest
                                  context:(NSManagedObjectContext*)context
 {
@@ -241,7 +162,16 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
 
 //    scanInput.exclusiveStartKey = expression.exclusiveStartKey;
     if (fetchRequest.predicate) {
-        scanInput.scanFilter = [self scanFilterForPredicate:fetchRequest.predicate];
+        NSPDynamoStoreFilterElement* filter = [NSPDynamoStoreFilterElement elementWithPredicate:fetchRequest.predicate];
+        if ([filter operatorSupported:NSPDynamoStoreElementOperatorOR]) {
+            scanInput.scanFilter = [filter awsConditions];
+            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
+        } else if ([filter operatorSupported:NSPDynamoStoreElementOperatorAND]) {
+            scanInput.scanFilter = [filter awsConditions];
+            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+        } else {
+            NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+        }
     }
 
      [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
