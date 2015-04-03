@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="14C1514" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
-    <entity name="Item" representedClassName="Item" syncable="YES">
+    <entity name="Category" representedClassName="NSPExampleCategory" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="objectId" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="category" inverseEntity="Item" syncable="YES"/>
+        <userInfo>
+            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
+        </userInfo>
+    </entity>
+    <entity name="Item" representedClassName="NSPExampleItem" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
@@ -9,16 +17,15 @@
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="photoURL" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="section" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tel" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="items" inverseEntity="Category" syncable="YES"/>
         <relationship name="person" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Person" inverseName="items" inverseEntity="Person" syncable="YES"/>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="Item"/>
             <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
         </userInfo>
     </entity>
-    <entity name="Person" representedClassName="Person" syncable="YES">
+    <entity name="Person" representedClassName="NSPExamplePerson" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="person" inverseEntity="Item" syncable="YES"/>
@@ -27,7 +34,8 @@
         </userInfo>
     </entity>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="225"/>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="223"/>
         <element name="Person" positionX="-63" positionY="-27" width="128" height="88"/>
+        <element name="Category" positionX="-45" positionY="81" width="128" height="88"/>
     </elements>
 </model>
