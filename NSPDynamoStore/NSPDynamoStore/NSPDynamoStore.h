@@ -10,7 +10,7 @@
 
 #import "NSPDefines.h"
 
-NSP_EXTERN NSString* const NSPDynamoStoreAWSServiceConfigurationKey;
+NSP_EXTERN NSString* const NSPDynamoStoreDynamoDBKey;
 
 @interface NSPDynamoStore : NSIncrementalStore
 

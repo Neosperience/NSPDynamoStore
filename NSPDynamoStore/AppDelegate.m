@@ -17,9 +17,10 @@ NSString* const kAWSAccountID = @"[AWS account ID here]";
 NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";
 NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
 
+NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
+
 @interface AppDelegate ()
 
-@property (nonatomic, strong) AWSServiceConfiguration* serviceConfiguration;
 
 @end
 
@@ -28,6 +29,8 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+
+    [self setupDynamoDB];
 
     NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Item"];
     fetchRequest.returnsObjectsAsFaults = NO;
@@ -38,7 +41,7 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'church' AND address BEGINSWITH 'Corso' AND NOT url == NULL"];
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"address BEGINSWITH 'Corso' AND NOT url == NULL"];
 
 //    Compund predicates are not supported yet
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
@@ -88,22 +91,20 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
     [self saveContext];
 }
 
--(AWSServiceConfiguration *)serviceConfiguration
+-(void)setupDynamoDB
 {
-    if (!_serviceConfiguration) {
-        AWSCognitoCredentialsProvider *credentialsProvider = [AWSCognitoCredentialsProvider credentialsWithRegionType:AWSRegionUSEast1
-                                                                                                            accountId:kAWSAccountID
-                                                                                                       identityPoolId:kCognitoPoolID
-                                                                                                        unauthRoleArn:kCognitoRoleUnauth
-                                                                                                          authRoleArn:nil];
+    AWSCognitoCredentialsProvider *credentialsProvider = [AWSCognitoCredentialsProvider credentialsWithRegionType:AWSRegionUSEast1
+                                                                                                        accountId:kAWSAccountID
+                                                                                                   identityPoolId:kCognitoPoolID
+                                                                                                    unauthRoleArn:kCognitoRoleUnauth
+                                                                                                      authRoleArn:nil];
 
-        _serviceConfiguration = [AWSServiceConfiguration configurationWithRegion:AWSRegionUSEast1
-                                                             credentialsProvider:credentialsProvider];
+    AWSServiceConfiguration* serviceConfiguration = [AWSServiceConfiguration configurationWithRegion:AWSRegionUSEast1
+                                                                                 credentialsProvider:credentialsProvider];
 
-        [AWSServiceManager defaultServiceManager].defaultServiceConfiguration = _serviceConfiguration;
-    }
+    [AWSServiceManager defaultServiceManager].defaultServiceConfiguration = serviceConfiguration;
 
-    return _serviceConfiguration;
+    [AWSDynamoDB registerDynamoDBWithConfiguration:serviceConfiguration forKey:kDynamoDBKey];
 }
 
 #pragma mark - Core Data stack
@@ -141,7 +142,7 @@ NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
     if (![_persistentStoreCoordinator addPersistentStoreWithType:[NSPDynamoStore storeType]
                                                    configuration:nil
                                                              URL:nil
-                                                         options:@{ NSPDynamoStoreAWSServiceConfigurationKey : self.serviceConfiguration }
+                                                         options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                                                            error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
