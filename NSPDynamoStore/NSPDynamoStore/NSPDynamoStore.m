@@ -17,11 +17,10 @@
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 
-NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSServiceConfiguration";
+NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
 
 @interface NSPDynamoStore ()
 
-@property (nonatomic, strong) AWSServiceConfiguration* serviceConfiguration;
 @property (nonatomic, strong) AWSDynamoDB* dynamoDB;
 @property (nonatomic, strong) NSCache* cache;
 
@@ -41,6 +40,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
 
 #pragma mark - NSIncrementalStore
 
+/// @override NSIncrementalStore
 - (instancetype)initWithPersistentStoreCoordinator:(NSPersistentStoreCoordinator *)root
                                  configurationName:(NSString *)name
                                                URL:(NSURL *)url
@@ -48,19 +48,22 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
 {
     self = [super initWithPersistentStoreCoordinator:root configurationName:name URL:url options:options];
     if (self) {
-        self.serviceConfiguration = options[NSPDynamoStoreAWSServiceConfigurationKey] ? :
-                                    [AWSServiceManager defaultServiceManager].defaultServiceConfiguration;
+        NSString* dynamoDBKey = options[NSPDynamoStoreDynamoDBKey];
 
-        NSAssert(self.serviceConfiguration,
-                 @"NSPDynamoStore: You must specify a service configuration in the options dictionary with NSPDynamoStoreAWSServiceConfiguration key "
-                 "or you must ensure [AWSServiceManager defaultServiceManager].defaultServiceConfiguration returns a valid service configuration.");
+        if (dynamoDBKey) {
+            self.dynamoDB = [AWSDynamoDB DynamoDBForKey:dynamoDBKey];
+        }
 
-        self.dynamoDB = [[AWSDynamoDB alloc] initWithConfiguration:self.serviceConfiguration];
+        NSAssert(self.dynamoDB, @"NSPDynamoStore: Can not find DynamoDB for the key '%@'. You must register a DynamoDB instance with "
+                 "[AWSDynamoDB registerDynamoDBWithConfiguration:yourConfiguration forKey:@\"yourKey\"] and pass your key in the persistent store "
+                 "options dictionary with NSPDynamoStoreDynamoDBKey key.", dynamoDBKey);
+
         self.cache = [NSCache new];
     }
     return self;
 }
 
+// @override NSIncrementalStore
 -(BOOL)loadMetadata:(NSError *__autoreleasing *)error
 {
     [self setMetadata:@{ NSStoreTypeKey : [[self class] storeType],
@@ -68,6 +71,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
     return YES;
 }
 
+// @override NSIncrementalStore
 -(id)executeRequest:(NSPersistentStoreRequest *)request
         withContext:(NSManagedObjectContext *)context
               error:(NSError *__autoreleasing *)error
@@ -79,6 +83,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
     return nil;
 }
 
+// @override NSIncrementalStore
 -(NSIncrementalStoreNode *)newValuesForObjectWithID:(NSManagedObjectID *)objectID
                                         withContext:(NSManagedObjectContext *)context
                                               error:(NSError *__autoreleasing *)error
@@ -103,7 +108,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
             return nil;
         }] waitUntilFinished];
 
-        nativeAttributes = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:objectID.entity];
+        nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:objectID.entity];
         [self.cache setObject:nativeAttributes forKey:objectID];
     }
 
@@ -111,11 +116,13 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
     return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:nativeAttributes version:1];
 }
 
+// @override NSIncrementalStore
 -(id)newValueForRelationship:(NSRelationshipDescription *)relationship
              forObjectWithID:(NSManagedObjectID *)objectID
                  withContext:(NSManagedObjectContext *)context
                        error:(NSError *__autoreleasing *)error
 {
+    // TODO: handle to-many relationships here
     return nil;
 }
 
@@ -176,7 +183,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
                 [results addObject:objectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                NSDictionary* result = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:fetchRequest.entity];
+                NSDictionary* result = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:fetchRequest.entity];
                 [results addObject:result];
             }
          }
@@ -186,7 +193,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
     return results;
 }
 
--(NSDictionary*)dynamoAttributesToNativeAttributes:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
+-(NSDictionary*)nativeAttributesFromDynamoAttributes:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
 {
     NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
 
@@ -199,12 +206,18 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
     }];
 
     [entity.relationshipsByName enumerateKeysAndObjectsUsingBlock:^(NSString* relationshipName, NSRelationshipDescription* relationship, BOOL *stop) {
+
+        // Only to-one relationships are handled here. To-many relationships are handled in newValueForRelationship
+        if (relationship.toMany) return;
+
         NSString* dynamoAttributeName = [relationship nsp_dynamoName];
         AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
         id referenceObject = [dynamoAttribute nsp_getAttributeValue];
 
-        // Only to-one relationships are handled here. To-many relationships are handled in newValueForRelationship
-        if (referenceObject && ([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]])) {
+        if (referenceObject) {
+            NSAssert([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]],
+                     @"NSDynamoStore: the value of a relationship type property must be a number or a string and it must be the hash key of the "
+                     "destination object. Entity: %@, relationship: %@, value: %@", entity, relationshipName, referenceObject);
             NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:referenceObject];
             [transformedValues setValue:objectId forKey:relationship.name];
         }
@@ -225,7 +238,7 @@ NSString* const NSPDynamoStoreAWSServiceConfigurationKey = @"NSPDynamoStoreAWSSe
         NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceId];
 
         if (putToCache) {
-            NSDictionary* nativeAttributes = [self dynamoAttributesToNativeAttributes:dynamoAttributes ofEntity:entity];
+            NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:entity];
             [self.cache setObject:nativeAttributes forKey:objectId];
         }
 
