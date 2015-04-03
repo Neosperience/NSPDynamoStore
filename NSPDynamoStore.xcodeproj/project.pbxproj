@@ -14,7 +14,6 @@
 		1B4EBDA81ACAAD2B00BCC188 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA61ACAAD2B00BCC188 /* Main.storyboard */; };
 		1B4EBDAA1ACAAD2B00BCC188 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */; };
 		1B4EBDAD1ACAAD2B00BCC188 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */; };
-		1B4EBDB91ACAAD2B00BCC188 /* NSPDynamoStoreTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */; };
 		1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B750D1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m */; };
 		1B6B75171ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B750F1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m */; };
 		1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75111ACD928F00F3EE2E /* NSPDynamoStore.m */; };
@@ -24,18 +23,10 @@
 		1B6B75221ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B751F1ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m */; };
 		1B6B75251ACD94C800F3EE2E /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75241ACD94C800F3EE2E /* Person.m */; };
 		1B6B75281ACD94C800F3EE2E /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75271ACD94C800F3EE2E /* Item.m */; };
+		1B6B753D1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B753C1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.m */; };
+		1B6B75401ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B753F1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m */; };
 		2FD7126C5691B33A774CF97F /* libPods-NSPDynamoStore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		1B4EBDB31ACAAD2B00BCC188 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B4EBD8E1ACAAD2A00BCC188 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 1B4EBD951ACAAD2A00BCC188;
-			remoteInfo = NSPDynamoStore;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1B4EBD961ACAAD2A00BCC188 /* NSPDynamoStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSPDynamoStore.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -49,9 +40,6 @@
 		1B4EBDA71ACAAD2B00BCC188 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1B4EBDAC1ACAAD2B00BCC188 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		1B4EBDB21ACAAD2B00BCC188 /* NSPDynamoStoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NSPDynamoStoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		1B4EBDB71ACAAD2B00BCC188 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreTests.m; sourceTree = "<group>"; };
 		1B6B750C1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AWSDynamoDBAttributeValue+NSPDynamoStore.h"; sourceTree = "<group>"; };
 		1B6B750D1ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AWSDynamoDBAttributeValue+NSPDynamoStore.m"; sourceTree = "<group>"; };
 		1B6B750E1ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSEntityDescription+NSPDynamoStore.h"; sourceTree = "<group>"; };
@@ -71,6 +59,10 @@
 		1B6B75241ACD94C800F3EE2E /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
 		1B6B75261ACD94C800F3EE2E /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Item.h; sourceTree = "<group>"; };
 		1B6B75271ACD94C800F3EE2E /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
+		1B6B753B1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSManagedObjectModel+NSPUtils.h"; sourceTree = "<group>"; };
+		1B6B753C1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSManagedObjectModel+NSPUtils.m"; sourceTree = "<group>"; };
+		1B6B753E1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoStoreErrors.h; sourceTree = "<group>"; };
+		1B6B753F1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreErrors.m; sourceTree = "<group>"; };
 		6AA7DF1A53149253BE8BD47A /* Pods-NSPDynamoStore.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.debug.xcconfig"; sourceTree = "<group>"; };
 		81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NSPDynamoStore.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F90992F0DDCC886C9EF12A58 /* Pods-NSPDynamoStore.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.release.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.release.xcconfig"; sourceTree = "<group>"; };
@@ -85,13 +77,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		1B4EBDAF1ACAAD2B00BCC188 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -99,7 +84,6 @@
 			isa = PBXGroup;
 			children = (
 				1B4EBD981ACAAD2A00BCC188 /* NSPDynamoStore */,
-				1B4EBDB51ACAAD2B00BCC188 /* NSPDynamoStoreTests */,
 				1B4EBD971ACAAD2A00BCC188 /* Products */,
 				9F9D6B0A2988E4A953FA0921 /* Pods */,
 				A83FDCD654D335882321FB98 /* Frameworks */,
@@ -110,7 +94,6 @@
 			isa = PBXGroup;
 			children = (
 				1B4EBD961ACAAD2A00BCC188 /* NSPDynamoStore.app */,
-				1B4EBDB21ACAAD2B00BCC188 /* NSPDynamoStoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -118,10 +101,12 @@
 		1B4EBD981ACAAD2A00BCC188 /* NSPDynamoStore */ = {
 			isa = PBXGroup;
 			children = (
-				1B6B75261ACD94C800F3EE2E /* Item.h */,
-				1B6B75271ACD94C800F3EE2E /* Item.m */,
-				1B6B75231ACD94C800F3EE2E /* Person.h */,
-				1B6B75241ACD94C800F3EE2E /* Person.m */,
+				1B6B75381ACE84FD00F3EE2E /* NSPExampleCategory.h */,
+				1B6B75391ACE84FD00F3EE2E /* NSPExampleCategory.m */,
+				1B6B75351ACE84FD00F3EE2E /* NSPExamplePerson.h */,
+				1B6B75361ACE84FD00F3EE2E /* NSPExamplePerson.m */,
+				1B6B75321ACE84FC00F3EE2E /* NSPExampleItem.h */,
+				1B6B75331ACE84FC00F3EE2E /* NSPExampleItem.m */,
 				1B6B751B1ACD92B000F3EE2E /* Utils */,
 				1B6B750B1ACD928F00F3EE2E /* NSPDynamoStore */,
 				1B4EBD9D1ACAAD2B00BCC188 /* AppDelegate.h */,
@@ -133,6 +118,8 @@
 				1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */,
 				1B4EBDA01ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld */,
 				1B4EBD991ACAAD2B00BCC188 /* Supporting Files */,
+				1B6B753B1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.h */,
+				1B6B753C1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.m */,
 			);
 			path = NSPDynamoStore;
 			sourceTree = "<group>";
@@ -142,23 +129,6 @@
 			children = (
 				1B4EBD9A1ACAAD2B00BCC188 /* Info.plist */,
 				1B4EBD9B1ACAAD2B00BCC188 /* main.m */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		1B4EBDB51ACAAD2B00BCC188 /* NSPDynamoStoreTests */ = {
-			isa = PBXGroup;
-			children = (
-				1B4EBDB81ACAAD2B00BCC188 /* NSPDynamoStoreTests.m */,
-				1B4EBDB61ACAAD2B00BCC188 /* Supporting Files */,
-			);
-			path = NSPDynamoStoreTests;
-			sourceTree = "<group>";
-		};
-		1B4EBDB61ACAAD2B00BCC188 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				1B4EBDB71ACAAD2B00BCC188 /* Info.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -176,6 +146,8 @@
 				1B6B75131ACD928F00F3EE2E /* NSPDynamoStoreExpression.m */,
 				1B6B75141ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.h */,
 				1B6B75151ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m */,
+				1B6B753E1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.h */,
+				1B6B753F1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m */,
 			);
 			path = NSPDynamoStore;
 			sourceTree = "<group>";
@@ -231,24 +203,6 @@
 			productReference = 1B4EBD961ACAAD2A00BCC188 /* NSPDynamoStore.app */;
 			productType = "com.apple.product-type.application";
 		};
-		1B4EBDB11ACAAD2B00BCC188 /* NSPDynamoStoreTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 1B4EBDBF1ACAAD2B00BCC188 /* Build configuration list for PBXNativeTarget "NSPDynamoStoreTests" */;
-			buildPhases = (
-				1B4EBDAE1ACAAD2B00BCC188 /* Sources */,
-				1B4EBDAF1ACAAD2B00BCC188 /* Frameworks */,
-				1B4EBDB01ACAAD2B00BCC188 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				1B4EBDB41ACAAD2B00BCC188 /* PBXTargetDependency */,
-			);
-			name = NSPDynamoStoreTests;
-			productName = NSPDynamoStoreTests;
-			productReference = 1B4EBDB21ACAAD2B00BCC188 /* NSPDynamoStoreTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -260,10 +214,6 @@
 				TargetAttributes = {
 					1B4EBD951ACAAD2A00BCC188 = {
 						CreatedOnToolsVersion = 6.2;
-					};
-					1B4EBDB11ACAAD2B00BCC188 = {
-						CreatedOnToolsVersion = 6.2;
-						TestTargetID = 1B4EBD951ACAAD2A00BCC188;
 					};
 				};
 			};
@@ -281,7 +231,6 @@
 			projectRoot = "";
 			targets = (
 				1B4EBD951ACAAD2A00BCC188 /* NSPDynamoStore */,
-				1B4EBDB11ACAAD2B00BCC188 /* NSPDynamoStoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -294,13 +243,6 @@
 				1B4EBDA81ACAAD2B00BCC188 /* Main.storyboard in Resources */,
 				1B4EBDAD1ACAAD2B00BCC188 /* LaunchScreen.xib in Resources */,
 				1B4EBDAA1ACAAD2B00BCC188 /* Images.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		1B4EBDB01ACAAD2B00BCC188 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -348,6 +290,7 @@
 				1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */,
 				1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */,
 				1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */,
+				1B6B75401ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m in Sources */,
 				1B6B75221ACD92B000F3EE2E /* NSObject+NSPTypeCheck.m in Sources */,
 				1B6B75211ACD92B000F3EE2E /* NSArray+NSPCollectionUtils.m in Sources */,
 				1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */,
@@ -355,28 +298,13 @@
 				1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */,
 				1B4EBDA51ACAAD2B00BCC188 /* ViewController.m in Sources */,
 				1B4EBD9C1ACAAD2B00BCC188 /* main.m in Sources */,
+				1B6B753D1ACE874F00F3EE2E /* NSManagedObjectModel+NSPUtils.m in Sources */,
 				1B6B75171ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m in Sources */,
 				1B6B75191ACD928F00F3EE2E /* NSPDynamoStoreExpression.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		1B4EBDAE1ACAAD2B00BCC188 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				1B4EBDB91ACAAD2B00BCC188 /* NSPDynamoStoreTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		1B4EBDB41ACAAD2B00BCC188 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 1B4EBD951ACAAD2A00BCC188 /* NSPDynamoStore */;
-			targetProxy = 1B4EBDB31ACAAD2B00BCC188 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		1B4EBDA61ACAAD2B00BCC188 /* Main.storyboard */ = {
@@ -500,40 +428,6 @@
 			};
 			name = Release;
 		};
-		1B4EBDC01ACAAD2B00BCC188 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = NSPDynamoStoreTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NSPDynamoStore.app/NSPDynamoStore";
-			};
-			name = Debug;
-		};
-		1B4EBDC11ACAAD2B00BCC188 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = NSPDynamoStoreTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NSPDynamoStore.app/NSPDynamoStore";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -551,15 +445,6 @@
 			buildConfigurations = (
 				1B4EBDBD1ACAAD2B00BCC188 /* Debug */,
 				1B4EBDBE1ACAAD2B00BCC188 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		1B4EBDBF1ACAAD2B00BCC188 /* Build configuration list for PBXNativeTarget "NSPDynamoStoreTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				1B4EBDC01ACAAD2B00BCC188 /* Debug */,
-				1B4EBDC11ACAAD2B00BCC188 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
