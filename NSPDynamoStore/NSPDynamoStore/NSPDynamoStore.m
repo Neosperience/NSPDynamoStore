@@ -7,12 +7,14 @@
 //
 
 #import "NSPDynamoStore.h"
+
 #import "NSObject+NSPTypeCheck.h"
 #import "NSArray+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
 #import "NSPDynamoStoreExpression.h"
+#import "NSPDynamoStoreErrors.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
@@ -102,11 +104,25 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
         getItemInput.key = key;
 
         __block NSDictionary* dynamoAttributes = nil;
+        __block NSError* fetchError = nil;
         [[[self.dynamoDB getItem:getItemInput] continueWithBlock:^id(BFTask *task) {
+
+            if (task.error) {
+                fetchError = task.error;
+                return [BFTask taskWithError:task.error];
+            }
+
             AWSDynamoDBGetItemOutput *getItemOutput = task.result;
             dynamoAttributes = getItemOutput.item;
-            return nil;
+
+            return dynamoAttributes;
+
         }] waitUntilFinished];
+
+        if (fetchError) {
+            if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
+            return nil;
+        }
 
         nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:objectID.entity];
         [self.cache setObject:nativeAttributes forKey:objectID];
@@ -171,7 +187,15 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
     }
 
     // TODO: decide in a best-effort way if we can use query operation
+
+    __block NSError* fetchError = nil;
     [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
+
+        if (task.error) {
+            fetchError = task.error;
+            return [BFTask taskWithError:task.error];
+        }
+
         AWSDynamoDBScanOutput *scanOutput = task.result;
 
         for (NSDictionary* dynamoAttributes in scanOutput.items) {
@@ -187,10 +211,16 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
                 [results addObject:result];
             }
          }
-         return nil;
+         return results;
+
     }] waitUntilFinished];
 
-    return results;
+    if (fetchError) {
+        if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
+        return nil;
+    } else {
+        return results;
+    }
 }
 
 -(NSDictionary*)nativeAttributesFromDynamoAttributes:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
