@@ -72,19 +72,27 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
     NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
 
-    NSArray* categoryResults = [self.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
+    __weak typeof(self) weakSelf = self;
 
-    if (error) {
-        NSLog(@"ERROR: %@", error);
-    } else {
-        for (NSPExampleCategory* category in categoryResults) {
-            NSLog(@"category.name: %@", category.name);
-            NSLog(@"items: ");
-            for (NSPExampleItem* item in category.items) {
-                NSLog(@"  item.name: %@", item.name);
+    [self.managedObjectContext performBlock:^{
+
+        NSError *error = nil;
+        NSArray* categoryResults = [weakSelf.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
+
+        if (error) {
+            NSLog(@"ERROR: %@", error);
+        } else {
+            for (NSPExampleCategory* category in categoryResults) {
+                NSLog(@"category.name: %@", category.name);
+                NSLog(@"items: ");
+                for (NSPExampleItem* item in category.items) {
+                    NSLog(@"  item.name: %@", item.name);
+                }
             }
         }
-    }
+
+    }];
+
     return YES;
 }
 
@@ -191,7 +199,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     if (!coordinator) {
         return nil;
     }
-    _managedObjectContext = [[NSManagedObjectContext alloc] init];
+    _managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [_managedObjectContext setPersistentStoreCoordinator:coordinator];
     return _managedObjectContext;
 }
