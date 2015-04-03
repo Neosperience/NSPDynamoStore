@@ -85,6 +85,47 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
     return nil;
 }
 
+-(NSDictionary*)fetchNativeAttributesOfObjectWithId:(NSManagedObjectID*)objectID
+                                              error:(NSError *__autoreleasing *)error
+{
+    AWSDynamoDBGetItemInput *getItemInput = [AWSDynamoDBGetItemInput new];
+    getItemInput.tableName = [objectID.entity nsp_dynamoTableName];
+    id referenceObject = [self referenceObjectForObjectID:objectID];
+
+    NSMutableDictionary *key = [NSMutableDictionary new];
+    AWSDynamoDBAttributeValue *hashAttributeValue = [AWSDynamoDBAttributeValue new];
+    [hashAttributeValue nsp_setAttributeValue:referenceObject];
+    [key setObject:hashAttributeValue
+            forKey:[objectID.entity nsp_dynamoHashKeyName]];
+    getItemInput.key = key;
+
+    __block NSDictionary* dynamoAttributes = nil;
+    __block NSError* fetchError = nil;
+    [[[self.dynamoDB getItem:getItemInput] continueWithBlock:^id(BFTask *task) {
+
+        if (task.error) {
+            fetchError = task.error;
+            return [BFTask taskWithError:task.error];
+        }
+
+        AWSDynamoDBGetItemOutput *getItemOutput = task.result;
+        dynamoAttributes = getItemOutput.item;
+
+        return dynamoAttributes;
+
+    }] waitUntilFinished];
+
+    if (fetchError) {
+        if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
+        return nil;
+    }
+
+    NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:objectID.entity];
+    [self.cache setObject:nativeAttributes forKey:objectID];
+
+    return nativeAttributes;
+}
+
 // @override NSIncrementalStore
 -(NSIncrementalStoreNode *)newValuesForObjectWithID:(NSManagedObjectID *)objectID
                                         withContext:(NSManagedObjectContext *)context
@@ -92,44 +133,15 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
 {
     NSDictionary* nativeAttributes = [self.cache objectForKey:objectID];
     if (!nativeAttributes) {
-        AWSDynamoDBGetItemInput *getItemInput = [AWSDynamoDBGetItemInput new];
-        getItemInput.tableName = [objectID.entity nsp_dynamoTableName];
-        id referenceObject = [self referenceObjectForObjectID:objectID];
-
-        NSMutableDictionary *key = [NSMutableDictionary new];
-        AWSDynamoDBAttributeValue *hashAttributeValue = [AWSDynamoDBAttributeValue new];
-        [hashAttributeValue nsp_setAttributeValue:referenceObject];
-        [key setObject:hashAttributeValue
-                forKey:[objectID.entity nsp_dynamoHashKeyName]];
-        getItemInput.key = key;
-
-        __block NSDictionary* dynamoAttributes = nil;
-        __block NSError* fetchError = nil;
-        [[[self.dynamoDB getItem:getItemInput] continueWithBlock:^id(BFTask *task) {
-
-            if (task.error) {
-                fetchError = task.error;
-                return [BFTask taskWithError:task.error];
-            }
-
-            AWSDynamoDBGetItemOutput *getItemOutput = task.result;
-            dynamoAttributes = getItemOutput.item;
-
-            return dynamoAttributes;
-
-        }] waitUntilFinished];
-
-        if (fetchError) {
-            if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
-            return nil;
-        }
-
-        nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:objectID.entity];
-        [self.cache setObject:nativeAttributes forKey:objectID];
+        nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
     }
 
-    // TODO: use for example lastModified timestamp as version field to help Core Data to resolve conflicts
-    return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:nativeAttributes version:1];
+    if (nativeAttributes) {
+        // TODO: use for example lastModified timestamp as version field to help Core Data to resolve conflicts
+        return [[NSIncrementalStoreNode alloc] initWithObjectID:objectID withValues:nativeAttributes version:1];
+    } else {
+        return nil;
+    }
 }
 
 // @override NSIncrementalStore
@@ -138,8 +150,12 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
                  withContext:(NSManagedObjectContext *)context
                        error:(NSError *__autoreleasing *)error
 {
-    // TODO: handle to-many relationships here
-    return nil;
+    NSDictionary* nativeAttributes = [self.cache objectForKey:objectID];
+    if (!nativeAttributes) {
+        nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
+    }
+
+    return nativeAttributes[relationship.name];
 }
 
 #pragma mark - Private
@@ -237,19 +253,30 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
 
     [entity.relationshipsByName enumerateKeysAndObjectsUsingBlock:^(NSString* relationshipName, NSRelationshipDescription* relationship, BOOL *stop) {
 
-        // Only to-one relationships are handled here. To-many relationships are handled in newValueForRelationship
-        if (relationship.toMany) return;
-
         NSString* dynamoAttributeName = [relationship nsp_dynamoName];
         AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
-        id referenceObject = [dynamoAttribute nsp_getAttributeValue];
+        id relationshipObject = [dynamoAttribute nsp_getAttributeValue];
 
-        if (referenceObject) {
-            NSAssert([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]],
-                     @"NSDynamoStore: the value of a relationship type property must be a number or a string and it must be the hash key of the "
-                     "destination object. Entity: %@, relationship: %@, value: %@", entity, relationshipName, referenceObject);
-            NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:referenceObject];
-            [transformedValues setValue:objectId forKey:relationship.name];
+        if (relationshipObject) {
+            if ([relationshipObject isKindOfClass:[NSString class]] || [relationshipObject isKindOfClass:[NSNumber class]]) {
+                NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:relationshipObject];
+                [transformedValues setValue:objectId forKey:relationship.name];
+            } else if ([relationshipObject respondsToSelector:@selector(countByEnumeratingWithState:objects:count:)]) {
+                NSMutableArray* objectIds = [NSMutableArray array];
+                for (id referenceObject in relationshipObject) {
+                    NSAssert([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]],
+                             @"NSDynamoStore: the value of a to-many relationship field must be a collection containing only strings or numbers "
+                             "represnting the destination object hash key.");
+                    NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:referenceObject];
+                    [objectIds addObject:objectId];
+                }
+                [transformedValues setValue:objectIds forKey:relationship.name];
+            } else {
+                NSAssert(NO, @"NSDynamoStore: the value of a relationship type property must be a number, a string or a collection "
+                              "and it must contain the hash key(s) of the destination object(s). "
+                              "Entity: %@, relationship: %@, value: %@", entity, relationshipName, relationshipObject);
+            }
+
         }
 
     }];

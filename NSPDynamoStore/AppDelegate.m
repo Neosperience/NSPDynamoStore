@@ -8,8 +8,10 @@
 
 #import "AppDelegate.h"
 #import "NSPDynamoStore.h"
-#import "Item.h"
-#import "Person.h"
+#import "NSPExampleItem.h"
+#import "NSPExamplePerson.h"
+#import "NSPExampleCategory.h"
+#import "NSManagedObjectModel+NSPUtils.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 
@@ -32,7 +34,10 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Item"];
+    NSError* error = nil;
+/*
+    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleItem class]].name;
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
     fetchRequest.returnsObjectsAsFaults = NO;
 
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"section", @"church"];
@@ -49,21 +54,37 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     fetchRequest.predicate = predicate;
     fetchRequest.resultType = NSManagedObjectResultType;
 
-    NSError* error = nil;
     NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
 
-    Item* firstItem = [results firstObject];
+    NSPExampleItem* firstItem = [results firstObject];
 
     if (error) {
         NSLog(@"ERROR: %@", error);
     } else {
-        Person* person = firstItem.person;
+        NSPExamplePerson* person = firstItem.person;
         NSLog(@"results count: %@", @([results count]));
         NSLog(@"firstItem: %@", firstItem);
         NSLog(@"firstItem.person: %@", person);
         NSLog(@"firstItem.person.name: %@", person.name);
     }
+    */
 
+    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
+    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
+
+    NSArray* categoryResults = [self.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
+
+    if (error) {
+        NSLog(@"ERROR: %@", error);
+    } else {
+        for (NSPExampleCategory* category in categoryResults) {
+            NSLog(@"category.name: %@", category.name);
+            NSLog(@"items: ");
+            for (NSPExampleItem* item in category.items) {
+                NSLog(@"  item.name: %@", item.name);
+            }
+        }
+    }
     return YES;
 }
 
