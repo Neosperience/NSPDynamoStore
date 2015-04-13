@@ -164,6 +164,8 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
                    withContext:(NSManagedObjectContext *)context
                          error:(NSError *__autoreleasing *)error
 {
+    NSLog(@"NSPDynamoStore executing fetch request: %@", fetchRequest);
+
     NSMutableArray* results = [NSMutableArray array];
     NSEntityDescription* entity = fetchRequest.entity;
     NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
@@ -190,15 +192,22 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
     if (limit > 0) scanInput.limit = @(limit);
 
     if (fetchRequest.predicate) {
-        NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
-        if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
-            scanInput.scanFilter = [expression dynamoConditions];
-            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
-        } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
-            scanInput.scanFilter = [expression dynamoConditions];
-            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+        if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSTruePredicate"]) {
+            scanInput.scanFilter = nil;
+            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorUnknown;
+        } else if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSFalsePredicate"]) {
+            return nil;
         } else {
-            NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+            NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
+            if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
+                scanInput.scanFilter = [expression dynamoConditions];
+                scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
+            } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
+                scanInput.scanFilter = [expression dynamoConditions];
+                scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+            } else {
+                NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+            }
         }
     }
 

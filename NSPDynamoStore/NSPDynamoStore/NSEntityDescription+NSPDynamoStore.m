@@ -20,7 +20,10 @@ NSString* const kNSPDynamoStoreEntityDynamoDBTableNameKey = @"NSPDynamoStoreEnti
 
 -(NSString*)nsp_dynamoHashKeyName
 {
-    return self.userInfo[kNSPDynamoStoreEntityHashKeyAttributeNameKey];
+    NSString* hashKeyName = self.userInfo[kNSPDynamoStoreEntityHashKeyAttributeNameKey];
+    NSAssert(hashKeyName, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key. Entity: %@",
+             kNSPDynamoStoreEntityHashKeyAttributeNameKey, self);
+    return hashKeyName;
 }
 
 -(NSString*)nsp_dynamoRangeKeyName

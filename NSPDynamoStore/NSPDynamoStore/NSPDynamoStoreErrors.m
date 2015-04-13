@@ -6,6 +6,8 @@
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
+#import <CoreData/CoreData.h>
+
 #import "NSPDynamoStoreErrors.h"
 
 NSString* const NSPDynamoStoreErrorDomain = @"com.neosperience.NSPDynamoStoreErrorDomain";
@@ -14,7 +16,7 @@ NSString* const NSPDynamoStoreErrorDomain = @"com.neosperience.NSPDynamoStoreErr
 
 +(NSError *)fetchErrorWithUnderlyingError:(NSError *)error
 {
-    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithCapacity:3];
     userInfo[NSLocalizedDescriptionKey] = NSLocalizedStringFromTable(@"Failed to execute database request.", @"NSPDynamoStore", @"fetch error description");
     userInfo[NSLocalizedFailureReasonErrorKey] = NSLocalizedStringFromTable(@"DynamoDB returned an error.", @"NSPDynamoStore", @"fetch error reason");
     userInfo[NSUnderlyingErrorKey] = error;

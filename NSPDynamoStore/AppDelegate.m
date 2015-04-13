@@ -12,6 +12,7 @@
 #import "NSPExamplePerson.h"
 #import "NSPExampleCategory.h"
 #import "NSManagedObjectModel+NSPUtils.h"
+#import "NSPDynamoSyncEntityMigrationPolicy.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 
@@ -69,29 +70,34 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     }
     */
 
-    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
-    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
+//    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
+//    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
+//
+//    __weak typeof(self) weakSelf = self;
+//
+//    [self.managedObjectContext performBlock:^{
+//
+//        NSError *error = nil;
+//        NSArray* categoryResults = [weakSelf.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
+//
+//        if (error) {
+//            NSLog(@"ERROR: %@", error);
+//        } else {
+//            for (NSPExampleCategory* category in categoryResults) {
+//                NSLog(@"category.name: %@", category.name);
+//                NSLog(@"items: ");
+//                for (NSPExampleItem* item in category.items) {
+//                    NSLog(@"  item.name: %@", item.name);
+//                }
+//            }
+//        }
+//
+//    }];
 
-    __weak typeof(self) weakSelf = self;
-
-    [self.managedObjectContext performBlock:^{
-
-        NSError *error = nil;
-        NSArray* categoryResults = [weakSelf.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
-
-        if (error) {
-            NSLog(@"ERROR: %@", error);
-        } else {
-            for (NSPExampleCategory* category in categoryResults) {
-                NSLog(@"category.name: %@", category.name);
-                NSLog(@"items: ");
-                for (NSPExampleItem* item in category.items) {
-                    NSLog(@"  item.name: %@", item.name);
-                }
-            }
-        }
-
-    }];
+    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+    dispatch_async(lowQueue, ^{
+        [self migrate];
+    });
 
     return YES;
 }
@@ -202,6 +208,54 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     _managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [_managedObjectContext setPersistentStoreCoordinator:coordinator];
     return _managedObjectContext;
+}
+
+-(NSURL*)cacheURL
+{
+    NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"cache.sqlite"];
+    NSLog(@"cache URL: %@", cacheURL);
+    return cacheURL;
+}
+
+-(NSMappingModel*)syncMapping
+{
+    NSError* error = nil;
+    NSMappingModel* model = [NSMappingModel inferredMappingModelForSourceModel:[self managedObjectModel]
+                                                              destinationModel:[self managedObjectModel]
+                                                                         error:&error];
+
+    if (error) {
+        NSLog(@"Error creating mapping model: %@", error);
+        return nil;
+    }
+
+    for (NSEntityMapping* entityMapping in model.entityMappings) {
+        [entityMapping setEntityMigrationPolicyClassName:NSStringFromClass([NSPDynamoSyncEntityMigrationPolicy class])];
+    }
+
+    return model;
+}
+
+-(void)migrate
+{
+    NSMigrationManager* migrationManager = [[NSMigrationManager alloc] initWithSourceModel:[self managedObjectModel]
+                                                                          destinationModel:[self managedObjectModel]];
+    NSError* error = nil;
+
+    NSMappingModel* model = [self syncMapping];
+    if (!model) return;
+
+    [migrationManager migrateStoreFromURL:nil
+                                     type:[NSPDynamoStore storeType]
+                                  options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                         withMappingModel:model
+                         toDestinationURL:[self cacheURL]
+                          destinationType:NSSQLiteStoreType
+                       destinationOptions:nil
+                                    error:&error];
+    if (error) {
+        NSLog(@"migration error: %@", error);
+    }
 }
 
 #pragma mark - Core Data Saving support
