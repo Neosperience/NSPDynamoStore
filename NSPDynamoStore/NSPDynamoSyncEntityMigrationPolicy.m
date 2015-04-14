@@ -9,11 +9,50 @@
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 
+@interface NSPDynamoSyncEntityMigrationPolicy ()
+
+@property (nonatomic, strong) NSMutableDictionary* existingInstancesIndices;
+
+@end
+
 @implementation NSPDynamoSyncEntityMigrationPolicy
+
+-(NSMutableDictionary *)existingInstancesIndices
+{
+    if (!_existingInstancesIndices) {
+        _existingInstancesIndices = [NSMutableDictionary dictionary];
+    }
+    return _existingInstancesIndices;
+}
+
+#pragma mark - NSEntityMigrationPolicy
 
 -(BOOL)beginEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
 {
     NSLog(@"BEGIN entity mapping: %@", mapping.sourceEntityName);
+    NSMutableDictionary* existingInstancesIndex = [NSMutableDictionary dictionary];
+
+    // Pre-fetch existing instances for destination entity. They will be used for uniquing in createDestinationInstancesForSourceInstance.
+    NSFetchRequest* existingInstancesRequest = [NSFetchRequest fetchRequestWithEntityName:mapping.destinationEntityName];
+    NSError* fetchError = nil;
+    NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
+    NSString* hashKeyName = [destinationEntity nsp_dynamoHashKeyName];
+    NSArray* existingInstances = [manager.destinationContext executeFetchRequest:existingInstancesRequest error:&fetchError];
+
+    if (fetchError) {
+        NSLog(@"NSPDynamoSyncEntityMigrationPolicy: failed existing instances fetch request: %@ ", fetchError);
+        if (error) *error = fetchError;
+        return NO;
+    }
+
+    // Create hash key -> instance index for easy access
+    for (id existingInstance in existingInstances) {
+        id hashKey = [existingInstance valueForKey:hashKeyName];
+        existingInstancesIndex[hashKey] = existingInstance;
+    }
+
+    self.existingInstancesIndices[mapping.destinationEntityName] = existingInstancesIndex;
+
     return [super beginEntityMapping:mapping manager:manager error:error];
 }
 
@@ -22,30 +61,32 @@
                                            manager:(NSMigrationManager *)manager
                                              error:(NSError *__autoreleasing *)error
 {
-    NSString* sourceHashKeyName = [sourceInstance.entity nsp_dynamoHashKeyName];
-    id hashKeyValue = [sourceInstance valueForKey:sourceHashKeyName];
+    id (^evaluatePropertyMapping)(NSPropertyMapping*, id) = ^id (NSPropertyMapping* propertyMapping, id destinationInstance)
+    {
+        NSMutableDictionary *evaluationContext =
+        [@{ NSMigrationManagerKey : manager,
+            NSMigrationSourceObjectKey : sourceInstance,
+            NSMigrationEntityMappingKey : mapping,
+            NSMigrationEntityPolicyKey : self,
+            NSMigrationPropertyMappingKey : propertyMapping } mutableCopy];
+        [evaluationContext setValue:destinationInstance forKey:NSMigrationDestinationObjectKey];
+        return  [propertyMapping.valueExpression expressionValueWithObject:nil context:evaluationContext];
+    };
 
     NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
     NSString* destinationHashKeyName = [destinationEntity nsp_dynamoHashKeyName];
 
-    NSLog(@"CREATE destination for source with key: %@ == %@", sourceHashKeyName, hashKeyValue);
-    NSLog(@"    destination entity: %@, key name: %@", destinationEntity.name, destinationHashKeyName);
+    NSArray* hashKeyPropertyMappingArray = [mapping.attributeMappings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"name == %@", destinationHashKeyName]];
 
-    // first try to fetch if an existing object exists with this hash key
-    NSFetchRequest* existingDestinationRequest = [NSFetchRequest fetchRequestWithEntityName:mapping.destinationEntityName];
-    NSPredicate* existingDestinationPredicate = [NSPredicate predicateWithFormat:@"%K == %@", destinationHashKeyName, hashKeyValue];
-    existingDestinationRequest.predicate = existingDestinationPredicate;
-    existingDestinationRequest.fetchLimit = 1;
+    NSPropertyMapping* hashKeyPropertyMapping= [hashKeyPropertyMappingArray lastObject];
 
-    NSError* fetchError = nil;
-    NSArray* existingObjects = [manager.destinationContext executeFetchRequest:existingDestinationRequest error:&fetchError];
+    id hashKeyValue = evaluatePropertyMapping(hashKeyPropertyMapping, nil);
 
-    if (fetchError) {
-        if (error) *error = fetchError;
-        return NO;
-    }
+    NSLog(@"CREATE destination destination entity: %@, key: { %@ : %@ }", destinationEntity.name, destinationHashKeyName, hashKeyValue);
 
-    NSManagedObject* destinationInstance = [existingObjects lastObject];
+    // check if an instance with this key already exists in destination context (check memory cache fetched in beginEntityMapping)
+    NSMutableDictionary* destinationInstancesIndex = self.existingInstancesIndices[mapping.destinationEntityName];
+    NSManagedObject* destinationInstance = destinationInstancesIndex[hashKeyValue];
 
     if (!destinationInstance) {
         // no existing object, create a new one
@@ -57,19 +98,9 @@
     }
 
     // update object with new attributes
-    
     for (NSPropertyMapping* attributeMapping in mapping.attributeMappings) {
-
-        NSMutableDictionary *context =
-            [@{ NSMigrationManagerKey : manager,
-                NSMigrationSourceObjectKey : sourceInstance,
-                NSMigrationDestinationObjectKey : destinationInstance,
-                NSMigrationEntityMappingKey : mapping,
-                NSMigrationPropertyMappingKey : attributeMapping,
-                NSMigrationEntityPolicyKey : self } mutableCopy];
-
-        id expressionResult = [attributeMapping.valueExpression expressionValueWithObject:nil context:context];
         NSString* destinationAttributeName = attributeMapping.name;
+        id expressionResult = evaluatePropertyMapping(attributeMapping, destinationInstance);
         [destinationInstance setValue:expressionResult forKey:destinationAttributeName];
         NSLog(@"    set value for key: { %@ : %@ }", destinationAttributeName, expressionResult);
     }
@@ -81,6 +112,9 @@
 -(BOOL)endEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
 {
     NSLog(@"END entity mapping: %@", mapping.sourceEntityName);
+
+    [self.existingInstancesIndices removeObjectForKey:mapping.destinationEntityName];
+
     return [super endEntityMapping:mapping manager:manager error:error];
 }
 
