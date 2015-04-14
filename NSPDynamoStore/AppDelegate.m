@@ -35,8 +35,9 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
+
     NSError* error = nil;
-/*
+
     NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleItem class]].name;
     NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
     fetchRequest.returnsObjectsAsFaults = NO;
@@ -47,12 +48,12 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"address BEGINSWITH 'Corso' AND NOT url == NULL"];
+//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"address BEGINSWITH 'Corso' AND NOT url == NULL"];
 
 //    Compund predicates are not supported yet
 //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
 
-    fetchRequest.predicate = predicate;
+//    fetchRequest.predicate = predicate;
     fetchRequest.resultType = NSManagedObjectResultType;
 
     NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
@@ -67,8 +68,9 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
         NSLog(@"firstItem: %@", firstItem);
         NSLog(@"firstItem.person: %@", person);
         NSLog(@"firstItem.person.name: %@", person.name);
+        NSLog(@"firstItem.elements: %@", [firstItem elementsAsObject]);
     }
-    */
+
 
 //    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
 //    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
@@ -94,10 +96,10 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 //
 //    }];
 
-    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-    dispatch_async(lowQueue, ^{
-        [self migrate];
-    });
+//    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+//    dispatch_async(lowQueue, ^{
+//        [self migrate];
+//    });
 
     return YES;
 }
@@ -174,9 +176,16 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:[NSPDynamoStore storeType]
+
+    NSString* storeType = [NSPDynamoStore storeType];
+    NSURL* storeURL = nil;
+
+//    NSString* storeType = NSSQLiteStoreType;
+//    NSURL* storeURL = [self cacheURL];
+
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                    configuration:nil
-                                                             URL:nil
+                                                             URL:storeURL
                                                          options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                                                            error:&error]) {
         // Report any error we got.
