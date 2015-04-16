@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D131" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Content" representedClassName="NSPModelContent" syncable="YES">
+        <attribute name="contentId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="elements" optional="YES" attributeType="Binary" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreAttributeName" value="items"/>
+            </userInfo>
+        </attribute>
+        <attribute name="id" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="locale" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="template" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="templateId" optional="YES" attributeType="String" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="ownerId"/>
+                <index value="id"/>
+            </compoundIndex>
+        </compoundIndexes>
+        <userInfo>
+            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="nsp-contents4clients"/>
+            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
+            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="id"/>
+        </userInfo>
+    </entity>
+    <entity name="Item" representedClassName="NSPModelItem" syncable="YES">
+        <attribute name="beaconId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="beaconMajor" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="beaconMinor" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="city" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="code" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="itemId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="latitudine" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="longitudine" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="state" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="status" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="street" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="zip" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="content" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Content" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemContent"/>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="CONTENT_ID=contentId,OWNER_ID=ownerId"/>
+            </userInfo>
+        </relationship>
+        <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreDestinationPrimaryKeyAttributeMap" value="ownerId=ownerId,tags=code"/>
+            </userInfo>
+        </relationship>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="ownerId"/>
+                <index value="itemId"/>
+            </compoundIndex>
+        </compoundIndexes>
+        <userInfo>
+            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="nsp-items4clients"/>
+            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
+            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="itemId"/>
+        </userInfo>
+    </entity>
+    <entity name="Tag" representedClassName="NSPModelTag" syncable="YES">
+        <attribute name="code" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="descriptions" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="position" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="ownerId"/>
+                <index value="code"/>
+            </compoundIndex>
+        </compoundIndexes>
+        <userInfo>
+            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="nsp-tags4clients"/>
+            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
+            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="code"/>
+        </userInfo>
+    </entity>
+    <fetchRequest name="itemContent" entity="Content" predicateString="contentId == $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>
+    <elements>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="315"/>
+        <element name="Tag" positionX="-54" positionY="-9" width="128" height="120"/>
+        <element name="Content" positionX="-36" positionY="9" width="128" height="165"/>
+    </elements>
+</model>

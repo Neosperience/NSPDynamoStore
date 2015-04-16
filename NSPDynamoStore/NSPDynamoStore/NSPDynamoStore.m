@@ -15,11 +15,14 @@
 #import "NSPropertyDescription+NSPDynamoStore.h"
 #import "NSPDynamoStoreExpression.h"
 #import "NSPDynamoStoreErrors.h"
+#import "NSAttributeDescription+NSPDynamoStore.h"
+#import "NSRelationshipDescription+NSPDynamoStore.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 
-NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
+NSString* const kNSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
+NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 @interface NSPDynamoStore ()
 
@@ -68,7 +71,7 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
 {
     self = [super initWithPersistentStoreCoordinator:root configurationName:name URL:url options:options];
     if (self) {
-        NSString* dynamoDBKey = options[NSPDynamoStoreDynamoDBKey];
+        NSString* dynamoDBKey = options[kNSPDynamoStoreDynamoDBKey];
 
         if (dynamoDBKey) {
             self.dynamoDB = [AWSDynamoDB DynamoDBForKey:dynamoDBKey];
@@ -108,14 +111,9 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
 {
     AWSDynamoDBGetItemInput *getItemInput = [AWSDynamoDBGetItemInput new];
     getItemInput.tableName = [objectID.entity nsp_dynamoTableName];
-    id referenceObject = [self referenceObjectForObjectID:objectID];
 
-    NSMutableDictionary *key = [NSMutableDictionary new];
-    AWSDynamoDBAttributeValue *hashAttributeValue = [AWSDynamoDBAttributeValue new];
-    [hashAttributeValue nsp_setAttributeValue:referenceObject];
-    [key setObject:hashAttributeValue
-            forKey:[objectID.entity nsp_dynamoHashKeyName]];
-    getItemInput.key = key;
+    NSDictionary* keys = [self dynamoPrimaryKeyValuesFromObjectID:objectID];
+    getItemInput.key = keys;
 
     __block NSDictionary* dynamoAttributes = nil;
     __block NSError* fetchError = nil;
@@ -178,7 +176,47 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
         nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
     }
 
-    return nativeAttributes[relationship.name];
+    NSString* fetchRequestTemplateName = [relationship nsp_fetchRequestTemplateName];
+    NSDictionary* fetchRequestVariableKeyPathMap = [relationship nsp_fetchRequestVariableKeyPathMap];
+
+    NSMutableDictionary* substitutionDictionary = [NSMutableDictionary dictionaryWithCapacity:[fetchRequestVariableKeyPathMap count]];
+    for (NSString* key in [fetchRequestVariableKeyPathMap allKeys]) {
+        NSString* attributeKeyPath = fetchRequestVariableKeyPathMap[key];
+        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:attributeKeyPath];
+
+        // TODO: this should be a runtime error, not an assert
+        NSAssert(attributeKeyPathValue, @"NSPDynamoStore: Can not evaluate key path in source object for relationship fetch request template. \n"
+                                        "\trelationship: %@.%@\n\tfetch request template: %@\n\tkey path: %@\n\tsource object: %@",
+                                        relationship.entity.name, relationship.name, fetchRequestTemplateName, attributeKeyPath, nativeAttributes);
+
+        [substitutionDictionary setValue:attributeKeyPathValue forKey:key];
+    }
+
+    NSFetchRequest* fetchRequest = [[relationship.entity.managedObjectModel fetchRequestFromTemplateWithName:fetchRequestTemplateName
+                                                                                       substitutionVariables:substitutionDictionary] copy];
+
+    fetchRequest.resultType = NSManagedObjectIDResultType;
+
+    NSError* fetchError = nil;
+    NSArray* fetchResult = [context executeFetchRequest:fetchRequest error:&fetchError];
+    id result = nil;
+
+    if (fetchError) {
+        if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
+        return nil;
+    }
+
+    if (!relationship.isToMany) {
+
+        // TODO: this should be a runtime error, not an assert
+        NSAssert([fetchResult count] <= 1, @"NSPDynamoStore: fetch request %@ for to-one relationship %@.%@ returned more then one result "
+                 "for objectId: %@", fetchRequestTemplateName, relationship.entity.name, relationship.name, objectID);
+        result = [fetchResult lastObject];
+    } else {
+        result = [fetchResult count] > 0 ? fetchResult : nil;
+    }
+
+    return result;
 }
 
 #pragma mark - Private
@@ -187,11 +225,10 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
                    withContext:(NSManagedObjectContext *)context
                          error:(NSError *__autoreleasing *)error
 {
-    NSLog(@"NSPDynamoStore executing fetch request: %@", fetchRequest);
-
     NSMutableArray* results = [NSMutableArray array];
     NSEntityDescription* entity = fetchRequest.entity;
     NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
+    NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
     NSString* tableName = [entity nsp_dynamoTableName];
     NSUInteger limit = fetchRequest.fetchLimit;
 
@@ -203,7 +240,7 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
     scanInput.tableName = tableName;
 
     if (!fetchRequest.includesPropertyValues) {
-        scanInput.projectionExpression = hashKeyName;
+        scanInput.projectionExpression = pkRangeKeyName ? [NSString stringWithFormat:@"%@,%@", hashKeyName, pkRangeKeyName] : hashKeyName;
     } else if (fetchRequest.propertiesToFetch) {
         NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) { return [property nsp_dynamoName]; }];
         scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
@@ -217,19 +254,20 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
     if (fetchRequest.predicate) {
         if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSTruePredicate"]) {
             scanInput.scanFilter = nil;
-            scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorUnknown;
         } else if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSFalsePredicate"]) {
             return nil;
         } else {
             NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
-            if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
-                scanInput.scanFilter = [expression dynamoConditions];
-                scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
-            } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
-                scanInput.scanFilter = [expression dynamoConditions];
-                scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
-            } else {
-                NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+            scanInput.scanFilter = [expression dynamoConditions];
+
+            if ([scanInput.scanFilter count] > 1) {
+                if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
+                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
+                } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
+                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+                } else {
+                    NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+                }
             }
         }
     }
@@ -308,44 +346,6 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
         }
     }];
 
-    [entity.relationshipsByName enumerateKeysAndObjectsUsingBlock:^(NSString* relationshipName, NSRelationshipDescription* relationship, BOOL *stop) {
-
-        NSString* dynamoAttributeName = [relationship nsp_dynamoName];
-        AWSDynamoDBAttributeValue* dynamoAttribute = dynamoAttributes[dynamoAttributeName];
-        id relationshipObject = [dynamoAttribute nsp_getAttributeValue];
-
-        if (relationshipObject) {
-            if (![relationship isToMany]) {
-                if ([relationshipObject isKindOfClass:[NSString class]] || [relationshipObject isKindOfClass:[NSNumber class]]) {
-                    NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:relationshipObject];
-                    [transformedValues setValue:objectId forKey:relationship.name];
-                } else {
-                    NSAssert(NO, @"NSDynamoStore: the value of a to-one relationship field must be a collection containing only strings or numbers "
-                             "representing the destination object hash key.\n"
-                             "Entity: %@, relationship: %@, value: %@", entity, relationshipName, relationshipObject);
-                }
-            } else {
-                if ([relationshipObject respondsToSelector:@selector(countByEnumeratingWithState:objects:count:)]) {
-                    NSMutableArray* objectIds = [NSMutableArray array];
-                    for (id referenceObject in relationshipObject) {
-                        NSAssert([referenceObject isKindOfClass:[NSString class]] || [referenceObject isKindOfClass:[NSNumber class]],
-                                 @"NSDynamoStore: the value of a to-many relationship field must be a collection containing only strings or numbers "
-                                 "represnting the destination object hash key.\n"
-                                 "Entity: %@, relationship: %@, value: %@", entity, relationshipName, relationshipObject);
-                        NSManagedObjectID* objectId = [self newObjectIDForEntity:relationship.destinationEntity referenceObject:referenceObject];
-                        [objectIds addObject:objectId];
-                    }
-                    [transformedValues setValue:objectIds forKey:relationship.name];
-                } else {
-                    NSAssert(NO, @"NSDynamoStore: the value of a to-many relationship type property must be a collection.\n"
-                                  "Entity: %@, relationship: %@, value: %@", entity, relationshipName, relationshipObject);
-                }
-
-            }
-        }
-
-    }];
-
     return transformedValues;
 }
 
@@ -353,20 +353,80 @@ NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
                                  dynamoAttributes:(NSDictionary*)dynamoAttributes
                                        putToCache:(BOOL)putToCache
 {
+    id referenceObject = nil;
+
     NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
-    AWSDynamoDBAttributeValue* hasKeyValue = dynamoAttributes[hashKeyName];
-    id referenceId = [hasKeyValue nsp_getAttributeValue];
-    if (referenceId) {
-        NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceId];
+    NSAttributeDescription* hashKeyAttribute = entity.attributesByName[hashKeyName];
+    NSString* dynamoHashKeyName = [hashKeyAttribute nsp_dynamoName];
 
-        if (putToCache) {
-            NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:entity];
-            [self.cache setObject:nativeAttributes forKey:objectId];
-        }
+    AWSDynamoDBAttributeValue* hashKeyDynamoValue = dynamoAttributes[dynamoHashKeyName];
+    id hashKeyNativeValue = [hashKeyDynamoValue nsp_getAttributeValue];
+    NSAssert(hashKeyNativeValue, @"NSDynamoStore: no hash key value in DynamoDB item");
 
-        return objectId;
+    NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
+    if (pkRangeKeyName) {
+        AWSDynamoDBAttributeValue* pkRangeKeyDynamoValue = dynamoAttributes[pkRangeKeyName];
+        id pkRangeKeyNativeValue = [pkRangeKeyDynamoValue nsp_getAttributeValue];
+        NSAssert(pkRangeKeyNativeValue, @"NSDynamoStore: no primary range key value in DynamoDB item");
+        referenceObject = [@[[hashKeyNativeValue description], [pkRangeKeyNativeValue description]] componentsJoinedByString:kNSPDynamoStoreKeySeparator];
+    } else {
+        referenceObject = hashKeyNativeValue;
     }
-    return nil;
+
+    NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceObject];
+
+    if (putToCache) {
+        NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:entity];
+        [self.cache setObject:nativeAttributes forKey:objectId];
+    }
+
+    return objectId;
+}
+
+-(NSDictionary*)nativePrimaryKeyValuesFromObjectID:(NSManagedObjectID*)objectID
+{
+    id pk = [self referenceObjectForObjectID:objectID];
+
+    NSString* hashKeyName = [objectID.entity nsp_dynamoHashKeyName];
+    NSString* pkRangeKeyName = [objectID.entity nsp_dynamoPrimaryRangeKeyName];
+
+    NSAttributeDescription* hashKeyAttribute = objectID.entity.attributesByName[hashKeyName];
+    NSAttributeDescription* pkRangeKeyAttribute = pkRangeKeyName ? objectID.entity.attributesByName[pkRangeKeyName] : nil;
+
+    NSAssert([hashKeyAttribute nsp_isStringType] || [hashKeyAttribute nsp_isNumberType],
+             @"NSPDynamoStore: hash key attribute must be string or number type");
+
+    id hashKeyValue = nil;
+    id pkRangeKeyValue = nil;
+
+    if (!pkRangeKeyName) {
+        hashKeyValue = pk;
+    } else {
+        NSAssert([pkRangeKeyAttribute nsp_isStringType] || [pkRangeKeyAttribute nsp_isNumberType],
+                 @"NSPDynamoStore: primary range key attribute must be string or number type");
+        NSParameterAssert([pk isKindOfClass:[NSString class]]);
+        NSArray* pkComponents = [pk componentsSeparatedByString:kNSPDynamoStoreKeySeparator];
+        NSParameterAssert([pkComponents count] == 2);
+
+        hashKeyValue = [hashKeyAttribute nsp_isStringType] ? pkComponents[0] : @([pkComponents[0] doubleValue]);
+        pkRangeKeyValue = [pkRangeKeyAttribute nsp_isStringType] ? pkComponents[1] : @([pkComponents[0] doubleValue]);
+    }
+
+    NSMutableDictionary* result = [@{ hashKeyName : hashKeyValue } mutableCopy];
+    if (pkRangeKeyName) [result setValue:pkRangeKeyValue forKey:pkRangeKeyName];
+    return result;
+}
+
+-(NSDictionary*)dynamoPrimaryKeyValuesFromObjectID:(NSManagedObjectID*)objectID
+{
+    NSDictionary* primaryKeys = [self nativePrimaryKeyValuesFromObjectID:objectID];
+    NSMutableDictionary* dynamoKeys = [NSMutableDictionary dictionaryWithCapacity:[primaryKeys count]];
+    [primaryKeys enumerateKeysAndObjectsUsingBlock:^(NSString* keyName, id keyValue, BOOL *stop) {
+        AWSDynamoDBAttributeValue *dynamoValue = [AWSDynamoDBAttributeValue new];
+        [dynamoValue nsp_setAttributeValue:keyValue];
+        dynamoKeys[keyName] = dynamoValue;
+    }];
+    return dynamoKeys;
 }
 
 @end

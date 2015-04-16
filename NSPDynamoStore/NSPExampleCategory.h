@@ -2,7 +2,7 @@
 //  NSPExampleCategory.h
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 03/04/15.
+//  Created by Janos Tolgyesi on 16/04/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
@@ -13,8 +13,9 @@
 
 @interface NSPExampleCategory : NSManagedObject
 
-@property (nonatomic, retain) NSString * objectId;
 @property (nonatomic, retain) NSString * name;
+@property (nonatomic, retain) NSString * objectId;
+@property (nonatomic, retain) id itemIds;
 @property (nonatomic, retain) NSSet *items;
 @end
 

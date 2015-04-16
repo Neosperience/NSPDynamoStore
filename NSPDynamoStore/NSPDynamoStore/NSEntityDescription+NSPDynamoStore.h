@@ -10,8 +10,20 @@
 
 @interface NSEntityDescription (NSPDynamoStore)
 
+/**
+ @brief Returns the name of the Dynamo hash key.
+ */
 -(NSString*)nsp_dynamoHashKeyName;
--(NSString*)nsp_dynamoRangeKeyName;
+
+/**
+ @brief If the Dynamo primary key is made of a (hash key, range key) double then returns the name of the range key part
+ of primary key, otherwise nill.
+ */
+-(NSString*)nsp_dynamoPrimaryRangeKeyName;
+
+/**
+ @brief Returns the name of the Dynamo table.
+ */
 -(NSString*)nsp_dynamoTableName;
 
 @end

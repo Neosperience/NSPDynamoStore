@@ -35,10 +35,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-
-    NSError* error = nil;
-
-    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleItem class]].name;
+    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
     NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
     fetchRequest.returnsObjectsAsFaults = NO;
 
@@ -56,20 +53,24 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 //    fetchRequest.predicate = predicate;
     fetchRequest.resultType = NSManagedObjectResultType;
 
-    NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+    [self.managedObjectContext performBlock:^{
+        NSError* error = nil;
 
-    NSPExampleItem* firstItem = [results firstObject];
+        NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
 
-    if (error) {
-        NSLog(@"ERROR: %@", error);
-    } else {
-        NSPExamplePerson* person = firstItem.person;
-        NSLog(@"results count: %@", @([results count]));
-        NSLog(@"firstItem: %@", firstItem);
-        NSLog(@"firstItem.person: %@", person);
-        NSLog(@"firstItem.person.name: %@", person.name);
-        NSLog(@"firstItem.elements: %@", [firstItem elementsAsObject]);
-    }
+        if (error) {
+            NSLog(@"ERROR: %@", error);
+        } else {
+            NSPExampleCategory* category = [results firstObject];
+            NSLog(@"category name: %@", category.name);
+            NSLog(@"category items count: %@", @([category.items count]));
+            for (NSPExampleItem* item in category.items) {
+                NSLog(@"\t%@", item.name);
+                NSLog(@"\t\telements: %@", item.elements);
+            }
+        }
+
+    }];
 
 
 //    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
@@ -96,10 +97,10 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 //
 //    }];
 
-//    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-//    dispatch_async(lowQueue, ^{
-//        [self migrate];
-//    });
+    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+    dispatch_async(lowQueue, ^{
+        [self migrate];
+    });
 
     return YES;
 }
@@ -186,7 +187,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     if (![_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                    configuration:nil
                                                              URL:storeURL
-                                                         options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                                                         options:@{ kNSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                                                            error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -256,7 +257,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [migrationManager migrateStoreFromURL:nil
                                      type:[NSPDynamoStore storeType]
-                                  options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                                  options:@{ kNSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                          withMappingModel:model
                          toDestinationURL:[self cacheURL]
                           destinationType:NSSQLiteStoreType
