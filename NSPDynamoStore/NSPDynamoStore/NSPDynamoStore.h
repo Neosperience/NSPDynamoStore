@@ -10,7 +10,7 @@
 
 #import "NSPDefines.h"
 
-NSP_EXTERN NSString* const NSPDynamoStoreDynamoDBKey;
+NSP_EXTERN NSString* const kNSPDynamoStoreDynamoDBKey;
 
 @interface NSPDynamoStore : NSIncrementalStore
 

@@ -9,6 +9,8 @@
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 
+NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
+
 @interface NSPDynamoSyncEntityMigrationPolicy ()
 
 @property (nonatomic, strong) NSMutableDictionary* existingInstancesIndices;
@@ -25,6 +27,32 @@
     return _existingInstancesIndices;
 }
 
+-(id)mapKeyForHashKeyValue:(id)hashKeyValue primaryKeyRangeKeyValue:(id)pkRangeKeyValue
+{
+    if (pkRangeKeyValue) {
+        return [@[[hashKeyValue description], [pkRangeKeyValue description]] componentsJoinedByString:kNSPDynamoSynchHashKeySeparator];
+    } else {
+        return hashKeyValue;
+    }
+}
+
+-(id)mapKeyForInstance:(id)existingInstance entity:(NSEntityDescription*)entity
+{
+    NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
+    id hashKeyValue = [existingInstance valueForKey:hashKeyName];
+    NSAssert(hashKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no hash key value in item");
+
+    NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
+    id pkRangeKeyValue = nil;
+
+    if (pkRangeKeyName) {
+        pkRangeKeyValue = [existingInstance valueForKey:pkRangeKeyName];
+        NSAssert(pkRangeKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no primary key range key value in item");
+    }
+
+    return [self mapKeyForHashKeyValue:hashKeyValue primaryKeyRangeKeyValue:pkRangeKeyValue];
+}
+
 #pragma mark - NSEntityMigrationPolicy
 
 -(BOOL)beginEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
@@ -36,7 +64,8 @@
     NSFetchRequest* existingInstancesRequest = [NSFetchRequest fetchRequestWithEntityName:mapping.destinationEntityName];
     NSError* fetchError = nil;
     NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
-    NSString* hashKeyName = [destinationEntity nsp_dynamoHashKeyName];
+
+
     NSArray* existingInstances = [manager.destinationContext executeFetchRequest:existingInstancesRequest error:&fetchError];
 
     if (fetchError) {
@@ -45,9 +74,9 @@
         return NO;
     }
 
-    // Create hash key -> instance index for easy access
+    // Create primary key -> instance index for easy access
     for (id existingInstance in existingInstances) {
-        id hashKey = [existingInstance valueForKey:hashKeyName];
+        id hashKey = [self mapKeyForInstance:existingInstance entity:destinationEntity];
         existingInstancesIndex[hashKey] = existingInstance;
     }
 
@@ -70,23 +99,38 @@
             NSMigrationEntityPolicyKey : self,
             NSMigrationPropertyMappingKey : propertyMapping } mutableCopy];
         [evaluationContext setValue:destinationInstance forKey:NSMigrationDestinationObjectKey];
-        return  [propertyMapping.valueExpression expressionValueWithObject:nil context:evaluationContext];
+        return [propertyMapping.valueExpression expressionValueWithObject:nil context:evaluationContext];
+    };
+
+    id (^evaluateDestinationAttributeWithName)(NSString*, id)  = ^id (NSString* destinationAttributeName, id destinationInstance)
+    {
+        NSPredicate* pkRangeKeyPropertyMappingFilter = [NSPredicate predicateWithFormat:@"name == %@", destinationAttributeName];
+        NSArray* pkRangeKeyPropertyMappingArray = [mapping.attributeMappings filteredArrayUsingPredicate:pkRangeKeyPropertyMappingFilter];
+        NSPropertyMapping* pkRangeKeyPropertyMapping = [pkRangeKeyPropertyMappingArray lastObject];
+        return evaluatePropertyMapping(pkRangeKeyPropertyMapping, destinationInstance);
     };
 
     NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
+
     NSString* destinationHashKeyName = [destinationEntity nsp_dynamoHashKeyName];
+    id hashKeyValue = evaluateDestinationAttributeWithName(destinationHashKeyName, nil);
+    NSAssert(hashKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no hash key value in source instance");
 
-    NSArray* hashKeyPropertyMappingArray = [mapping.attributeMappings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"name == %@", destinationHashKeyName]];
+    id pkRangeKeyValue = nil;
 
-    NSPropertyMapping* hashKeyPropertyMapping= [hashKeyPropertyMappingArray lastObject];
+    NSString* destinationPKRangeKeyName = [destinationEntity nsp_dynamoPrimaryRangeKeyName];
+    if (destinationPKRangeKeyName) {
+        pkRangeKeyValue = evaluateDestinationAttributeWithName(destinationPKRangeKeyName, nil);
+        NSAssert(pkRangeKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no primary key range key value in source instance");
+    }
 
-    id hashKeyValue = evaluatePropertyMapping(hashKeyPropertyMapping, nil);
-
-    NSLog(@"CREATE destination destination entity: %@, key: { %@ : %@ }", destinationEntity.name, destinationHashKeyName, hashKeyValue);
+    NSLog(@"CREATE destination entity: %@, key: { %@ : %@, %@ : %@ }",
+          destinationEntity.name, destinationHashKeyName, hashKeyValue, destinationPKRangeKeyName, pkRangeKeyValue);
 
     // check if an instance with this key already exists in destination context (check memory cache fetched in beginEntityMapping)
     NSMutableDictionary* destinationInstancesIndex = self.existingInstancesIndices[mapping.destinationEntityName];
-    NSManagedObject* destinationInstance = destinationInstancesIndex[hashKeyValue];
+    id mapKey = [self mapKeyForHashKeyValue:hashKeyValue primaryKeyRangeKeyValue:pkRangeKeyValue];
+    NSManagedObject* destinationInstance = destinationInstancesIndex[mapKey];
 
     if (!destinationInstance) {
         // no existing object, create a new one

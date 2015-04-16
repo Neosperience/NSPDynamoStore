@@ -2,7 +2,7 @@
 //  NSPExampleItem.m
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 14/04/15.
+//  Created by Janos Tolgyesi on 16/04/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
@@ -10,10 +10,12 @@
 #import "NSPExampleCategory.h"
 #import "NSPExamplePerson.h"
 
+
 @implementation NSPExampleItem
 
 @dynamic address;
 @dynamic desc;
+@dynamic elements;
 @dynamic email;
 @dynamic latitude;
 @dynamic longitude;
@@ -22,18 +24,9 @@
 @dynamic photoURL;
 @dynamic tel;
 @dynamic url;
-@dynamic elements;
+@dynamic categoryId;
+@dynamic personId;
 @dynamic category;
 @dynamic person;
-
--(id)elementsAsObject
-{
-    NSValueTransformer* dataTransformer = [NSValueTransformer valueTransformerForName:NSKeyedUnarchiveFromDataTransformerName];
-    id decodedValue = nil;
-    if (self.elements) {
-        decodedValue = [dataTransformer transformedValue:self.elements];
-    }
-    return decodedValue;
-}
 
 @end

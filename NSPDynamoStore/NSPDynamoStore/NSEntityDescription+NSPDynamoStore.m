@@ -13,7 +13,7 @@
 #import <AWSDynamoDB.h>
 
 NSString* const kNSPDynamoStoreEntityHashKeyAttributeNameKey = @"NSPDynamoStoreEntityHashKeyAttributeName";
-NSString* const kNSPDynamoStoreEntityRangeKeyAttributeNameKey = @"NSPDynamoStoreEntityRangeKeyAttributeName";
+NSString* const kNSPDynamoStoreEntityPrimaryRangeKeyAttributeNameKey = @"NSPDynamoStoreEntityPrimaryRangeKeyAttributeName";
 NSString* const kNSPDynamoStoreEntityDynamoDBTableNameKey = @"NSPDynamoStoreEntityDynamoDBTableName";
 
 @implementation NSEntityDescription (NSPDynamoStore)
@@ -21,14 +21,14 @@ NSString* const kNSPDynamoStoreEntityDynamoDBTableNameKey = @"NSPDynamoStoreEnti
 -(NSString*)nsp_dynamoHashKeyName
 {
     NSString* hashKeyName = self.userInfo[kNSPDynamoStoreEntityHashKeyAttributeNameKey];
-    NSAssert(hashKeyName, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key. Entity: %@",
+    NSAssert(hashKeyName, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key for entity: %@",
              kNSPDynamoStoreEntityHashKeyAttributeNameKey, self);
     return hashKeyName;
 }
 
--(NSString*)nsp_dynamoRangeKeyName
+-(NSString*)nsp_dynamoPrimaryRangeKeyName
 {
-    return self.userInfo[kNSPDynamoStoreEntityRangeKeyAttributeNameKey];
+    return self.userInfo[kNSPDynamoStoreEntityPrimaryRangeKeyAttributeNameKey];
 }
 
 -(NSString*)nsp_dynamoTableName

@@ -2,7 +2,7 @@
 //  NSPExampleCategory.m
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 03/04/15.
+//  Created by Janos Tolgyesi on 16/04/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
@@ -12,8 +12,9 @@
 
 @implementation NSPExampleCategory
 
-@dynamic objectId;
 @dynamic name;
+@dynamic objectId;
+@dynamic itemIds;
 @dynamic items;
 
 @end

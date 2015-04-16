@@ -1,27 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="14C1514" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D131" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Category" representedClassName="NSPExampleCategory" syncable="YES">
+        <attribute name="itemIds" optional="YES" attributeType="Transformable" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreAttributeName" value="items"/>
+            </userInfo>
+        </attribute>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="category" inverseEntity="Item" syncable="YES"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="category" inverseEntity="Item" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="categoryItems"/>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="ITEM_IDS=itemIds"/>
+            </userInfo>
+        </relationship>
         <userInfo>
             <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
         </userInfo>
     </entity>
     <entity name="Item" representedClassName="NSPExampleItem" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="categoryId" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreAttributeName" value="category"/>
+            </userInfo>
+        </attribute>
         <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="elements" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="elements" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="personId" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreAttributeName" value="person"/>
+            </userInfo>
+        </attribute>
         <attribute name="photoURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tel" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
-        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="items" inverseEntity="Category" syncable="YES"/>
-        <relationship name="person" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Person" inverseName="items" inverseEntity="Person" syncable="YES"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="items" inverseEntity="Category" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemCategory"/>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="CATEGORY_ID=categoryId"/>
+            </userInfo>
+        </relationship>
+        <relationship name="person" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Person" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemPerson"/>
+                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="PERSON_ID=personId"/>
+            </userInfo>
+        </relationship>
         <userInfo>
             <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
         </userInfo>
@@ -29,14 +59,16 @@
     <entity name="Person" representedClassName="NSPExamplePerson" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="person" inverseEntity="Item" syncable="YES"/>
         <userInfo>
             <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
         </userInfo>
     </entity>
+    <fetchRequest name="categoryItems" entity="Item" predicateString="objectId IN $ITEM_IDS"/>
+    <fetchRequest name="itemCategory" entity="Category" predicateString="objectId == $CATEGORY_ID"/>
+    <fetchRequest name="itemPerson" entity="Person" predicateString="objectId == $PERSON_ID"/>
     <elements>
-        <element name="Category" positionX="-45" positionY="81" width="128" height="90"/>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="238"/>
-        <element name="Person" positionX="-63" positionY="-27" width="128" height="90"/>
+        <element name="Category" positionX="-45" positionY="81" width="128" height="105"/>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="270"/>
+        <element name="Person" positionX="-63" positionY="-27" width="128" height="30"/>
     </elements>
 </model>
