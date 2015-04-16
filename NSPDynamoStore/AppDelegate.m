@@ -14,11 +14,19 @@
 #import "NSManagedObjectModel+NSPUtils.h"
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 
+#import "NSPModel.h"
+
 #import <AWSDynamoDB/AWSDynamoDB.h>
 
-NSString* const kAWSAccountID = @"754753050238";
-NSString* const kCognitoPoolID = @"us-east-1:60afae78-f8b8-43d8-bcb3-001d8a1b9f6a";
-NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_HelloCognitoPoolUnauth_DefaultRole";
+// Private
+// NSString* const kAWSAccountID = @"754753050238";
+// NSString* const kCognitoPoolID = @"us-east-1:60afae78-f8b8-43d8-bcb3-001d8a1b9f6a";
+// NSString* const kCognitoRoleUnauth = @"arn:aws:iam::754753050238:role/Cognito_HelloCognitoPoolUnauth_DefaultRole";
+
+// Neos
+NSString* const kAWSAccountID = @"776002747516";
+NSString* const kCognitoPoolID = @"us-east-1:a624330d-41fc-43bf-9bc1-d46cd4502162";
+NSString* const kCognitoRoleUnauth = @"arn:aws:iam::776002747516:role/Cognito_NeosLogosUnauth_DefaultRole";
 
 NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
@@ -35,72 +43,12 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
-    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
-    fetchRequest.returnsObjectsAsFaults = NO;
+    [self canopusTest];
 
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"section", @"church"];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K in %@", @"section", @[@"culture", @"church"]];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"longitude < 9.18"];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"address BEGINSWITH 'Corso' AND NOT url == NULL"];
-
-//    Compund predicates are not supported yet
-//    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
-
-//    fetchRequest.predicate = predicate;
-    fetchRequest.resultType = NSManagedObjectResultType;
-
-    [self.managedObjectContext performBlock:^{
-        NSError* error = nil;
-
-        NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
-
-        if (error) {
-            NSLog(@"ERROR: %@", error);
-        } else {
-            NSPExampleCategory* category = [results firstObject];
-            NSLog(@"category name: %@", category.name);
-            NSLog(@"category items count: %@", @([category.items count]));
-            for (NSPExampleItem* item in category.items) {
-                NSLog(@"\t%@", item.name);
-                NSLog(@"\t\telements: %@", item.elements);
-            }
-        }
-
-    }];
-
-
-//    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
-//    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
-//
-//    __weak typeof(self) weakSelf = self;
-//
-//    [self.managedObjectContext performBlock:^{
-//
-//        NSError *error = nil;
-//        NSArray* categoryResults = [weakSelf.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
-//
-//        if (error) {
-//            NSLog(@"ERROR: %@", error);
-//        } else {
-//            for (NSPExampleCategory* category in categoryResults) {
-//                NSLog(@"category.name: %@", category.name);
-//                NSLog(@"items: ");
-//                for (NSPExampleItem* item in category.items) {
-//                    NSLog(@"  item.name: %@", item.name);
-//                }
-//            }
-//        }
-//
-//    }];
-
-    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-    dispatch_async(lowQueue, ^{
-        [self migrate];
-    });
+//    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+//    dispatch_async(lowQueue, ^{
+//        [self migrate];
+//    });
 
     return YES;
 }
@@ -145,6 +93,116 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     [AWSDynamoDB registerDynamoDBWithConfiguration:serviceConfiguration forKey:kDynamoDBKey];
 }
 
+- (void)canopusTest
+{
+    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPModelItem class]].name;
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
+
+    [self.managedObjectContext performBlock:^{
+        NSError* error = nil;
+        NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+        if (error) {
+            NSLog(@"ERROR: %@", error);
+        } else {
+            for (NSPModelItem* item in results) {
+                NSLog(@"%@", item.code);
+                NSLog(@"\tname: %@", item.name);
+                NSLog(@"\tcity, state, country, zip: %@, %@, %@, %@", item.city, item.state,  item.country, item.zip);
+                NSLog(@"\tstreet: %@", item.street);
+                NSLog(@"\tcoordinates: %@, %@", item.latitude, item.longitude);
+
+                NSLog(@"\ttags:");
+                for (NSPModelTag* tag in item.tags) {
+                    NSLog(@"\t\t%@", tag.code);
+//                    NSLog(@"\t\t\tdescriptions: %@", tag.descriptions);
+//                    NSLog(@"\t\t\tposition: %@", tag.position);
+                }
+
+                NSLog(@"\tcontents:");
+                for (NSPModelContent* content in item.content) {
+                    NSLog(@"\t\t%@", content.locale);
+                    NSLog(@"\t\t\telements: %@", content.elements);
+                    NSLog(@"\t\t\ttemplate: %@", content.template);
+                    NSLog(@"\t\t\ttextForSearch: %@", content.textForSearch);
+                }
+
+            }
+        }
+    }];
+}
+
+- (void)exampleTest
+{
+    [self setupDynamoDB];
+
+    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
+    fetchRequest.returnsObjectsAsFaults = NO;
+
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K == %@", @"section", @"church"];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"%K in %@", @"section", @[@"culture", @"church"]];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"longitude < 9.18"];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name BEGINSWITH %@", @"Basilica"];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"name CONTAINS %@", @"di"];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"latitude BETWEEN %@", @[@45.45, @45.46]];
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"address BEGINSWITH 'Corso' AND NOT url == NULL"];
+
+    //    Compund predicates are not supported yet
+    //    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"section == 'culture' AND name BEGINSWITH 'Antico'"];
+
+    //    fetchRequest.predicate = predicate;
+    fetchRequest.resultType = NSManagedObjectResultType;
+
+    [self.managedObjectContext performBlock:^{
+        NSError* error = nil;
+
+        NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+
+        if (error) {
+            NSLog(@"ERROR: %@", error);
+        } else {
+            NSPExampleCategory* category = [results firstObject];
+            NSLog(@"category name: %@", category.name);
+            NSLog(@"category items count: %@", @([category.items count]));
+            for (NSPExampleItem* item in category.items) {
+                NSLog(@"\t%@", item.name);
+                NSLog(@"\t\telements: %@", item.elements);
+            }
+        }
+
+    }];
+
+
+    //    NSString* categoryEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPExampleCategory class]].name;
+    //    NSFetchRequest* categoryFetchRequest = [[NSFetchRequest alloc] initWithEntityName:categoryEntityName];
+    //
+    //    __weak typeof(self) weakSelf = self;
+    //
+    //    [self.managedObjectContext performBlock:^{
+    //
+    //        NSError *error = nil;
+    //        NSArray* categoryResults = [weakSelf.managedObjectContext executeFetchRequest:categoryFetchRequest error:&error];
+    //
+    //        if (error) {
+    //            NSLog(@"ERROR: %@", error);
+    //        } else {
+    //            for (NSPExampleCategory* category in categoryResults) {
+    //                NSLog(@"category.name: %@", category.name);
+    //                NSLog(@"items: ");
+    //                for (NSPExampleItem* item in category.items) {
+    //                    NSLog(@"  item.name: %@", item.name);
+    //                }
+    //            }
+    //        }
+    //
+    //    }];
+    
+    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+    dispatch_async(lowQueue, ^{
+        [self migrate];
+    });
+}
+
 #pragma mark - Core Data stack
 
 @synthesize managedObjectContext = _managedObjectContext;
@@ -161,7 +219,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     if (_managedObjectModel != nil) {
         return _managedObjectModel;
     }
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"NSPDynamoStore" withExtension:@"momd"];
+//    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"NSPDynamoStore" withExtension:@"momd"];
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"NSPCanopus" withExtension:@"momd"];
     _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     return _managedObjectModel;
 }
@@ -222,7 +281,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 -(NSURL*)cacheURL
 {
-    NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"cache.sqlite"];
+//    NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"cache.sqlite"];
+    NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"canopus.sqlite"];
     NSLog(@"cache URL: %@", cacheURL);
     return cacheURL;
 }

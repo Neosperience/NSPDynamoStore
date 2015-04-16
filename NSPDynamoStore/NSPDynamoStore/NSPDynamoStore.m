@@ -286,8 +286,8 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
         for (NSDictionary* dynamoAttributes in scanOutput.items) {
             NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
-                                                             dynamoAttributes:dynamoAttributes
-                                                                   putToCache:fetchRequest.includesPropertyValues];
+                                                            dynamoAttributes:dynamoAttributes
+                                                                  putToCache:fetchRequest.includesPropertyValues];
             if (fetchRequest.resultType == NSManagedObjectResultType) {
                 [results addObject:[context objectWithID:objectId]];
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
