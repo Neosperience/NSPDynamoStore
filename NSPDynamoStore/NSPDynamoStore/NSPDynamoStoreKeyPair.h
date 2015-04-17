@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSPDynamoStoreKeyPairDescriptor : NSObject
+@interface NSPDynamoStoreKeyPair : NSObject
 
 -(instancetype)initWithString:(NSString*)string;
 +(instancetype)keyPairWithString:(NSString*)string;

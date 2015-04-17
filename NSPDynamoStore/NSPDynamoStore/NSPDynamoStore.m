@@ -17,7 +17,7 @@
 #import "NSPDynamoStoreErrors.h"
 #import "NSAttributeDescription+NSPDynamoStore.h"
 #import "NSRelationshipDescription+NSPDynamoStore.h"
-#import "NSPDynamoStoreKeyPairDescriptor.h"
+#import "NSPDynamoStoreKeyPair.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
@@ -30,8 +30,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 @property (nonatomic, strong) AWSDynamoDB* dynamoDB;
 @property (nonatomic, strong) NSCache* cache;
-
-@property (nonatomic, strong) NSMutableDictionary* embeddedObjects;
 
 @end
 
@@ -48,14 +46,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         _cache = [NSCache new];
     }
     return _cache;
-}
-
--(NSMutableDictionary *)embeddedObjects
-{
-    if (!_embeddedObjects) {
-        _embeddedObjects = [NSMutableDictionary new];
-    }
-    return _embeddedObjects;
 }
 
 #pragma mark - NSIncrementalStore
@@ -147,10 +137,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSDictionary* nativeAttributes = [self.cache objectForKey:objectID];
 
     if (!nativeAttributes) {
-        nativeAttributes = [self.embeddedObjects objectForKey:objectID];
-    }
-
-    if (!nativeAttributes) {
         nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
     }
 
@@ -224,7 +210,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     NSMutableArray* results = [NSMutableArray array];
     NSEntityDescription* entity = fetchRequest.entity;
-    NSPDynamoStoreKeyPairDescriptor* keyPair = [entity nsp_primaryKeys];
+    NSPDynamoStoreKeyPair* keyPair = [entity nsp_primaryKeys];
     NSString* tableName = [entity nsp_dynamoTableName];
     NSUInteger limit = fetchRequest.fetchLimit;
 
@@ -232,20 +218,30 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSAssert([fetchRequest.sortDescriptors count] == 0, @"NSPDynamoStore: sort descriptors are not supported.");
 
     AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
+    AWSDynamoDBQueryInput *queryInput = [AWSDynamoDBQueryInput new];
 
     scanInput.tableName = tableName;
+    queryInput.tableName = tableName;
 
     if (!fetchRequest.includesPropertyValues) {
         scanInput.projectionExpression = [keyPair dynamoProjectionExpression];
+        queryInput.projectionExpression = [keyPair dynamoProjectionExpression];
     } else if (fetchRequest.propertiesToFetch) {
         NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) { return [property nsp_dynamoName]; }];
-        scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
+        NSString* projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
+        scanInput.projectionExpression = projectionExpression;
+        queryInput.projectionExpression = projectionExpression;
     }
 
     // TODO: support limit and skip if possible with exclusiveStartKey
     // scanInput.exclusiveStartKey = expression.exclusiveStartKey;
 
-    if (limit > 0) scanInput.limit = @(limit);
+    if (limit > 0) {
+        scanInput.limit = @(limit);
+        queryInput.limit = @(limit);
+    }
+
+    BOOL canQuery = NO;
 
     if (fetchRequest.predicate) {
         if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSTruePredicate"]) {
@@ -256,13 +252,28 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
             scanInput.scanFilter = [expression dynamoConditions];
 
-            if ([scanInput.scanFilter count] > 1) {
-                if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
-                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
-                } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
-                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
-                } else {
-                    NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+            __block NSString* queryIndexName = nil;
+            [[entity nsp_dynamoIndices] enumerateKeysAndObjectsUsingBlock:^(NSString* indexName, NSPDynamoStoreKeyPair* index, BOOL *stop) {
+                if ([expression canQueryForKeyPair:index]) queryIndexName = indexName;
+            }];
+
+            canQuery = [expression canQueryForKeyPair:keyPair] || (queryIndexName != nil);
+
+            NSLog(@"Executing fetch request for entity name: %@, predicate: %@, canQuery: %@, indexName: %@",
+                  fetchRequest.entityName, fetchRequest.predicate, @(canQuery), queryIndexName);
+
+            if (canQuery) {
+                queryInput.keyConditions = [expression dynamoConditions];
+                queryInput.indexName = queryIndexName;
+            } else {
+                if ([scanInput.scanFilter count] > 1) {
+                    if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
+                        scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
+                    } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
+                        scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+                    } else {
+                        NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
+                    }
                 }
             }
         }
@@ -270,17 +281,23 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
     // TODO: decide in a best-effort way if we can use query operation
 
+    // TODO: check if we can use a get operation
+    // TODO: evaluate exploding SET types to multiple query or get operations
+
     __block NSError* fetchError = nil;
-    [[[self.dynamoDB scan:scanInput] continueWithBlock:^id(BFTask *task) {
+
+    BFTask* task = canQuery ? [self.dynamoDB query:queryInput] : [self.dynamoDB scan:scanInput];
+
+    [[task continueWithBlock:^id(BFTask *task) {
 
         if (task.error) {
             fetchError = task.error;
             return [BFTask taskWithError:task.error];
         }
 
-        AWSDynamoDBScanOutput *scanOutput = task.result;
+        id output = task.result; // can be AWSDynamoDBScanOutput or AWSDynamoDBQueryOutput
 
-        for (NSDictionary* dynamoAttributes in scanOutput.items) {
+        for (NSDictionary* dynamoAttributes in [output valueForKey:@"items"]) {
             NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
                                                             dynamoAttributes:dynamoAttributes
                                                                   putToCache:fetchRequest.includesPropertyValues];
@@ -296,21 +313,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
          return results;
 
     }] waitUntilFinished];
-
-    [self.embeddedObjects enumerateKeysAndObjectsUsingBlock:^(NSManagedObjectID* managedObjectId, id embeddedObject, BOOL *stop)
-    {
-        // TODO: add objects only if they conform fetchRequest.predicate
-        if ([managedObjectId.entity.name isEqualToString:fetchRequest.entityName]) {
-            if (fetchRequest.resultType == NSManagedObjectResultType) {
-                [results addObject:[context objectWithID:managedObjectId]];
-            } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
-                [results addObject:managedObjectId];
-            } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:embeddedObject ofEntity:fetchRequest.entity];
-                [results addObject:result];
-            }
-        }
-    }];
 
     if (fetchError) {
         if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
@@ -346,7 +348,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                                        putToCache:(BOOL)putToCache
 {
     id referenceObject = nil;
-    NSPDynamoStoreKeyPairDescriptor* keyPair = [entity nsp_primaryKeys];
+    NSPDynamoStoreKeyPair* keyPair = [entity nsp_primaryKeys];
     NSAttributeDescription* hashKeyAttribute = entity.attributesByName[keyPair.hashKeyName];
     NSString* dynamoHashKeyName = [hashKeyAttribute nsp_dynamoName];
 
@@ -378,7 +380,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     id pk = [self referenceObjectForObjectID:objectID];
 
-    NSPDynamoStoreKeyPairDescriptor* keyPair = [objectID.entity nsp_primaryKeys];
+    NSPDynamoStoreKeyPair* keyPair = [objectID.entity nsp_primaryKeys];
 
     NSAttributeDescription* hashKeyAttribute = objectID.entity.attributesByName[keyPair.hashKeyName];
     NSAttributeDescription* pkRangeKeyAttribute = keyPair.rangeKeyName ? objectID.entity.attributesByName[keyPair.rangeKeyName] : nil;

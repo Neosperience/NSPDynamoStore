@@ -8,14 +8,14 @@
 
 #import <CoreData/CoreData.h>
 
-@class NSPDynamoStoreKeyPairDescriptor;
+@class NSPDynamoStoreKeyPair;
 
 @interface NSEntityDescription (NSPDynamoStore)
 
 /**
  @brief Returns the DynamoDB primary keys.
  */
--(NSPDynamoStoreKeyPairDescriptor*)nsp_primaryKeys;
+-(NSPDynamoStoreKeyPair*)nsp_primaryKeys;
 
 /**
  @brief Returns the name of the Dynamo table.

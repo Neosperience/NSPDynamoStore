@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class AWSDynamoDBCondition;
+@class AWSDynamoDBCondition, NSPDynamoStoreKeyPair;
 
 typedef enum : NSUInteger {
     NSPDynamoStoreExpressionOperatorUnknown,
@@ -23,6 +23,8 @@ typedef enum : NSUInteger {
 
 -(NSDictionary*)dynamoConditions;
 -(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator;
+
+-(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair*)keyPair;
 
 @end
 

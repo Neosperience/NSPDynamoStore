@@ -14,12 +14,6 @@
         <attribute name="template" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="templateId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="textForSearch" optional="YES" attributeType="String" syncable="YES"/>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="ownerId"/>
-                <index value="id"/>
-            </compoundIndex>
-        </compoundIndexes>
         <userInfo>
             <entry key="NSPDynamoIndices" value="{&quot;lastModified-index&quot;:[&quot;ownerId&quot;,&quot;lastModified&quot;]}"/>
             <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;,&quot;id&quot;]"/>
@@ -94,7 +88,7 @@
             <entry key="NSPDynamoTableName" value="canopus-tags4clients"/>
         </userInfo>
     </entity>
-    <fetchRequest name="itemContent" entity="Content" predicateString="contentId == $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>
+    <fetchRequest name="itemContent" entity="Content" predicateString="id BEGINSWITH $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>
     <fetchRequest name="itemTags" entity="Tag" predicateString="ownerId == $OWNER_ID AND tagId IN $TAG_IDS"/>
     <elements>
         <element name="Content" positionX="-36" positionY="9" width="128" height="180"/>
