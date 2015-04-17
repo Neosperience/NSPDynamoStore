@@ -4,7 +4,11 @@
         <attribute name="contentId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="elements" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="id" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" valueTransformerName="NSPTimestampValueTransformer" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoValueTransformerName" value="NSPTimestampValueTransformer"/>
+            </userInfo>
+        </attribute>
         <attribute name="locale" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="template" optional="YES" attributeType="Transformable" syncable="YES"/>
@@ -17,9 +21,9 @@
             </compoundIndex>
         </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="nsp-contents4clients"/>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
-            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="id"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
+            <entry key="NSPDynamoPrimaryRangeKey" value="id"/>
+            <entry key="NSPDynamoTableName" value="nsp-contents4clients"/>
         </userInfo>
     </entity>
     <entity name="Item" representedClassName="NSPModelItem" syncable="YES">
@@ -31,7 +35,11 @@
         <attribute name="contentId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="itemId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
-        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" valueTransformerName="NSPTimestampValueTransformer" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoValueTransformerName" value="NSPTimestampValueTransformer"/>
+            </userInfo>
+        </attribute>
         <attribute name="latitude" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="longitude" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
@@ -41,20 +49,20 @@
         <attribute name="street" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="tagIds" optional="YES" attributeType="Transformable" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreAttributeName" value="tags"/>
+                <entry key="NSPDynamoAttributeKey" value="tags"/>
             </userInfo>
         </attribute>
         <attribute name="zip" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="content" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Content" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemContent"/>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="CONTENT_ID=contentId,OWNER_ID=ownerId"/>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="itemContent"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="CONTENT_ID=contentId,OWNER_ID=ownerId"/>
             </userInfo>
         </relationship>
         <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemTags"/>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="OWNER_ID=ownerId,TAG_IDS=tagIds"/>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="itemTags"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,TAG_IDS=tagIds"/>
             </userInfo>
         </relationship>
         <compoundIndexes>
@@ -64,15 +72,19 @@
             </compoundIndex>
         </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="nsp-items4clients"/>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
-            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="itemId"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
+            <entry key="NSPDynamoPrimaryRangeKey" value="itemId"/>
+            <entry key="NSPDynamoTableName" value="nsp-items4clients"/>
         </userInfo>
     </entity>
     <entity name="Tag" representedClassName="NSPModelTag" syncable="YES">
         <attribute name="code" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="descriptions" optional="YES" attributeType="Transformable" syncable="YES"/>
-        <attribute name="lastModified" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" valueTransformerName="NSPTimestampValueTransformer" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoValueTransformerName" value="NSPTimestampValueTransformer"/>
+            </userInfo>
+        </attribute>
         <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="position" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="tagId" optional="YES" attributeType="String" syncable="YES"/>
@@ -83,9 +95,9 @@
             </compoundIndex>
         </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityDynamoDBTableName" value="canopus-tags4clients"/>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="ownerId"/>
-            <entry key="NSPDynamoStoreEntityPrimaryRangeKeyAttributeName" value="tagId"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
+            <entry key="NSPDynamoPrimaryRangeKey" value="tagId"/>
+            <entry key="NSPDynamoTableName" value="canopus-tags4clients"/>
         </userInfo>
     </entity>
     <fetchRequest name="itemContent" entity="Content" predicateString="contentId == $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>

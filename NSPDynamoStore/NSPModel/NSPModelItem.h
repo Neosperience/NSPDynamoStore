@@ -2,7 +2,7 @@
 //  NSPModelItem.h
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 16/04/15.
+//  Created by Janos Tolgyesi on 17/04/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
@@ -15,7 +15,7 @@
 
 @property (nonatomic, retain) NSString * ownerId;
 @property (nonatomic, retain) NSString * itemId;
-@property (nonatomic, retain) NSNumber * lastModified;
+@property (nonatomic, retain) NSDate * lastModified;
 @property (nonatomic, retain) NSNumber * status;
 @property (nonatomic, retain) NSString * code;
 @property (nonatomic, retain) NSString * street;

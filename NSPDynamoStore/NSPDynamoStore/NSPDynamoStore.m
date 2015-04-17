@@ -21,8 +21,9 @@
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 
-NSString* const kNSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
-NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
+NSString* const NSPDynamoStoreType = @"NSPDynamoStore";
+NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
+NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 @interface NSPDynamoStore ()
 
@@ -35,14 +36,9 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 @implementation NSPDynamoStore
 
-+ (void)initialize
++ (void)load
 {
-    [NSPersistentStoreCoordinator registerStoreClass:self forStoreType:[self storeType]];
-}
-
-+ (NSString *)storeType
-{
-    return NSStringFromClass(self);
+    [NSPersistentStoreCoordinator registerStoreClass:self forStoreType:NSPDynamoStoreType];
 }
 
 -(NSCache *)cache
@@ -71,7 +67,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     self = [super initWithPersistentStoreCoordinator:root configurationName:name URL:url options:options];
     if (self) {
-        NSString* dynamoDBKey = options[kNSPDynamoStoreDynamoDBKey];
+        NSString* dynamoDBKey = options[NSPDynamoStoreDynamoDBKey];
 
         if (dynamoDBKey) {
             self.dynamoDB = [AWSDynamoDB DynamoDBForKey:dynamoDBKey];
@@ -87,7 +83,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 // @override NSIncrementalStore
 -(BOOL)loadMetadata:(NSError *__autoreleasing *)error
 {
-    [self setMetadata:@{ NSStoreTypeKey : [[self class] storeType],
+    [self setMetadata:@{ NSStoreTypeKey : NSPDynamoStoreType,
                          NSStoreUUIDKey : [[NSProcessInfo processInfo] globallyUniqueString] }];
     return YES;
 }
@@ -136,7 +132,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         return nil;
     }
 
-    NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:objectID.entity];
+    NSDictionary* nativeAttributes = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:objectID.entity];
     [self.cache setObject:nativeAttributes forKey:objectID];
 
     return nativeAttributes;
@@ -293,7 +289,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
                 [results addObject:objectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                NSDictionary* result = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:fetchRequest.entity];
+                NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:fetchRequest.entity];
                 [results addObject:result];
             }
          }
@@ -310,7 +306,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
                 [results addObject:managedObjectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
-                NSDictionary* result = [self nativeAttributesFromDynamoAttributes:embeddedObject ofEntity:fetchRequest.entity];
+                NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:embeddedObject ofEntity:fetchRequest.entity];
                 [results addObject:result];
             }
         }
@@ -324,26 +320,22 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     }
 }
 
--(NSDictionary*)nativeAttributesFromDynamoAttributes:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
+-(id)nativeAttributeValueFromDynamoAttributeValue:(AWSDynamoDBAttributeValue*)dynamoAttributeValue ofAttribute:(NSAttributeDescription*)attribute
+{
+    id nativeAttributeValue = [dynamoAttributeValue nsp_getAttributeValue];
+    NSValueTransformer* valueTransformer = [attribute nsp_valueTransformer];
+    return valueTransformer ? [valueTransformer transformedValue:nativeAttributeValue] : nativeAttributeValue;
+}
+
+-(NSDictionary*)nativeAttributeValuesFromDynamoAttributeValues:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
 {
     NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
 
     [entity.attributesByName enumerateKeysAndObjectsUsingBlock:^(NSString* attributeName, NSAttributeDescription* attribute, BOOL *stop) {
         NSString* dynamoAttributeName = [attribute nsp_dynamoName];
         AWSDynamoDBAttributeValue* dynamoAttributeValue = dynamoAttributes[dynamoAttributeName];
-        id nativeAttributeValue = [dynamoAttributeValue nsp_getAttributeValue];
-        id encodedValue = nil;
-
-        if (attribute.attributeType == NSBinaryDataAttributeType) {
-            NSValueTransformer* dataTransformer = [NSValueTransformer valueTransformerForName:NSKeyedUnarchiveFromDataTransformerName];
-            encodedValue = [dataTransformer reverseTransformedValue:nativeAttributeValue];
-        } else {
-            encodedValue = nativeAttributeValue;
-        }
-
-        if (nativeAttributeValue) {
-            [transformedValues setValue:encodedValue forKey:attribute.name];
-        }
+        id nativeAttributeValue = [self nativeAttributeValueFromDynamoAttributeValue:dynamoAttributeValue ofAttribute:attribute];
+        [transformedValues setValue:nativeAttributeValue forKey:attribute.name];
     }];
 
     return transformedValues;
@@ -360,15 +352,16 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSString* dynamoHashKeyName = [hashKeyAttribute nsp_dynamoName];
 
     AWSDynamoDBAttributeValue* hashKeyDynamoValue = dynamoAttributes[dynamoHashKeyName];
-    id hashKeyNativeValue = [hashKeyDynamoValue nsp_getAttributeValue];
+    id hashKeyNativeValue = [self nativeAttributeValueFromDynamoAttributeValue:hashKeyDynamoValue ofAttribute:hashKeyAttribute];
     NSAssert(hashKeyNativeValue, @"NSDynamoStore: no hash key value in DynamoDB item");
 
     NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
     if (pkRangeKeyName) {
+        NSAttributeDescription* pkRangeKeyAttribute = entity.attributesByName[pkRangeKeyName];
         AWSDynamoDBAttributeValue* pkRangeKeyDynamoValue = dynamoAttributes[pkRangeKeyName];
-        id pkRangeKeyNativeValue = [pkRangeKeyDynamoValue nsp_getAttributeValue];
+        id pkRangeKeyNativeValue = [self nativeAttributeValueFromDynamoAttributeValue:pkRangeKeyDynamoValue ofAttribute:pkRangeKeyAttribute];
         NSAssert(pkRangeKeyNativeValue, @"NSDynamoStore: no primary range key value in DynamoDB item");
-        referenceObject = [@[[hashKeyNativeValue description], [pkRangeKeyNativeValue description]] componentsJoinedByString:kNSPDynamoStoreKeySeparator];
+        referenceObject = [@[[hashKeyNativeValue description], [pkRangeKeyNativeValue description]] componentsJoinedByString:NSPDynamoStoreKeySeparator];
     } else {
         referenceObject = hashKeyNativeValue;
     }
@@ -376,7 +369,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSManagedObjectID* objectId = [self newObjectIDForEntity:entity referenceObject:referenceObject];
 
     if (putToCache) {
-        NSDictionary* nativeAttributes = [self nativeAttributesFromDynamoAttributes:dynamoAttributes ofEntity:entity];
+        NSDictionary* nativeAttributes = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:entity];
         [self.cache setObject:nativeAttributes forKey:objectId];
     }
 
@@ -405,7 +398,7 @@ NSString* const kNSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         NSAssert([pkRangeKeyAttribute nsp_isStringType] || [pkRangeKeyAttribute nsp_isNumberType],
                  @"NSPDynamoStore: primary range key attribute must be string or number type");
         NSParameterAssert([pk isKindOfClass:[NSString class]]);
-        NSArray* pkComponents = [pk componentsSeparatedByString:kNSPDynamoStoreKeySeparator];
+        NSArray* pkComponents = [pk componentsSeparatedByString:NSPDynamoStoreKeySeparator];
         NSParameterAssert([pkComponents count] == 2);
 
         hashKeyValue = [hashKeyAttribute nsp_isStringType] ? pkComponents[0] : @([pkComponents[0] doubleValue]);
