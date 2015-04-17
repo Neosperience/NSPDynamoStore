@@ -8,22 +8,24 @@
 
 #import <CoreData/CoreData.h>
 
+@class NSPDynamoStoreKeyPairDescriptor;
+
 @interface NSEntityDescription (NSPDynamoStore)
 
 /**
- @brief Returns the name of the Dynamo hash key.
+ @brief Returns the DynamoDB primary keys.
  */
--(NSString*)nsp_dynamoHashKeyName;
-
-/**
- @brief If the Dynamo primary key is made of a (hash key, range key) double then returns the name of the range key part
- of primary key, otherwise nill.
- */
--(NSString*)nsp_dynamoPrimaryRangeKeyName;
+-(NSPDynamoStoreKeyPairDescriptor*)nsp_primaryKeys;
 
 /**
  @brief Returns the name of the Dynamo table.
  */
 -(NSString*)nsp_dynamoTableName;
+
+/**
+ @brief Returns the indices defined for the entity. The dictionary keys are the indices name and the instances are
+ NSPDynamoStoreIndexDescriptor instances.
+ */
+-(NSDictionary*)nsp_dynamoIndices;
 
 @end

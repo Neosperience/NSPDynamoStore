@@ -21,8 +21,8 @@
             </compoundIndex>
         </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
-            <entry key="NSPDynamoPrimaryRangeKey" value="id"/>
+            <entry key="NSPDynamoIndices" value="{&quot;lastModified-index&quot;:[&quot;ownerId&quot;,&quot;lastModified&quot;]}"/>
+            <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;,&quot;id&quot;]"/>
             <entry key="NSPDynamoTableName" value="nsp-contents4clients"/>
         </userInfo>
     </entity>
@@ -65,15 +65,9 @@
                 <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,TAG_IDS=tagIds"/>
             </userInfo>
         </relationship>
-        <compoundIndexes>
-            <compoundIndex>
-                <index value="ownerId"/>
-                <index value="itemId"/>
-            </compoundIndex>
-        </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
-            <entry key="NSPDynamoPrimaryRangeKey" value="itemId"/>
+            <entry key="NSPDynamoIndices" value="{&quot;lastModified-index&quot;:[&quot;ownerId&quot;,&quot;lastModified&quot;],&quot;status-index&quot;:[&quot;ownerId&quot;,&quot;status&quot;]}"/>
+            <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;,&quot;itemId&quot;]"/>
             <entry key="NSPDynamoTableName" value="nsp-items4clients"/>
         </userInfo>
     </entity>
@@ -95,16 +89,16 @@
             </compoundIndex>
         </compoundIndexes>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="ownerId"/>
-            <entry key="NSPDynamoPrimaryRangeKey" value="tagId"/>
+            <entry key="NSPDynamoIndices" value="{&quot;lastModified-index&quot;:[&quot;ownerId&quot;,&quot;lastModified&quot;]}"/>
+            <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;,&quot;tagId&quot;]"/>
             <entry key="NSPDynamoTableName" value="canopus-tags4clients"/>
         </userInfo>
     </entity>
     <fetchRequest name="itemContent" entity="Content" predicateString="contentId == $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>
     <fetchRequest name="itemTags" entity="Tag" predicateString="ownerId == $OWNER_ID AND tagId IN $TAG_IDS"/>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="345"/>
-        <element name="Tag" positionX="-54" positionY="-9" width="128" height="135"/>
         <element name="Content" positionX="-36" positionY="9" width="128" height="180"/>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="30"/>
+        <element name="Tag" positionX="-54" positionY="-9" width="128" height="135"/>
     </elements>
 </model>

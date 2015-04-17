@@ -17,6 +17,7 @@
 #import "NSPDynamoStoreErrors.h"
 #import "NSAttributeDescription+NSPDynamoStore.h"
 #import "NSRelationshipDescription+NSPDynamoStore.h"
+#import "NSPDynamoStoreKeyPairDescriptor.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
@@ -223,8 +224,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     NSMutableArray* results = [NSMutableArray array];
     NSEntityDescription* entity = fetchRequest.entity;
-    NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
-    NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
+    NSPDynamoStoreKeyPairDescriptor* keyPair = [entity nsp_primaryKeys];
     NSString* tableName = [entity nsp_dynamoTableName];
     NSUInteger limit = fetchRequest.fetchLimit;
 
@@ -236,7 +236,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     scanInput.tableName = tableName;
 
     if (!fetchRequest.includesPropertyValues) {
-        scanInput.projectionExpression = pkRangeKeyName ? [NSString stringWithFormat:@"%@,%@", hashKeyName, pkRangeKeyName] : hashKeyName;
+        scanInput.projectionExpression = [keyPair dynamoProjectionExpression];
     } else if (fetchRequest.propertiesToFetch) {
         NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) { return [property nsp_dynamoName]; }];
         scanInput.projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
@@ -346,19 +346,17 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                                        putToCache:(BOOL)putToCache
 {
     id referenceObject = nil;
-
-    NSString* hashKeyName = [entity nsp_dynamoHashKeyName];
-    NSAttributeDescription* hashKeyAttribute = entity.attributesByName[hashKeyName];
+    NSPDynamoStoreKeyPairDescriptor* keyPair = [entity nsp_primaryKeys];
+    NSAttributeDescription* hashKeyAttribute = entity.attributesByName[keyPair.hashKeyName];
     NSString* dynamoHashKeyName = [hashKeyAttribute nsp_dynamoName];
 
     AWSDynamoDBAttributeValue* hashKeyDynamoValue = dynamoAttributes[dynamoHashKeyName];
     id hashKeyNativeValue = [self nativeAttributeValueFromDynamoAttributeValue:hashKeyDynamoValue ofAttribute:hashKeyAttribute];
     NSAssert(hashKeyNativeValue, @"NSDynamoStore: no hash key value in DynamoDB item");
 
-    NSString* pkRangeKeyName = [entity nsp_dynamoPrimaryRangeKeyName];
-    if (pkRangeKeyName) {
-        NSAttributeDescription* pkRangeKeyAttribute = entity.attributesByName[pkRangeKeyName];
-        AWSDynamoDBAttributeValue* pkRangeKeyDynamoValue = dynamoAttributes[pkRangeKeyName];
+    if (keyPair.rangeKeyName) {
+        NSAttributeDescription* pkRangeKeyAttribute = entity.attributesByName[keyPair.rangeKeyName];
+        AWSDynamoDBAttributeValue* pkRangeKeyDynamoValue = dynamoAttributes[keyPair.rangeKeyName];
         id pkRangeKeyNativeValue = [self nativeAttributeValueFromDynamoAttributeValue:pkRangeKeyDynamoValue ofAttribute:pkRangeKeyAttribute];
         NSAssert(pkRangeKeyNativeValue, @"NSDynamoStore: no primary range key value in DynamoDB item");
         referenceObject = [@[[hashKeyNativeValue description], [pkRangeKeyNativeValue description]] componentsJoinedByString:NSPDynamoStoreKeySeparator];
@@ -380,11 +378,10 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     id pk = [self referenceObjectForObjectID:objectID];
 
-    NSString* hashKeyName = [objectID.entity nsp_dynamoHashKeyName];
-    NSString* pkRangeKeyName = [objectID.entity nsp_dynamoPrimaryRangeKeyName];
+    NSPDynamoStoreKeyPairDescriptor* keyPair = [objectID.entity nsp_primaryKeys];
 
-    NSAttributeDescription* hashKeyAttribute = objectID.entity.attributesByName[hashKeyName];
-    NSAttributeDescription* pkRangeKeyAttribute = pkRangeKeyName ? objectID.entity.attributesByName[pkRangeKeyName] : nil;
+    NSAttributeDescription* hashKeyAttribute = objectID.entity.attributesByName[keyPair.hashKeyName];
+    NSAttributeDescription* pkRangeKeyAttribute = keyPair.rangeKeyName ? objectID.entity.attributesByName[keyPair.rangeKeyName] : nil;
 
     NSAssert([hashKeyAttribute nsp_isStringType] || [hashKeyAttribute nsp_isNumberType],
              @"NSPDynamoStore: hash key attribute must be string or number type");
@@ -392,7 +389,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     id hashKeyValue = nil;
     id pkRangeKeyValue = nil;
 
-    if (!pkRangeKeyName) {
+    if (!keyPair.rangeKeyName) {
         hashKeyValue = pk;
     } else {
         NSAssert([pkRangeKeyAttribute nsp_isStringType] || [pkRangeKeyAttribute nsp_isNumberType],
@@ -405,8 +402,8 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         pkRangeKeyValue = [pkRangeKeyAttribute nsp_isStringType] ? pkComponents[1] : @([pkComponents[0] doubleValue]);
     }
 
-    NSMutableDictionary* result = [@{ hashKeyName : hashKeyValue } mutableCopy];
-    if (pkRangeKeyName) [result setValue:pkRangeKeyValue forKey:pkRangeKeyName];
+    NSMutableDictionary* result = [@{ keyPair.hashKeyName : hashKeyValue } mutableCopy];
+    if (keyPair.rangeKeyName) [result setValue:pkRangeKeyValue forKey:keyPair.rangeKeyName];
     return result;
 }
 

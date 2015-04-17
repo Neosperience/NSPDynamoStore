@@ -34,6 +34,7 @@
 		1B8E26931AE104CC00D33906 /* NSPModelTag.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E26921AE104CC00D33906 /* NSPModelTag.m */; };
 		1B8E26961AE104CC00D33906 /* NSPModelContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E26951AE104CC00D33906 /* NSPModelContent.m */; };
 		1BB7B2631ADC0805005EA948 /* NSPDynamoSyncEntityMigrationPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BB7B2621ADC0805005EA948 /* NSPDynamoSyncEntityMigrationPolicy.m */; };
+		1BE406661AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BE406651AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.m */; };
 		2FD7126C5691B33A774CF97F /* libPods-NSPDynamoStore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */; };
 /* End PBXBuildFile section */
 
@@ -90,6 +91,8 @@
 		1B8E26951AE104CC00D33906 /* NSPModelContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPModelContent.m; sourceTree = "<group>"; };
 		1BB7B2611ADC0805005EA948 /* NSPDynamoSyncEntityMigrationPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoSyncEntityMigrationPolicy.h; sourceTree = "<group>"; };
 		1BB7B2621ADC0805005EA948 /* NSPDynamoSyncEntityMigrationPolicy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoSyncEntityMigrationPolicy.m; sourceTree = "<group>"; };
+		1BE406641AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoStoreKeyPairDescriptor.h; sourceTree = "<group>"; };
+		1BE406651AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreKeyPairDescriptor.m; sourceTree = "<group>"; };
 		6AA7DF1A53149253BE8BD47A /* Pods-NSPDynamoStore.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.debug.xcconfig"; sourceTree = "<group>"; };
 		81E7E79F12B5FCEF96A2CDE0 /* libPods-NSPDynamoStore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NSPDynamoStore.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F90992F0DDCC886C9EF12A58 /* Pods-NSPDynamoStore.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStore.release.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStore/Pods-NSPDynamoStore.release.xcconfig"; sourceTree = "<group>"; };
@@ -185,6 +188,8 @@
 				1B8E26521ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.m */,
 				1B8E26571ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.h */,
 				1B8E26581ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.m */,
+				1BE406641AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.h */,
+				1BE406651AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.m */,
 			);
 			path = NSPDynamoStore;
 			sourceTree = "<group>";
@@ -352,6 +357,7 @@
 				1B8E265C1ADFF21700D33906 /* NSPExamplePerson.m in Sources */,
 				1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */,
 				1B8E26931AE104CC00D33906 /* NSPModelTag.m in Sources */,
+				1BE406661AE1375600EE4F4B /* NSPDynamoStoreKeyPairDescriptor.m in Sources */,
 				1B8E26621ADFF21800D33906 /* NSPExampleItem.m in Sources */,
 				1B8E265F1ADFF21800D33906 /* NSPExampleCategory.m in Sources */,
 				1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */,

@@ -24,7 +24,7 @@ NSString* const NSPTimestampValueTransformerName = @"NSPTimestampValueTransforme
 
 - (id)transformedValue:(id)value
 {
-    if ([value isKindOfClass:[NSNumber class]]) {
+    if ([value isKindOfClass:[NSNumber class]] || [value isKindOfClass:[NSString class]]) {
         return [NSDate dateWithTimeIntervalSince1970:[value doubleValue]];
     } else {
         return nil;

@@ -13,6 +13,7 @@
 #import "NSPExampleCategory.h"
 #import "NSManagedObjectModel+NSPUtils.h"
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
+#import "NSEntityDescription+NSPDynamoStore.h"
 
 #import "NSPModel.h"
 
@@ -89,8 +90,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 - (void)canopusTest
 {
-    NSString* itemEntityName = [self.managedObjectModel entityForManagedObjectClass:[NSPModelItem class]].name;
-    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntityName];
+    NSEntityDescription* itemEntity = [self.managedObjectModel entityForManagedObjectClass:[NSPModelItem class]];
+    NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntity.name];
 
     [self.managedObjectContext performBlock:^{
         NSError* error = nil;
