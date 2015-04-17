@@ -110,10 +110,12 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
                 NSLog(@"\tcity, state, country, zip: %@, %@, %@, %@", item.city, item.state,  item.country, item.zip);
                 NSLog(@"\tstreet: %@", item.street);
                 NSLog(@"\tcoordinates: %@, %@", item.latitude, item.longitude);
+                NSLog(@"\tlastModified: %@", item.lastModified);
 
                 NSLog(@"\ttags:");
                 for (NSPModelTag* tag in item.tags) {
                     NSLog(@"\t\t%@", tag.code);
+                    NSLog(@"\t\t\tlastModified: %@", tag.lastModified);
 //                    NSLog(@"\t\t\tdescriptions: %@", tag.descriptions);
 //                    NSLog(@"\t\t\tposition: %@", tag.position);
                 }
@@ -124,6 +126,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
                     NSLog(@"\t\t\telements: %@", content.elements);
                     NSLog(@"\t\t\ttemplate: %@", content.template);
                     NSLog(@"\t\t\ttextForSearch: %@", content.textForSearch);
+                    NSLog(@"\t\t\tlastModified: %@", content.lastModified);
                 }
 
             }
@@ -237,7 +240,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
 
-    NSString* storeType = [NSPDynamoStore storeType];
+    NSString* storeType = NSPDynamoStoreType;
     NSURL* storeURL = nil;
 
 //    NSString* storeType = NSSQLiteStoreType;
@@ -246,7 +249,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     if (![_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                    configuration:nil
                                                              URL:storeURL
-                                                         options:@{ kNSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                                                         options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                                                            error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -316,8 +319,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     if (!model) return;
 
     [migrationManager migrateStoreFromURL:nil
-                                     type:[NSPDynamoStore storeType]
-                                  options:@{ kNSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                                     type:NSPDynamoStoreType
+                                  options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
                          withMappingModel:model
                          toDestinationURL:[self cacheURL]
                           destinationType:NSSQLiteStoreType

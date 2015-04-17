@@ -3,7 +3,7 @@
     <entity name="Category" representedClassName="NSPExampleCategory" syncable="YES">
         <attribute name="itemIds" optional="YES" attributeType="Transformable" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreAttributeName" value="items"/>
+                <entry key="NSPDynamoAttributeKey" value="items"/>
             </userInfo>
         </attribute>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
@@ -15,14 +15,14 @@
             </userInfo>
         </relationship>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
         </userInfo>
     </entity>
     <entity name="Item" representedClassName="NSPExampleItem" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="categoryId" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreAttributeName" value="category"/>
+                <entry key="NSPDynamoAttributeKey" value="category"/>
             </userInfo>
         </attribute>
         <attribute name="desc" optional="YES" attributeType="String" syncable="YES"/>
@@ -34,7 +34,7 @@
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="personId" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreAttributeName" value="person"/>
+                <entry key="NSPDynamoAttributeKey" value="person"/>
             </userInfo>
         </attribute>
         <attribute name="photoURL" optional="YES" attributeType="String" syncable="YES"/>
@@ -53,14 +53,14 @@
             </userInfo>
         </relationship>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
         </userInfo>
     </entity>
     <entity name="Person" representedClassName="NSPExamplePerson" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <userInfo>
-            <entry key="NSPDynamoStoreEntityHashKeyAttributeName" value="objectId"/>
+            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
         </userInfo>
     </entity>
     <fetchRequest name="categoryItems" entity="Item" predicateString="objectId IN $ITEM_IDS"/>
@@ -69,6 +69,6 @@
     <elements>
         <element name="Category" positionX="-45" positionY="81" width="128" height="105"/>
         <element name="Item" positionX="-63" positionY="-18" width="128" height="270"/>
-        <element name="Person" positionX="-63" positionY="-27" width="128" height="30"/>
+        <element name="Person" positionX="-63" positionY="-27" width="128" height="75"/>
     </elements>
 </model>

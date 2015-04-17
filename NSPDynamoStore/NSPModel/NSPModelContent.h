@@ -2,7 +2,7 @@
 //  NSPModelContent.h
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 16/04/15.
+//  Created by Janos Tolgyesi on 17/04/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
@@ -18,7 +18,7 @@
 @property (nonatomic, retain) NSString * templateId;
 @property (nonatomic, retain) id template;
 @property (nonatomic, retain) id elements;
-@property (nonatomic, retain) NSNumber * lastModified;
+@property (nonatomic, retain) NSDate * lastModified;
 @property (nonatomic, retain) NSString * contentId;
 @property (nonatomic, retain) NSString * textForSearch;
 

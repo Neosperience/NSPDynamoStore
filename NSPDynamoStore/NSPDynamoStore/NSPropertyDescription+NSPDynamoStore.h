@@ -11,5 +11,6 @@
 @interface NSPropertyDescription (NSPDynamoStore)
 
 -(NSString*)nsp_dynamoName;
+-(NSValueTransformer*)nsp_valueTransformer;
 
 @end
