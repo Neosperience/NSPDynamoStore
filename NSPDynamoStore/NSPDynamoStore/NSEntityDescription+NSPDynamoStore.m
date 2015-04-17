@@ -9,7 +9,7 @@
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
-#import "NSPDynamoStoreKeyPairDescriptor.h"
+#import "NSPDynamoStoreKeyPair.h"
 
 #import <AWSDynamoDB.h>
 
@@ -19,12 +19,12 @@ NSString* const kNSPDynamoIndicesKey = @"NSPDynamoIndices";
 
 @implementation NSEntityDescription (NSPDynamoStore)
 
--(NSPDynamoStoreKeyPairDescriptor*)nsp_primaryKeys
+-(NSPDynamoStoreKeyPair*)nsp_primaryKeys
 {
     NSString* keyPairString = self.userInfo[kNSPDynamoPrimaryKeysKey];
     NSAssert(keyPairString, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key for entity: %@",
              kNSPDynamoPrimaryKeysKey, self.name);
-    return [NSPDynamoStoreKeyPairDescriptor keyPairWithString:keyPairString];
+    return [NSPDynamoStoreKeyPair keyPairWithString:keyPairString];
 }
 
 -(NSString*)nsp_dynamoTableName
@@ -35,7 +35,7 @@ NSString* const kNSPDynamoIndicesKey = @"NSPDynamoIndices";
 -(NSDictionary*)nsp_dynamoIndices
 {
     NSString* indicesString = self.userInfo[kNSPDynamoIndicesKey];
-    return indicesString ? [NSPDynamoStoreKeyPairDescriptor indicesWithString:indicesString] : nil;
+    return indicesString ? [NSPDynamoStoreKeyPair indicesWithString:indicesString] : nil;
 }
 
 @end

@@ -8,7 +8,7 @@
 
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
-#import "NSPDynamoStoreKeyPairDescriptor.h"
+#import "NSPDynamoStoreKeyPair.h"
 
 NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
 
@@ -39,7 +39,7 @@ NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
 
 -(id)mapKeyForInstance:(id)existingInstance entity:(NSEntityDescription*)entity
 {
-    NSPDynamoStoreKeyPairDescriptor* keyPair = [entity nsp_primaryKeys];
+    NSPDynamoStoreKeyPair* keyPair = [entity nsp_primaryKeys];
 
     id hashKeyValue = [existingInstance valueForKey:keyPair.hashKeyName];
     NSAssert(hashKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no hash key value in item");
@@ -113,7 +113,7 @@ NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
 
     NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
 
-    NSPDynamoStoreKeyPairDescriptor* destinationKeyPair = [destinationEntity nsp_primaryKeys];
+    NSPDynamoStoreKeyPair* destinationKeyPair = [destinationEntity nsp_primaryKeys];
 
     id hashKeyValue = evaluateDestinationAttributeWithName(destinationKeyPair.hashKeyName, nil);
     NSAssert(hashKeyValue, @"NSPDynamoSyncEntityMigrationPolicy: no hash key value in source instance");

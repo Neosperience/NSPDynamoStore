@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
-#import "NSPDynamoStoreKeyPairDescriptor.h"
+#import "NSPDynamoStoreKeyPair.h"
 
 NSString* const kNSPDynamoStoreIndexDescriptorInvalidFormatMessage =
     @"NSPDynamoStore: indices value must be in the following format: "
@@ -15,7 +15,7 @@ NSString* const kNSPDynamoStoreIndexDescriptorInvalidFormatMessage =
 NSString* const kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage =
     @"NSPDynamoStore: key pair value must be in the following format: [ hashKeyName, rangeKeyName ]";
 
-@implementation NSPDynamoStoreKeyPairDescriptor
+@implementation NSPDynamoStoreKeyPair
 
 - (instancetype)initWithArray:(NSArray*)array
 {

@@ -9,6 +9,7 @@
 #import "NSPDynamoStoreExpression.h"
 #import "NSArray+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
+#import "NSPDynamoStoreKeyPair.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 
@@ -97,6 +98,12 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
 }
 
 -(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator
+{
+    NSAssert(NO, @"NSPDynamoStore: abstract function called");
+    return NO;
+}
+
+-(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
 {
     NSAssert(NO, @"NSPDynamoStore: abstract function called");
     return NO;
@@ -217,6 +224,31 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return (elementOperator == NSPDynamoStoreExpressionOperatorAND) || (elementOperator == NSPDynamoStoreExpressionOperatorOR);
 }
 
+-(BOOL)isHashKeyFilterForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+{
+    BOOL operatorSupported = self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ;
+    return [self.key isEqualToString:keyPair.hashKeyName] && operatorSupported;
+}
+
+-(BOOL)isRangeKeyFilterForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+{
+    BOOL operatorSupported =
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ ||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorLE ||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorLT ||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorGE||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorGT||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorBeginsWith||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorBetween;
+
+    return [self.key isEqualToString:keyPair.rangeKeyName] && operatorSupported;
+}
+
+-(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
+{
+    return [self isHashKeyFilterForKeyPair:keyPair];
+}
+
 @end
 
 @implementation NSPDynamoStoreCompoundExpression
@@ -313,6 +345,25 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
         [conditions addEntriesFromDictionary:elementConditions];
     }
     return conditions;
+}
+
+-(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
+{
+    if ([self.subElements count] == 2) {
+        NSPDynamoStoreComparisonExpression* firstElement = self.subElements[0];
+        NSPDynamoStoreComparisonExpression* secondElement = self.subElements[1];
+
+        if ([firstElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]] &&
+            [secondElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]]) {
+            return (
+                ([firstElement isHashKeyFilterForKeyPair:keyPair] && [secondElement isRangeKeyFilterForKeyPair:keyPair]) ||
+                ([firstElement isRangeKeyFilterForKeyPair:keyPair] && [secondElement isHashKeyFilterForKeyPair:keyPair])
+            ) && (
+                self.elementOperator == NSPDynamoStoreExpressionOperatorAND
+            );
+        }
+    }
+    return NO;
 }
 
 @end
