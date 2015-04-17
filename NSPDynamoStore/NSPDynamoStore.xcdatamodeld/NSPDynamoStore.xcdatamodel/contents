@@ -15,7 +15,7 @@
             </userInfo>
         </relationship>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
+            <entry key="NSPDynamoIndices" value="[&quot;objectId&quot;]"/>
         </userInfo>
     </entity>
     <entity name="Item" representedClassName="NSPExampleItem" syncable="YES">
@@ -53,14 +53,14 @@
             </userInfo>
         </relationship>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
+            <entry key="NSPDynamoIndices" value="[&quot;objectId&quot;]"/>
         </userInfo>
     </entity>
     <entity name="Person" representedClassName="NSPExamplePerson" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <userInfo>
-            <entry key="NSPDynamoPrimaryHashKey" value="objectId"/>
+            <entry key="NSPDynamoIndices" value="[&quot;objectId&quot;]"/>
         </userInfo>
     </entity>
     <fetchRequest name="categoryItems" entity="Item" predicateString="objectId IN $ITEM_IDS"/>

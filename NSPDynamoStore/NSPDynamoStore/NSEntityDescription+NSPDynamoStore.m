@@ -9,31 +9,33 @@
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
+#import "NSPDynamoStoreKeyPairDescriptor.h"
 
 #import <AWSDynamoDB.h>
 
-NSString* const kNSPDynamoPrimaryHashKey = @"NSPDynamoPrimaryHashKey";
-NSString* const kNSPDynamoPrimaryRangeKey = @"NSPDynamoPrimaryRangeKey";
+NSString* const kNSPDynamoPrimaryKeysKey = @"NSPDynamoPrimaryKeys";
 NSString* const kNSPDynamoTableNameKey = @"NSPDynamoTableName";
+NSString* const kNSPDynamoIndicesKey = @"NSPDynamoIndices";
 
 @implementation NSEntityDescription (NSPDynamoStore)
 
--(NSString*)nsp_dynamoHashKeyName
+-(NSPDynamoStoreKeyPairDescriptor*)nsp_primaryKeys
 {
-    NSString* hashKeyName = self.userInfo[kNSPDynamoPrimaryHashKey];
-    NSAssert(hashKeyName, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key for entity: %@",
-             kNSPDynamoPrimaryHashKey, self);
-    return hashKeyName;
-}
-
--(NSString*)nsp_dynamoPrimaryRangeKeyName
-{
-    return self.userInfo[kNSPDynamoPrimaryRangeKey];
+    NSString* keyPairString = self.userInfo[kNSPDynamoPrimaryKeysKey];
+    NSAssert(keyPairString, @"NSPDynamoStore: The user info of the entity must contain a value for %@ key for entity: %@",
+             kNSPDynamoPrimaryKeysKey, self.name);
+    return [NSPDynamoStoreKeyPairDescriptor keyPairWithString:keyPairString];
 }
 
 -(NSString*)nsp_dynamoTableName
 {
     return self.userInfo[kNSPDynamoTableNameKey] ? : self.name;
+}
+
+-(NSDictionary*)nsp_dynamoIndices
+{
+    NSString* indicesString = self.userInfo[kNSPDynamoIndicesKey];
+    return indicesString ? [NSPDynamoStoreKeyPairDescriptor indicesWithString:indicesString] : nil;
 }
 
 @end
