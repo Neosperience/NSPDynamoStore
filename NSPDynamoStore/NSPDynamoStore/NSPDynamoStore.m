@@ -204,44 +204,40 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 #pragma mark - Private
 
--(NSArray*)executeFetchRequest:(NSFetchRequest*)fetchRequest
-                   withContext:(NSManagedObjectContext *)context
-                         error:(NSError *__autoreleasing *)error
+-(void)configureRequest:(AWSRequest*)request withFetchRequest:(NSFetchRequest*)fetchRequest
 {
-    NSMutableArray* results = [NSMutableArray array];
-    NSEntityDescription* entity = fetchRequest.entity;
-    NSPDynamoStoreKeyPair* keyPair = [entity nsp_primaryKeys];
-    NSString* tableName = [entity nsp_dynamoTableName];
-    NSUInteger limit = fetchRequest.fetchLimit;
-
-    // TODO: examine the possibility to support sort descriptors if they refer to Global Secondary Indices
     NSAssert([fetchRequest.sortDescriptors count] == 0, @"NSPDynamoStore: sort descriptors are not supported.");
+    NSAssert([request isKindOfClass:[AWSDynamoDBScanInput class]] || [request isKindOfClass:[AWSDynamoDBQueryInput class]],
+             @"NSPDynamoStore: only AWSDynamoDBScanInput and AWSDynamoDBQueryInput instances can be configured with this method");
 
-    AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
-    AWSDynamoDBQueryInput *queryInput = [AWSDynamoDBQueryInput new];
+    id input = request;
+    NSPDynamoStoreKeyPair* keyPair = [fetchRequest.entity nsp_primaryKeys];
+    NSString* tableName = [fetchRequest.entity nsp_dynamoTableName];
 
-    scanInput.tableName = tableName;
-    queryInput.tableName = tableName;
+    [input setTableName:tableName];
 
     if (!fetchRequest.includesPropertyValues) {
-        scanInput.projectionExpression = [keyPair dynamoProjectionExpression];
-        queryInput.projectionExpression = [keyPair dynamoProjectionExpression];
+        [input setProjectionExpression:[keyPair dynamoProjectionExpression]];
     } else if (fetchRequest.propertiesToFetch) {
-        NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) { return [property nsp_dynamoName]; }];
+        NSArray* dynamoPropertiesToFetch = [fetchRequest.propertiesToFetch map:^id(NSPropertyDescription* property) {
+            return [property nsp_dynamoName]; }];
         NSString* projectionExpression = [dynamoPropertiesToFetch componentsJoinedByString:@","];
-        scanInput.projectionExpression = projectionExpression;
-        queryInput.projectionExpression = projectionExpression;
+        [input setProjectionExpression:projectionExpression];
     }
 
     // TODO: support limit and skip if possible with exclusiveStartKey
     // scanInput.exclusiveStartKey = expression.exclusiveStartKey;
 
-    if (limit > 0) {
-        scanInput.limit = @(limit);
-        queryInput.limit = @(limit);
-    }
+    NSUInteger limit = fetchRequest.fetchLimit;
+    if (limit > 0) [input setLimit:@(limit)];
+}
 
-    BOOL canQuery = NO;
+-(AWSDynamoDBScanInput*)scanInputForFetchRequest:(NSFetchRequest*)fetchRequest
+{
+    AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
+    [self configureRequest:scanInput withFetchRequest:fetchRequest];
+
+//    NSLog(@"Executing SCAN for fetch request for entity name: %@, predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
 
     if (fetchRequest.predicate) {
         if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSTruePredicate"]) {
@@ -252,41 +248,95 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
             scanInput.scanFilter = [expression dynamoConditions];
 
-            __block NSString* queryIndexName = nil;
-            [[entity nsp_dynamoIndices] enumerateKeysAndObjectsUsingBlock:^(NSString* indexName, NSPDynamoStoreKeyPair* index, BOOL *stop) {
-                if ([expression canQueryForKeyPair:index]) queryIndexName = indexName;
-            }];
-
-            canQuery = [expression canQueryForKeyPair:keyPair] || (queryIndexName != nil);
-
-            NSLog(@"Executing fetch request for entity name: %@, predicate: %@, canQuery: %@, indexName: %@",
-                  fetchRequest.entityName, fetchRequest.predicate, @(canQuery), queryIndexName);
-
-            if (canQuery) {
-                queryInput.keyConditions = [expression dynamoConditions];
-                queryInput.indexName = queryIndexName;
-            } else {
-                if ([scanInput.scanFilter count] > 1) {
-                    if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
-                        scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
-                    } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
-                        scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
-                    } else {
-                        NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
-                    }
+            if ([scanInput.scanFilter count] > 1) {
+                if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorOR]) {
+                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorOr;
+                } else if ([expression operatorSupported:NSPDynamoStoreExpressionOperatorAND]) {
+                    scanInput.conditionalOperator = AWSDynamoDBConditionalOperatorAnd;
+                } else {
+                    NSAssert(NO, @"NSPDynamoStore: expressions containing both AND and OR are not supported: %@", fetchRequest.predicate);
                 }
             }
         }
     }
 
-    // TODO: decide in a best-effort way if we can use query operation
+    return scanInput;
+}
 
-    // TODO: check if we can use a get operation
-    // TODO: evaluate exploding SET types to multiple query or get operations
+-(AWSDynamoDBQueryInput*)queryInputForFetchRequest:(NSFetchRequest*)fetchRequest
+{
+    AWSDynamoDBQueryInput* queryInput = nil;
+
+    if ([fetchRequest.predicate isKindOfClass:[NSCompoundPredicate class]] || [fetchRequest.predicate isKindOfClass:[NSComparisonPredicate class]]) {
+
+        NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
+        __block NSString* queryIndexName = nil;
+
+        [[fetchRequest.entity nsp_dynamoIndices] enumerateKeysAndObjectsUsingBlock:^(NSString* indexName, NSPDynamoStoreKeyPair* index, BOOL *stop) {
+            if ([expression canQueryForKeyPair:index]) queryIndexName = indexName;
+        }];
+
+        if ([expression canQueryForKeyPair:[fetchRequest.entity nsp_primaryKeys]] || (queryIndexName != nil)) {
+
+            queryInput = [AWSDynamoDBQueryInput new];
+            [self configureRequest:queryInput withFetchRequest:fetchRequest];
+
+            queryInput.keyConditions = [expression dynamoConditions];
+            queryInput.indexName = queryIndexName;
+        }
+    }
+
+    return queryInput;
+}
+
+-(AWSDynamoDBBatchGetItemInput*)batchGetInputForFetchRequest:(NSFetchRequest*)fetchRequest
+{
+    AWSDynamoDBBatchGetItemInput* batchGetInput = nil;
+
+    if ([fetchRequest.predicate isKindOfClass:[NSCompoundPredicate class]] || [fetchRequest.predicate isKindOfClass:[NSComparisonPredicate class]]) {
+
+        NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
+
+        NSPDynamoStoreKeyPair* primaryKeys = [fetchRequest.entity nsp_primaryKeys];
+        NSArray* explodedConditions = nil;
+        if ([expression canBatchGetForKeyPair:primaryKeys explodedConditions:&explodedConditions]) {
+            batchGetInput = [AWSDynamoDBBatchGetItemInput new];
+            NSString* tableName = [fetchRequest.entity nsp_dynamoTableName];
+            AWSDynamoDBKeysAndAttributes* keysAndAttributes = [AWSDynamoDBKeysAndAttributes new];
+            keysAndAttributes.keys = explodedConditions;
+            batchGetInput.requestItems = @{ tableName : keysAndAttributes };
+        }
+    }
+
+    return batchGetInput;
+}
+
+-(NSArray*)executeFetchRequest:(NSFetchRequest*)fetchRequest
+                   withContext:(NSManagedObjectContext *)context
+                         error:(NSError *__autoreleasing *)error
+{
+    NSMutableArray* results = [NSMutableArray array];
+
+    BFTask* task = nil;
+
+    AWSDynamoDBBatchGetItemInput* batchGetInput = [self batchGetInputForFetchRequest:fetchRequest];
+
+    if (batchGetInput) {
+        task = [self.dynamoDB batchGetItem:batchGetInput];
+        NSLog(@"Executing BATCH GET of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+    } else {
+        AWSDynamoDBQueryInput* queryInput = [self queryInputForFetchRequest:fetchRequest];
+        if (queryInput) {
+            task = [self.dynamoDB query:queryInput];
+            NSLog(@"Executing QUERY of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+        } else {
+            AWSDynamoDBScanInput* scanInput = [self scanInputForFetchRequest:fetchRequest];
+            task = [self.dynamoDB scan:scanInput];
+            NSLog(@"Executing SCAN of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+        }
+    }
 
     __block NSError* fetchError = nil;
-
-    BFTask* task = canQuery ? [self.dynamoDB query:queryInput] : [self.dynamoDB scan:scanInput];
 
     [[task continueWithBlock:^id(BFTask *task) {
 
@@ -295,9 +345,16 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             return [BFTask taskWithError:task.error];
         }
 
-        id output = task.result; // can be AWSDynamoDBScanOutput or AWSDynamoDBQueryOutput
+        NSArray* items = nil;
+        if ([task.result isKindOfClass:[AWSDynamoDBScanOutput class]] || [task.result isKindOfClass:[AWSDynamoDBQueryOutput class]]) {
+            items = [task.result valueForKey:@"items"];
+        } else if ([task.result isKindOfClass:[AWSDynamoDBBatchGetItemOutput class]]) {
+            AWSDynamoDBBatchGetItemOutput* batchGetOutput = task.result;
+            NSString* tableName = [fetchRequest.entity nsp_dynamoTableName];
+            items = [batchGetOutput.responses valueForKey:tableName];
+        }
 
-        for (NSDictionary* dynamoAttributes in [output valueForKey:@"items"]) {
+        for (NSDictionary* dynamoAttributes in items) {
             NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
                                                             dynamoAttributes:dynamoAttributes
                                                                   putToCache:fetchRequest.includesPropertyValues];
@@ -309,17 +366,13 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                 NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:fetchRequest.entity];
                 [results addObject:result];
             }
-         }
-         return results;
+        }
+
+        return results;
 
     }] waitUntilFinished];
 
-    if (fetchError) {
-        if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
-        return nil;
-    } else {
-        return results;
-    }
+    return results;
 }
 
 -(id)nativeAttributeValueFromDynamoAttributeValue:(AWSDynamoDBAttributeValue*)dynamoAttributeValue ofAttribute:(NSAttributeDescription*)attribute

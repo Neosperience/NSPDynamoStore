@@ -109,6 +109,18 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return NO;
 }
 
+-(BOOL)canGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
+{
+    NSAssert(NO, @"NSPDynamoStore: abstract function called");
+    return NO;
+}
+
+-(BOOL)canBatchGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair explodedConditions:(NSArray *__autoreleasing *)explodedConditions
+{
+    NSAssert(NO, @"NSPDynamoStore: abstract function called");
+    return NO;
+}
+
 @end
 
 @implementation NSPDynamoStoreComparisonExpression
@@ -224,10 +236,34 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
     return (elementOperator == NSPDynamoStoreExpressionOperatorAND) || (elementOperator == NSPDynamoStoreExpressionOperatorOR);
 }
 
--(BOOL)isHashKeyFilterForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+-(BOOL)isHashKeyEQExpressionForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
 {
     BOOL operatorSupported = self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ;
     return [self.key isEqualToString:keyPair.hashKeyName] && operatorSupported;
+}
+
+-(BOOL)isRangeKeyEQExpressionForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+{
+    BOOL operatorSupported = self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ;
+    return [self.key isEqualToString:keyPair.rangeKeyName] && operatorSupported;
+}
+
+-(BOOL)isHashKeyINExpressionForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+{
+    BOOL operatorSupported =
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ ||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorIN;
+
+    return [self.key isEqualToString:keyPair.hashKeyName] && operatorSupported;
+}
+
+-(BOOL)isRangeKeyINExpressionForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
+{
+    BOOL operatorSupported =
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorEQ ||
+        self.condition.comparisonOperator == AWSDynamoDBComparisonOperatorIN;
+
+    return [self.key isEqualToString:keyPair.rangeKeyName] && operatorSupported;
 }
 
 -(BOOL)isRangeKeyFilterForKeyPair:(NSPDynamoStoreKeyPair*)keyPair
@@ -246,7 +282,33 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
 
 -(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
 {
-    return [self isHashKeyFilterForKeyPair:keyPair];
+    return [self isHashKeyEQExpressionForKeyPair:keyPair];
+}
+
+-(BOOL)canGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
+{
+    return [self isHashKeyEQExpressionForKeyPair:keyPair] && !keyPair.rangeKeyName;
+}
+
+-(BOOL)canBatchGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair explodedConditions:(NSArray *__autoreleasing *)explodedConditions
+{
+    BOOL canBatchGet = [self isHashKeyINExpressionForKeyPair:keyPair] && !keyPair.rangeKeyName;
+
+    if (explodedConditions && canBatchGet) {
+
+        NSArray* collectionAttributeValues = self.condition.attributeValueList;
+        NSString* collectionAttributeName = self.key;
+
+        NSMutableArray* results = [NSMutableArray arrayWithCapacity:[collectionAttributeValues count]];
+        for (AWSDynamoDBAttributeValue* enumeratedValue in collectionAttributeValues) {
+            NSDictionary* condition = @{ collectionAttributeName : enumeratedValue };
+            [results addObject:condition];
+        }
+
+        *explodedConditions = results;
+    }
+
+    return canBatchGet;
 }
 
 @end
@@ -356,14 +418,84 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
         if ([firstElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]] &&
             [secondElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]]) {
             return (
-                ([firstElement isHashKeyFilterForKeyPair:keyPair] && [secondElement isRangeKeyFilterForKeyPair:keyPair]) ||
-                ([firstElement isRangeKeyFilterForKeyPair:keyPair] && [secondElement isHashKeyFilterForKeyPair:keyPair])
+                ([firstElement isHashKeyEQExpressionForKeyPair:keyPair] && [secondElement isRangeKeyFilterForKeyPair:keyPair]) ||
+                ([firstElement isRangeKeyFilterForKeyPair:keyPair] && [secondElement isHashKeyEQExpressionForKeyPair:keyPair])
             ) && (
                 self.elementOperator == NSPDynamoStoreExpressionOperatorAND
             );
         }
     }
     return NO;
+}
+
+-(BOOL)canGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair
+{
+    if ([self.subElements count] == 2) {
+        NSPDynamoStoreComparisonExpression* firstElement = self.subElements[0];
+        NSPDynamoStoreComparisonExpression* secondElement = self.subElements[1];
+
+        if ([firstElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]] &&
+            [secondElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]]) {
+            return (
+                ([firstElement isHashKeyEQExpressionForKeyPair:keyPair] && [secondElement isRangeKeyEQExpressionForKeyPair:keyPair]) ||
+                ([firstElement isRangeKeyEQExpressionForKeyPair:keyPair] && [secondElement isHashKeyEQExpressionForKeyPair:keyPair])
+            ) && (
+                self.elementOperator == NSPDynamoStoreExpressionOperatorAND
+            );
+        }
+    }
+    return NO;
+}
+
+-(BOOL)canBatchGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair explodedConditions:(NSArray* __autoreleasing *)explodedConditions
+{
+    BOOL canBatchGet = NO;
+
+    if ([self.subElements count] == 2) {
+        NSPDynamoStoreComparisonExpression* firstElement = self.subElements[0];
+        NSPDynamoStoreComparisonExpression* secondElement = self.subElements[1];
+
+        if ([firstElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]] &&
+            [secondElement isKindOfClass:[NSPDynamoStoreComparisonExpression class]]) {
+
+            if (self.elementOperator == NSPDynamoStoreExpressionOperatorAND) {
+
+                AWSDynamoDBAttributeValue* singleAttributeValue = nil;
+                NSArray* collectionAttributeValues = nil;
+                NSString* singleAttributeName = nil;
+                NSString* collectionAttributeName = nil;
+
+                if ([firstElement isHashKeyEQExpressionForKeyPair:keyPair] && [secondElement isRangeKeyINExpressionForKeyPair:keyPair]) {
+                    singleAttributeValue = [firstElement.condition.attributeValueList lastObject];
+                    collectionAttributeValues = secondElement.condition.attributeValueList;
+                    singleAttributeName = firstElement.key;
+                    collectionAttributeName = secondElement.key;
+                    canBatchGet = YES;
+                } else if ([firstElement isRangeKeyEQExpressionForKeyPair:keyPair] && [secondElement isHashKeyINExpressionForKeyPair:keyPair]) {
+                    singleAttributeValue = [secondElement.condition.attributeValueList lastObject];
+                    collectionAttributeValues = firstElement.condition.attributeValueList;
+                    singleAttributeName = secondElement.key;
+                    collectionAttributeName = firstElement.key;
+                    canBatchGet = YES;
+                }
+
+                if (explodedConditions && canBatchGet) {
+
+                    NSMutableArray* results = [NSMutableArray arrayWithCapacity:[collectionAttributeValues count]];
+                    for (AWSDynamoDBAttributeValue* enumeratedValue in collectionAttributeValues) {
+                        NSDictionary* condition = @{ singleAttributeName : singleAttributeValue,
+                                                     collectionAttributeName : enumeratedValue };
+                        [results addObject:condition];
+                    }
+
+                    *explodedConditions = results;
+                }
+
+            }
+
+        }
+    }
+    return canBatchGet;
 }
 
 @end

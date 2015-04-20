@@ -25,6 +25,8 @@ typedef enum : NSUInteger {
 -(BOOL)operatorSupported:(NSPDynamoStoreExpressionOperator)elementOperator;
 
 -(BOOL)canQueryForKeyPair:(NSPDynamoStoreKeyPair*)keyPair;
+-(BOOL)canGetForKeyPair:(NSPDynamoStoreKeyPair*)keyPair;
+-(BOOL)canBatchGetForKeyPair:(NSPDynamoStoreKeyPair *)keyPair explodedConditions:(NSArray* __autoreleasing *)explodedConditions;
 
 @end
 
