@@ -158,13 +158,13 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
 {
     if (!(comparisionPredicate.leftExpression.expressionType == NSKeyPathExpressionType &&
           comparisionPredicate.rightExpression.expressionType == NSConstantValueExpressionType)) {
-        NSAssert(NO, @"NSPDynamoStore: only key - constant type predicates are supported");
+        NSAssert(NO, @"NSPDynamoStore: only key - constant type predicates are supported for predicate: %@", comparisionPredicate);
         return;
     }
 
     if ((comparisionPredicate.options & NSCaseInsensitivePredicateOption) ||
         (comparisionPredicate.options & NSDiacriticInsensitivePredicateOption)) {
-        NSAssert(NO, @"NSPDynamoStore: case insesitive search is not supported");
+        NSAssert(NO, @"NSPDynamoStore: case insesitive search is not supported for predicate: %@", comparisionPredicate);
         return;
     }
 
