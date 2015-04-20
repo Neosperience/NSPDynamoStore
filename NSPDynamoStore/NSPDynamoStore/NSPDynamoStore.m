@@ -167,10 +167,10 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         NSString* attributeKeyPath = fetchRequestVariableKeyPathMap[key];
         id attributeKeyPathValue = [nativeAttributes valueForKeyPath:attributeKeyPath];
 
-        // TODO: this should be a runtime error, not an assert
-        NSAssert(attributeKeyPathValue, @"NSPDynamoStore: Can not evaluate key path in source object for relationship fetch request template. \n"
-                                        "\trelationship: %@.%@\n\tfetch request template: %@\n\tkey path: %@\n\tsource object: %@",
-                                        relationship.entity.name, relationship.name, fetchRequestTemplateName, attributeKeyPath, nativeAttributes);
+        if (!attributeKeyPathValue) {
+            // no relationship value for this object
+            return nil;
+        }
 
         [substitutionDictionary setValue:attributeKeyPathValue forKey:key];
     }
@@ -188,6 +188,9 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
     // Check if we can use batch get. If yes, then we have all info for recostructing the managed object IDs without a fetch.
     if ([expression canBatchGetForKeyPair:primaryKeys explodedConditions:&explodedDynamoConditions]) {
+
+        NSLog(@"Creating RELATIONSHIP from without network request of entity: %@ for predicate: %@",
+              fetchRequest.entityName, fetchRequest.predicate);
 
         NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[explodedDynamoConditions count]];
         for (NSDictionary* keyConditions in explodedDynamoConditions) {

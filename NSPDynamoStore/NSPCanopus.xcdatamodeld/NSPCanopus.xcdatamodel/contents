@@ -1,5 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D131" minimumToolsVersion="Xcode 4.3" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Application" representedClassName="NSPModelApplication" syncable="YES">
+        <attribute name="applicationId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="appOwnerInfo" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentsLastModified" optional="YES" attributeType="Date" valueTransformerName="NSPTimestampValueTransformer" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoValueTransformerName" value="NSPTimestampValueTransformer"/>
+            </userInfo>
+        </attribute>
+        <attribute name="generalInfo" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="lastModified" optional="YES" attributeType="Date" valueTransformerName="NSPTimestampValueTransformer" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoValueTransformerName" value="NSPTimestampValueTransformer"/>
+            </userInfo>
+        </attribute>
+        <attribute name="locales" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="organizationId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
+        <attribute name="tagIdForHome" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="tagIdForItinerary" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="homeTag" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="appHomeTag"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,HOME_TAG_ID=tagIdForHome"/>
+            </userInfo>
+        </relationship>
+        <relationship name="itineraryTag" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="appItineraryTag"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,ITINERARY_TAG_ID=tagIdForItinerary"/>
+            </userInfo>
+        </relationship>
+        <userInfo>
+            <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;]"/>
+            <entry key="NSPDynamoTableName" value="canopus-apps4clients"/>
+        </userInfo>
+    </entity>
     <entity name="Content" representedClassName="NSPModelContent" syncable="YES">
         <attribute name="contentId" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="elements" optional="YES" attributeType="Transformable" syncable="YES"/>
@@ -65,6 +102,29 @@
             <entry key="NSPDynamoTableName" value="nsp-items4clients"/>
         </userInfo>
     </entity>
+    <entity name="Node" representedClassName="NSPModelNode" syncable="YES">
+        <attribute name="fatherId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="itemId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="nodeId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="position" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <relationship name="father" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Node" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="nodeFatherNode"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,FATHER_NODE_ID=fatherId"/>
+            </userInfo>
+        </relationship>
+        <relationship name="item" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Item" syncable="YES">
+            <userInfo>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="nodeItem"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,ITEM_ID=itemId"/>
+            </userInfo>
+        </relationship>
+        <userInfo>
+            <entry key="NSPDynamoPrimaryKeys" value="[&quot;ownerId&quot;,&quot;nodeId&quot;]"/>
+            <entry key="NSPDynamoTableName" value="canopus-nodes4clients"/>
+        </userInfo>
+    </entity>
     <entity name="Tag" representedClassName="NSPModelTag" syncable="YES">
         <attribute name="code" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="descriptions" optional="YES" attributeType="Transformable" syncable="YES"/>
@@ -88,11 +148,17 @@
             <entry key="NSPDynamoTableName" value="canopus-tags4clients"/>
         </userInfo>
     </entity>
+    <fetchRequest name="appHomeTag" entity="Tag" predicateString="ownerId == $OWNER_ID AND tagId IN $HOME_TAG_ID"/>
+    <fetchRequest name="appItineraryTag" entity="Tag" predicateString="ownerId == $OWNER_ID AND tagId IN $ITINERARY_TAG_ID"/>
     <fetchRequest name="itemContent" entity="Content" predicateString="id BEGINSWITH $CONTENT_ID AND ownerId == $OWNER_ID" resultType="1"/>
     <fetchRequest name="itemTags" entity="Tag" predicateString="ownerId == $OWNER_ID AND tagId IN $TAG_IDS"/>
+    <fetchRequest name="nodeFatherNode" entity="Node" predicateString="ownerId == $OWNER_ID AND nodeId == $FATHER_NODE_ID"/>
+    <fetchRequest name="nodeItem" entity="Item" predicateString="ownerId == $OWNER_ID AND itemId == $ITEM_ID"/>
     <elements>
         <element name="Content" positionX="-36" positionY="9" width="128" height="180"/>
         <element name="Item" positionX="-63" positionY="-18" width="128" height="30"/>
         <element name="Tag" positionX="-54" positionY="-9" width="128" height="135"/>
+        <element name="Application" positionX="-36" positionY="144" width="128" height="240"/>
+        <element name="Node" positionX="-27" positionY="153" width="128" height="30"/>
     </elements>
 </model>
