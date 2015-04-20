@@ -14,6 +14,7 @@
 #import "NSManagedObjectModel+NSPUtils.h"
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
+#import "NSPDynamoSyncManager.h"
 
 #import "NSPModel.h"
 
@@ -33,6 +34,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 @interface AppDelegate ()
 
+@property (nonatomic, strong) NSPDynamoSyncManager* syncManager;
 
 @end
 
@@ -44,12 +46,24 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-    [self canopusTest];
+    self.syncManager = [[NSPDynamoSyncManager alloc] initWithManagedObjectModel:self.managedObjectModel
+                                                                    dynamoDBKey:kDynamoDBKey
+                                                            destinationStoreURL:[self cacheURL]
+                                                           destinationStoreType:NSSQLiteStoreType
+                                                       destionationStoreOptions:nil];
 
-//    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-//    dispatch_async(lowQueue, ^{
-//        [self migrate];
-//    });
+    [[self.syncManager synchronizeWithProgressBlock:^(float progress) {
+        NSLog(@"SYNC progress: %@", @(progress));
+    }] continueWithBlock:^id(BFTask *task) {
+        if (task.error) {
+            NSLog(@"Synchronization error: %@", task.error);
+        } else {
+            NSLog(@"Synchronization success");
+        }
+        return nil;
+    }];
+
+//    [self canopusTest];
 
     return YES;
 }
@@ -96,6 +110,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 - (void)canopusTest
 {
+
     NSEntityDescription* itemEntity = [self.managedObjectModel entityForManagedObjectClass:[NSPModelItem class]];
     NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:itemEntity.name];
 
@@ -133,6 +148,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
             }
         }
     }];
+
 }
 
 - (void)exampleTest
@@ -200,11 +216,6 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     //        }
     //
     //    }];
-    
-    dispatch_queue_t lowQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-    dispatch_async(lowQueue, ^{
-        [self migrate];
-    });
 }
 
 #pragma mark - Core Data stack
@@ -241,11 +252,11 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
 
-    NSString* storeType = NSPDynamoStoreType;
-    NSURL* storeURL = nil;
+//    NSString* storeType = NSPDynamoStoreType;
+//    NSURL* storeURL = nil;
 
-//    NSString* storeType = NSSQLiteStoreType;
-//    NSURL* storeURL = [self cacheURL];
+    NSString* storeType = NSSQLiteStoreType;
+    NSURL* storeURL = [self cacheURL];
 
     if (![_persistentStoreCoordinator addPersistentStoreWithType:storeType
                                                    configuration:nil
@@ -289,47 +300,6 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"canopus.sqlite"];
     NSLog(@"cache URL: %@", cacheURL);
     return cacheURL;
-}
-
--(NSMappingModel*)syncMapping
-{
-    NSError* error = nil;
-    NSMappingModel* model = [NSMappingModel inferredMappingModelForSourceModel:[self managedObjectModel]
-                                                              destinationModel:[self managedObjectModel]
-                                                                         error:&error];
-
-    if (error) {
-        NSLog(@"Error creating mapping model: %@", error);
-        return nil;
-    }
-
-    for (NSEntityMapping* entityMapping in model.entityMappings) {
-        [entityMapping setEntityMigrationPolicyClassName:NSStringFromClass([NSPDynamoSyncEntityMigrationPolicy class])];
-    }
-
-    return model;
-}
-
--(void)migrate
-{
-    NSMigrationManager* migrationManager = [[NSMigrationManager alloc] initWithSourceModel:[self managedObjectModel]
-                                                                          destinationModel:[self managedObjectModel]];
-    NSError* error = nil;
-
-    NSMappingModel* model = [self syncMapping];
-    if (!model) return;
-
-    [migrationManager migrateStoreFromURL:nil
-                                     type:NSPDynamoStoreType
-                                  options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
-                         withMappingModel:model
-                         toDestinationURL:[self cacheURL]
-                          destinationType:NSSQLiteStoreType
-                       destinationOptions:nil
-                                    error:&error];
-    if (error) {
-        NSLog(@"migration error: %@", error);
-    }
 }
 
 #pragma mark - Core Data Saving support
