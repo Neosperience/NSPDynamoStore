@@ -180,23 +180,44 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
     fetchRequest.resultType = NSManagedObjectIDResultType;
 
-    NSError* fetchError = nil;
-    NSArray* fetchResult = [context executeFetchRequest:fetchRequest error:&fetchError];
-    id result = nil;
+    NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
+    NSPDynamoStoreKeyPair* primaryKeys = [fetchRequest.entity nsp_primaryKeys];
+    NSArray* explodedDynamoConditions = nil;
 
-    if (fetchError) {
-        if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
-        return nil;
+    NSArray* results = nil;
+
+    // Check if we can use batch get. If yes, then we have all info for recostructing the managed object IDs without a fetch.
+    if ([expression canBatchGetForKeyPair:primaryKeys explodedConditions:&explodedDynamoConditions]) {
+
+        NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[explodedDynamoConditions count]];
+        for (NSDictionary* keyConditions in explodedDynamoConditions) {
+            NSManagedObjectID* relatedObjectID = [self objectIDForNewObjectOfEntity:fetchRequest.entity dynamoAttributes:keyConditions putToCache:NO];
+            [mutableResults addObject:relatedObjectID];
+        }
+        results = mutableResults;
+
+    } else {
+
+        NSError* fetchError = nil;
+        results = [context executeFetchRequest:fetchRequest error:&fetchError];
+
+        if (fetchError) {
+            if (error) *error = [NSPDynamoStoreErrors fetchErrorWithUnderlyingError:fetchError];
+            return nil;
+        }
+
     }
+
+    id result = nil;
 
     if (!relationship.isToMany) {
 
         // TODO: this should be a runtime error, not an assert
-        NSAssert([fetchResult count] <= 1, @"NSPDynamoStore: fetch request %@ for to-one relationship %@.%@ returned more then one result "
+        NSAssert([results count] <= 1, @"NSPDynamoStore: fetch request %@ for to-one relationship %@.%@ returned more then one result "
                  "for objectId: %@", fetchRequestTemplateName, relationship.entity.name, relationship.name, objectID);
-        result = [fetchResult lastObject];
+        result = [results lastObject];
     } else {
-        result = [fetchResult count] > 0 ? fetchResult : nil;
+        result = [results count] > 0 ? results : nil;
     }
 
     return result;
@@ -355,7 +376,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         }
 
         for (NSDictionary* dynamoAttributes in items) {
-            NSManagedObjectID* objectId = [self objectIdForNewObjectOfEntity:fetchRequest.entity
+            NSManagedObjectID* objectId = [self objectIDForNewObjectOfEntity:fetchRequest.entity
                                                             dynamoAttributes:dynamoAttributes
                                                                   putToCache:fetchRequest.includesPropertyValues];
             if (fetchRequest.resultType == NSManagedObjectResultType) {
@@ -396,7 +417,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     return transformedValues;
 }
 
--(NSManagedObjectID*)objectIdForNewObjectOfEntity:(NSEntityDescription*)entity
+-(NSManagedObjectID*)objectIDForNewObjectOfEntity:(NSEntityDescription*)entity
                                  dynamoAttributes:(NSDictionary*)dynamoAttributes
                                        putToCache:(BOOL)putToCache
 {
