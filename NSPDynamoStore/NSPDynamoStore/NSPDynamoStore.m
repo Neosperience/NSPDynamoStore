@@ -163,20 +163,26 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSDictionary* fetchRequestVariableKeyPathMap = [relationship nsp_fetchRequestVariableKeyPathMap];
 
     NSMutableDictionary* substitutionDictionary = [NSMutableDictionary dictionaryWithCapacity:[fetchRequestVariableKeyPathMap count]];
-    for (NSString* key in [fetchRequestVariableKeyPathMap allKeys]) {
-        NSString* attributeKeyPath = fetchRequestVariableKeyPathMap[key];
-        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:attributeKeyPath];
 
+    __block BOOL incompleteRequest = NO;
+    [fetchRequestVariableKeyPathMap enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSString* attributeKeyPath, BOOL *stop) {
+        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:attributeKeyPath];
         if (!attributeKeyPathValue) {
             // no relationship value for this object
-            return nil;
+            incompleteRequest = YES;
+            *stop = YES;
+            return;
         }
-
         [substitutionDictionary setValue:attributeKeyPathValue forKey:key];
+    }];
+
+    if (incompleteRequest) {
+        return nil;
     }
 
-    NSFetchRequest* fetchRequest = [[relationship.entity.managedObjectModel fetchRequestFromTemplateWithName:fetchRequestTemplateName
-                                                                                       substitutionVariables:substitutionDictionary] copy];
+    NSManagedObjectModel* model = relationship.entity.managedObjectModel;
+    NSFetchRequest* fetchRequest = [[model fetchRequestFromTemplateWithName:fetchRequestTemplateName
+                                                      substitutionVariables:substitutionDictionary] copy];
 
     fetchRequest.resultType = NSManagedObjectIDResultType;
 
@@ -194,7 +200,9 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
         NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[explodedDynamoConditions count]];
         for (NSDictionary* keyConditions in explodedDynamoConditions) {
-            NSManagedObjectID* relatedObjectID = [self objectIDForNewObjectOfEntity:fetchRequest.entity dynamoAttributes:keyConditions putToCache:NO];
+            NSManagedObjectID* relatedObjectID = [self objectIDForNewObjectOfEntity:fetchRequest.entity
+                                                                   dynamoAttributes:keyConditions
+                                                                         putToCache:NO];
             [mutableResults addObject:relatedObjectID];
         }
         results = mutableResults;

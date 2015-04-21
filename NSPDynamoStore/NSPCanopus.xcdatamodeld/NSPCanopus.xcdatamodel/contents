@@ -23,13 +23,13 @@
         <relationship name="homeTag" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="appHomeTag"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,HOME_TAG_ID=tagIdForHome"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;OWNER_ID&quot;:&quot;ownerId&quot;,&quot;HOME_TAG_ID&quot;:&quot;tagIdForHome&quot;}"/>
             </userInfo>
         </relationship>
         <relationship name="itineraryTag" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="appItineraryTag"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,ITINERARY_TAG_ID=tagIdForItinerary"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;OWNER_ID&quot;:&quot;ownerId&quot;,&quot;ITINERARY_TAG_ID&quot;:&quot;tagIdForItinerary&quot;}"/>
             </userInfo>
         </relationship>
         <userInfo>
@@ -87,13 +87,13 @@
         <relationship name="content" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Content" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="itemContent"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="CONTENT_ID=contentId,OWNER_ID=ownerId"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;CONTENT_ID&quot;:&quot;contentId&quot;,&quot;OWNER_ID&quot;:&quot;ownerId&quot;}"/>
             </userInfo>
         </relationship>
         <relationship name="tags" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tag" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="itemTags"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,TAG_IDS=tagIds"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;OWNER_ID&quot;:&quot;ownerId&quot;,&quot;TAG_IDS&quot;:&quot;tagIds&quot;}"/>
             </userInfo>
         </relationship>
         <userInfo>
@@ -111,13 +111,13 @@
         <relationship name="father" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Node" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="nodeFatherNode"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,FATHER_NODE_ID=fatherId"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;OWNER_ID&quot;:&quot;ownerId&quot;,&quot;FATHER_NODE_ID&quot;:&quot;fatherId&quot;}"/>
             </userInfo>
         </relationship>
         <relationship name="item" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Item" syncable="YES">
             <userInfo>
                 <entry key="NSPDynamoRelationshipFetchRequest" value="nodeItem"/>
-                <entry key="NSPDynamoRelationshipVariableMap" value="OWNER_ID=ownerId,ITEM_ID=itemId"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;OWNER_ID&quot;:&quot;ownerId&quot;,&quot;ITEM_ID&quot;:&quot;itemId&quot;}"/>
             </userInfo>
         </relationship>
         <userInfo>
@@ -156,9 +156,9 @@
     <fetchRequest name="nodeItem" entity="Item" predicateString="ownerId == $OWNER_ID AND itemId == $ITEM_ID"/>
     <elements>
         <element name="Content" positionX="-36" positionY="9" width="128" height="180"/>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="30"/>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="345"/>
         <element name="Tag" positionX="-54" positionY="-9" width="128" height="135"/>
         <element name="Application" positionX="-36" positionY="144" width="128" height="240"/>
-        <element name="Node" positionX="-27" positionY="153" width="128" height="30"/>
+        <element name="Node" positionX="-27" positionY="153" width="128" height="150"/>
     </elements>
 </model>

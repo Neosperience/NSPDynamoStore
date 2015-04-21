@@ -11,6 +11,10 @@
 NSString* const kNSPDynamoRelationshipFetchRequestKey = @"NSPDynamoRelationshipFetchRequest";
 NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVariableMap";
 
+NSString* const kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage =
+    @"NSPDynamoStore: fetch request variable key path must be in the following format: "
+    "{ TEMPLATE_VAR1 : sourceObjectKeyPath1, TEMPLATE_VAR2 : sourceObjectKeyPath2 }";
+
 @implementation NSRelationshipDescription (NSPDynamoStore)
 
 -(NSString*)nsp_fetchRequestTemplateName
@@ -23,16 +27,21 @@ NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVa
 
 -(NSDictionary*)nsp_fetchRequestVariableKeyPathMap
 {
-    NSString* namesAsString = self.userInfo[kNSPDynamoRelationshipVariableMapKey];
-    NSArray* mapElements = [namesAsString componentsSeparatedByString:@","];
-    NSMutableDictionary* map = [NSMutableDictionary dictionaryWithCapacity:[mapElements count]];
-    for (NSString* mapElement in mapElements) {
-        NSArray* keyAndValue = [mapElement componentsSeparatedByString:@"="];
-        NSAssert([keyAndValue count] == 2, @"NSPDynamoStore: Invalid value in userInfo of relationship '%@.%@' for key %@: %@ "
-                 "(expected a map in fetchRequestVariable1=sourceObjectKeyPath1,fetchRequestVariable2=sourceObjectKeyPath2 format)",
-                 self.entity.name, self.name, kNSPDynamoRelationshipVariableMapKey, namesAsString);
-        map[keyAndValue[0]] = keyAndValue[1];
-    }
+    NSString* mapString = self.userInfo[kNSPDynamoRelationshipVariableMapKey];
+
+    NSData* mapData = [mapString dataUsingEncoding:NSUTF8StringEncoding];
+    NSError* jsonReadError = nil;
+    NSDictionary* map = [NSJSONSerialization JSONObjectWithData:mapData options:0 error:&jsonReadError];
+    NSAssert(!jsonReadError, @"NSPDynamoStore: Error parsing fetch request variable key path map JSON in user info. Value: %@, error: %@",
+             mapString, jsonReadError);
+    NSAssert([map isKindOfClass:[NSDictionary class]],
+             kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage);
+
+    [map enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSString* value, BOOL *stop) {
+        NSAssert([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]],
+                 kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage);
+    }];
+
     return map;
 }
 
