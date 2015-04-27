@@ -10,6 +10,7 @@
 
 #import "NSObject+NSPTypeCheck.h"
 #import "NSArray+NSPCollectionUtils.h"
+#import "NSDictionary+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
@@ -162,18 +163,14 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     NSString* fetchRequestTemplateName = [relationship nsp_fetchRequestTemplateName];
     NSDictionary* fetchRequestVariableKeyPathMap = [relationship nsp_fetchRequestVariableKeyPathMap];
 
-    NSMutableDictionary* substitutionDictionary = [NSMutableDictionary dictionaryWithCapacity:[fetchRequestVariableKeyPathMap count]];
-
     __block BOOL incompleteRequest = NO;
-    [fetchRequestVariableKeyPathMap enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSString* attributeKeyPath, BOOL *stop) {
-        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:attributeKeyPath];
+    NSDictionary* substitutionDictionary = [fetchRequestVariableKeyPathMap map:^id(id key, id value) {
+        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:value];
         if (!attributeKeyPathValue) {
             // no relationship value for this object
             incompleteRequest = YES;
-            *stop = YES;
-            return;
         }
-        [substitutionDictionary setValue:attributeKeyPathValue forKey:key];
+        return attributeKeyPathValue;
     }];
 
     if (incompleteRequest) {
@@ -198,14 +195,11 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         NSLog(@"Creating RELATIONSHIP from without network request of entity: %@ for predicate: %@",
               fetchRequest.entityName, fetchRequest.predicate);
 
-        NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[explodedDynamoConditions count]];
-        for (NSDictionary* keyConditions in explodedDynamoConditions) {
-            NSManagedObjectID* relatedObjectID = [self objectIDForNewObjectOfEntity:fetchRequest.entity
-                                                                   dynamoAttributes:keyConditions
-                                                                         putToCache:NO];
-            [mutableResults addObject:relatedObjectID];
-        }
-        results = mutableResults;
+        results = [explodedDynamoConditions map:^id(NSDictionary* item) {
+            return [self objectIDForNewObjectOfEntity:fetchRequest.entity
+                                     dynamoAttributes:item
+                                           putToCache:NO];
+        }];
 
     } else {
 
@@ -347,8 +341,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                    withContext:(NSManagedObjectContext *)context
                          error:(NSError *__autoreleasing *)error
 {
-    NSMutableArray* results = [NSMutableArray array];
-
     BFTask* task = nil;
 
     AWSDynamoDBBatchGetItemInput* batchGetInput = [self batchGetInputForFetchRequest:fetchRequest];
@@ -369,6 +361,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     }
 
     __block NSError* fetchError = nil;
+    NSMutableArray* results = [NSMutableArray array];
 
     [[task continueWithBlock:^id(BFTask *task) {
 
@@ -416,16 +409,11 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 -(NSDictionary*)nativeAttributeValuesFromDynamoAttributeValues:(NSDictionary*)dynamoAttributes ofEntity:(NSEntityDescription*)entity
 {
-    NSMutableDictionary* transformedValues = [NSMutableDictionary dictionaryWithCapacity:[dynamoAttributes count]];
-
-    [entity.attributesByName enumerateKeysAndObjectsUsingBlock:^(NSString* attributeName, NSAttributeDescription* attribute, BOOL *stop) {
+    return [entity.attributesByName map:^id(NSString* attributeName, NSAttributeDescription* attribute) {
         NSString* dynamoAttributeName = [attribute nsp_dynamoName];
         AWSDynamoDBAttributeValue* dynamoAttributeValue = dynamoAttributes[dynamoAttributeName];
-        id nativeAttributeValue = [self nativeAttributeValueFromDynamoAttributeValue:dynamoAttributeValue ofAttribute:attribute];
-        [transformedValues setValue:nativeAttributeValue forKey:attribute.name];
+        return [self nativeAttributeValueFromDynamoAttributeValue:dynamoAttributeValue ofAttribute:attribute];
     }];
-
-    return transformedValues;
 }
 
 -(NSManagedObjectID*)objectIDForNewObjectOfEntity:(NSEntityDescription*)entity
@@ -481,7 +469,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     } else {
         NSAssert([pkRangeKeyAttribute nsp_isStringType] || [pkRangeKeyAttribute nsp_isNumberType],
                  @"NSPDynamoStore: primary range key attribute must be string or number type");
-        NSParameterAssert([pk isKindOfClass:[NSString class]]);
+        [NSString typeCheck:pk];
         NSArray* pkComponents = [pk componentsSeparatedByString:NSPDynamoStoreKeySeparator];
         NSParameterAssert([pkComponents count] == 2);
 
@@ -496,14 +484,11 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
 -(NSDictionary*)dynamoPrimaryKeyValuesFromObjectID:(NSManagedObjectID*)objectID
 {
-    NSDictionary* primaryKeys = [self nativePrimaryKeyValuesFromObjectID:objectID];
-    NSMutableDictionary* dynamoKeys = [NSMutableDictionary dictionaryWithCapacity:[primaryKeys count]];
-    [primaryKeys enumerateKeysAndObjectsUsingBlock:^(NSString* keyName, id keyValue, BOOL *stop) {
+    return [[self nativePrimaryKeyValuesFromObjectID:objectID] map:^id(id key, id value) {
         AWSDynamoDBAttributeValue *dynamoValue = [AWSDynamoDBAttributeValue new];
-        [dynamoValue nsp_setAttributeValue:keyValue];
-        dynamoKeys[keyName] = dynamoValue;
+        [dynamoValue nsp_setAttributeValue:value];
+        return dynamoValue;
     }];
-    return dynamoKeys;
 }
 
 @end

@@ -5,6 +5,7 @@ target 'NSPDynamoStore' do
 
 pod 'AWSiOSSDKv2'
 pod 'AWSCognitoSync'
+pod 'NSPCoreUtils', :path => '/Users/Janos/Projects/Work/NSPCoreUtils’
 
 end
 

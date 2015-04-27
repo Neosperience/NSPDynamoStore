@@ -1,6 +1,6 @@
 //
 //  NSObject+NSPTypeCheck.m
-//  NSPDynamoStore
+//  NSPCoreUtils
 //
 //  Created by Janos Tolgyesi on 31/03/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.

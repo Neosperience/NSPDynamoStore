@@ -7,6 +7,8 @@
 //
 
 #import "NSPDynamoStoreKeyPair.h"
+#import "NSDictionary+NSPCollectionUtils.h"
+#import "NSObject+NSPTypeCheck.h"
 
 NSString* const kNSPDynamoStoreIndexDescriptorInvalidFormatMessage =
     @"NSPDynamoStore: indices value must be in the following format: "
@@ -22,10 +24,10 @@ NSString* const kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage =
     self = [self init];
     if (self) {
         NSAssert([array count] == 1 || [array count] == 2, kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage);
-        NSAssert([array[0] isKindOfClass:[NSString class]], kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage);
+        [NSString typeCheck:array[0]];
         self.hashKeyName = array[0];
         if ([array count] == 2) {
-            NSAssert([array[1] isKindOfClass:[NSString class]], kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage);
+            [NSString typeCheck:array[1]];
             self.rangeKeyName = array[1];
         }
     }
@@ -43,7 +45,7 @@ NSString* const kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage =
     NSError* jsonReadError = nil;
     id indicesObject = [NSJSONSerialization JSONObjectWithData:keyPairData options:0 error:&jsonReadError];
     NSAssert(!jsonReadError, @"NSPDynamoStore: Error parsing key pair JSON in user info. Value: %@, error: %@", string, jsonReadError);
-    NSAssert([indicesObject isKindOfClass:[NSArray class]], kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage);
+    [NSArray typeCheck:indicesObject];
     return [self initWithArray:indicesObject];
 }
 
@@ -56,19 +58,15 @@ NSString* const kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage =
 {
     NSData* indicesData = [string dataUsingEncoding:NSUTF8StringEncoding];
     NSError* jsonReadError = nil;
-    id indicesObject = [NSJSONSerialization JSONObjectWithData:indicesData options:0 error:&jsonReadError];
+    NSDictionary* indicesObject = [NSJSONSerialization JSONObjectWithData:indicesData options:0 error:&jsonReadError];
     NSAssert(!jsonReadError, @"NSPDynamoStore: Error parsing indices JSON in user info. Value: %@, error: %@", string, jsonReadError);
-    NSAssert([indicesObject isKindOfClass:[NSDictionary class]], kNSPDynamoStoreIndexDescriptorInvalidFormatMessage);
+    [NSDictionary typeCheck:indicesObject];
 
-    NSMutableDictionary* results = [NSMutableDictionary dictionaryWithCapacity:[indicesObject count]];
-    for (NSString* indexName in [indicesObject allKeys]) {
-        NSAssert([indexName isKindOfClass:[NSString class]], kNSPDynamoStoreIndexDescriptorInvalidFormatMessage);
-        NSArray* keyNames = indicesObject[indexName];
-        NSAssert(([keyNames isKindOfClass:[NSArray class]]), kNSPDynamoStoreIndexDescriptorInvalidFormatMessage);
-        results[indexName] = [self keyPairWithArray:keyNames];
-    }
-
-    return results;
+    return [indicesObject map:^id(id key, id value) {
+        [NSString typeCheck:key];
+        [NSArray typeCheck:value];
+        return [self keyPairWithArray:value];
+    }];
 }
 
 -(NSString *)dynamoProjectionExpression

@@ -7,6 +7,7 @@
 //
 
 #import "NSRelationshipDescription+NSPDynamoStore.h"
+#import "NSObject+NSPTypeCheck.h"
 
 NSString* const kNSPDynamoRelationshipFetchRequestKey = @"NSPDynamoRelationshipFetchRequest";
 NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVariableMap";
@@ -34,12 +35,11 @@ NSString* const kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessag
     NSDictionary* map = [NSJSONSerialization JSONObjectWithData:mapData options:0 error:&jsonReadError];
     NSAssert(!jsonReadError, @"NSPDynamoStore: Error parsing fetch request variable key path map JSON in user info. Value: %@, error: %@",
              mapString, jsonReadError);
-    NSAssert([map isKindOfClass:[NSDictionary class]],
-             kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage);
+    [NSDictionary typeCheck:map];
 
     [map enumerateKeysAndObjectsUsingBlock:^(NSString* key, NSString* value, BOOL *stop) {
-        NSAssert([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]],
-                 kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage);
+        [NSString typeCheck:key];
+        [NSString typeCheck:value];
     }];
 
     return map;
