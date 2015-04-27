@@ -6,12 +6,12 @@ Pod::Spec.new do |s|
 	s.description  = <<-DESC
 						This library allow to use DynamoDB as a backing store for core data contexts, also handling the sync process.
 						DESC
-	s.homepage     = "https:/bitbucket.org/neosperience/nspdynamostore.git"
+	s.homepage     = "https://bitbucket.org/neosperience/nspdynamostore.git"
 	s.license      = { :type => 'MIT', :file => 'LICENSE' }
 	s.author       = { "Janos Tolgyes" => "janos.tolgyesi@neosperience.com" }
 
 	s.platform     = :ios, '6.0'
-	s.source       = { :git => "https:/bitbucket.org/neosperience/nspdynamostore.git", :tag => "0.0.1" }
+	s.source       = { :git => "https://bitbucket.org/neosperience/nspdynamostore.git", :tag => "0.0.1" }
 
 	s.requires_arc = true
 	s.dependency 'NSPCoreUtils'
@@ -23,11 +23,11 @@ Pod::Spec.new do |s|
 	s.subspec 'Main' do |sm|
 		sm.dependency 'NSPDynamoStore/Core'
 		sm.dependency 'NSPDynamoStore/NSPDynamoSync'
-		# sm.public_header_files = '*.h'
 	end
 	
-	#Core
+	#Core - NSPDynamoStore
 	s.subspec 'Core' do |sm|
+		sm.frameworks = 'CoreData'
 		sm.dependency 'AWSiOSSDKv2'
 		sm.dependency 'AWSCognitoSync'
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoStore/**/*.{h,m}'
@@ -35,7 +35,7 @@ Pod::Spec.new do |s|
 		# sm.resources = ["NSPDynamoStore/NSPDynamoStore.xcdatamodeld"]
 	end
 	
-	# NSPCollectionUtils
+	# NSPDynamoSync
 	s.subspec 'NSPDynamoSync' do |sm|
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoSync/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoStore/NSPDynamoSync/**/*.h'
