@@ -1,1 +1,1 @@
-../../../AWSSQS/SQS/AWSSQSService.h
+../../../AWSSQS/AWSSQS/AWSSQSService.h

@@ -1,1 +1,1 @@
-../../../AWSSNS/SNS/AWSSNSService.h
+../../../AWSSNS/AWSSNS/AWSSNSService.h

@@ -1,1 +1,1 @@
-../../../AWSKinesis/Kinesis/AWSKinesisService.h
+../../../AWSKinesis/AWSKinesis/AWSKinesisService.h

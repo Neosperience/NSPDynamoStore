@@ -1,1 +1,1 @@
-../../../AWSSimpleDB/SimpleDB/AWSSimpleDBModel.h
+../../../AWSSimpleDB/AWSSimpleDB/AWSSimpleDBModel.h

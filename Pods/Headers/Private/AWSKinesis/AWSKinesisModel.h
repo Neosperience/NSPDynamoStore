@@ -1,1 +1,1 @@
-../../../AWSKinesis/Kinesis/AWSKinesisModel.h
+../../../AWSKinesis/AWSKinesis/AWSKinesisModel.h

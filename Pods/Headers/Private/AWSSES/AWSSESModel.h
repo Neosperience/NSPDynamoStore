@@ -1,1 +1,1 @@
-../../../AWSSES/SES/AWSSESModel.h
+../../../AWSSES/AWSSES/AWSSESModel.h

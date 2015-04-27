@@ -1,0 +1,55 @@
+{
+  "name": "NSPCoreUtils",
+  "version": "0.0.1",
+  "summary": "NSPCoreUtils - Core utils",
+  "description": "\tThis library holds same basic utilities built on core Cocoa and other frameworks.\n",
+  "homepage": "https://bitbucket.org/neosperience/nspcoreutils-ios",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Janos Tolgyes": "janos.tolgyesi@neosperience.com"
+  },
+  "platforms": {
+    "ios": "6.0"
+  },
+  "source": {
+    "git": "https://bitbucket.org/neosperience/nspcoreutils-ios.git",
+    "tag": "0.0.1"
+  },
+  "requires_arc": true,
+  "default_subspecs": "Core",
+  "subspecs": [
+    {
+      "name": "Core",
+      "source_files": "*.h",
+      "dependencies": {
+        "NSPCoreUtils/NSPCollectionUtils": [
+
+        ],
+        "NSPCoreUtils/NSPDataUtils": [
+
+        ],
+        "NSPCoreUtils/NSPTypeCheck": [
+
+        ]
+      }
+    },
+    {
+      "name": "NSPCollectionUtils",
+      "source_files": "NSPCollectionUtils/**/*.{h,m}",
+      "public_header_files": "NSPCollectionUtils/**/*.h"
+    },
+    {
+      "name": "NSPDataUtils",
+      "source_files": "NSPDataUtils/**/*.{h,m}",
+      "public_header_files": "NSPDataUtils/**/*.h"
+    },
+    {
+      "name": "NSPTypeCheck",
+      "source_files": "NSPTypeCheck/**/*.{h,m}",
+      "public_header_files": "NSPTypeCheck/**/*.h"
+    }
+  ]
+}

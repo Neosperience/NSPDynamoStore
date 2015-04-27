@@ -1,1 +1,1 @@
-../../../AWSKinesis/Kinesis/AWSKinesis.h
+../../../AWSKinesis/AWSKinesis/AWSKinesis.h

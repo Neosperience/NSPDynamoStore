@@ -1,1 +1,1 @@
-../../../AWSKinesis/Kinesis/AWSKinesisRecorder.h
+../../../AWSKinesis/AWSKinesis/AWSKinesisRecorder.h

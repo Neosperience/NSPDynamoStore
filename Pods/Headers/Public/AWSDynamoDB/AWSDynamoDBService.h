@@ -1,1 +1,1 @@
-../../../AWSDynamoDB/DynamoDB/AWSDynamoDBService.h
+../../../AWSDynamoDB/AWSDynamoDB/AWSDynamoDBService.h
