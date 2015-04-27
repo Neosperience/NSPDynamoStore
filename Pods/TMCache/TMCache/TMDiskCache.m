@@ -8,7 +8,7 @@
                                     [[NSString stringWithUTF8String:__FILE__] lastPathComponent], \
                                     __LINE__, [error localizedDescription]); }
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_4_0
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_4_0 && defined(__clang) && defined(__has_feature) && !__has_feature(attribute_availability_app_extension)
     #define TMCacheStartBackgroundTask() UIBackgroundTaskIdentifier taskID = UIBackgroundTaskInvalid; \
             taskID = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{ \
             [[UIApplication sharedApplication] endBackgroundTask:taskID]; }];
@@ -491,6 +491,12 @@ NSString * const TMDiskCacheSharedName = @"TMDiskCacheShared";
 
             NSNumber *diskFileSize = [values objectForKey:NSURLTotalFileAllocatedSizeKey];
             if (diskFileSize) {
+                NSNumber *oldEntry = [strongSelf->_sizes objectForKey:key];
+                
+                if ([oldEntry isKindOfClass:[NSNumber class]]){
+                    strongSelf.byteCount = strongSelf->_byteCount - [oldEntry unsignedIntegerValue];
+                }
+                
                 [strongSelf->_sizes setObject:diskFileSize forKey:key];
                 strongSelf.byteCount = strongSelf->_byteCount + [diskFileSize unsignedIntegerValue]; // atomic
             }

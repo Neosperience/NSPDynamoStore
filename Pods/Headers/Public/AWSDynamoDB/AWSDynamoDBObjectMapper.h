@@ -1,1 +1,1 @@
-../../../AWSDynamoDB/DynamoDB/AWSDynamoDBObjectMapper.h
+../../../AWSDynamoDB/AWSDynamoDB/AWSDynamoDBObjectMapper.h

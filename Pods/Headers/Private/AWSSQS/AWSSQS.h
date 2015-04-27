@@ -1,1 +1,1 @@
-../../../AWSSQS/SQS/AWSSQS.h
+../../../AWSSQS/AWSSQS/AWSSQS.h

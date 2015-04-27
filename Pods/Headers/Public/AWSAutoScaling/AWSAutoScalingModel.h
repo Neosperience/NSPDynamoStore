@@ -1,1 +1,1 @@
-../../../AWSAutoScaling/AutoScaling/AWSAutoScalingModel.h
+../../../AWSAutoScaling/AWSAutoScaling/AWSAutoScalingModel.h

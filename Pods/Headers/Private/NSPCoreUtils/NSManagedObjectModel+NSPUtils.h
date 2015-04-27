@@ -1,0 +1,1 @@
+../../../NSPCoreUtils/NSPDataUtils/NSManagedObjectModel+NSPUtils.h

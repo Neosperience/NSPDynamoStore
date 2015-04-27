@@ -7,8 +7,7 @@
 //
 
 #import <CoreData/CoreData.h>
-
-#import "NSPDefines.h"
+#import <NSPCoreUtils.h>
 
 NSP_EXTERN NSString* const NSPDynamoStoreType;
 NSP_EXTERN NSString* const NSPDynamoStoreDynamoDBKey;

@@ -1,1 +1,1 @@
-../../../AWSSQS/SQS/AWSSQSModel.h
+../../../AWSSQS/AWSSQS/AWSSQSModel.h

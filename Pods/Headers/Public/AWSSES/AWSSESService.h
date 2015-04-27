@@ -1,1 +1,1 @@
-../../../AWSSES/SES/AWSSESService.h
+../../../AWSSES/AWSSES/AWSSESService.h

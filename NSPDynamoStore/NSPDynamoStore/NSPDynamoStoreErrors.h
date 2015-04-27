@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
-#import "NSPDefines.h"
+#import <NSPCoreUtils.h>
 
 #import <Foundation/Foundation.h>
 
