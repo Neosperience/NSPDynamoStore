@@ -299,13 +299,9 @@ AWSDynamoDBComparisonOperator NSPAWSOperatorFromNSOperator(NSPredicateOperatorTy
         NSArray* collectionAttributeValues = self.condition.attributeValueList;
         NSString* collectionAttributeName = self.key;
 
-        NSMutableArray* results = [NSMutableArray arrayWithCapacity:[collectionAttributeValues count]];
-        for (AWSDynamoDBAttributeValue* enumeratedValue in collectionAttributeValues) {
-            NSDictionary* condition = @{ collectionAttributeName : enumeratedValue };
-            [results addObject:condition];
-        }
-
-        *explodedConditions = results;
+        *explodedConditions = [collectionAttributeValues map:^id(id item) {
+            return @{ collectionAttributeName : item };
+        }];
     }
 
     return canBatchGet;

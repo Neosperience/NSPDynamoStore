@@ -1,6 +1,6 @@
 //
 //  NSArray+NSPCollectionUtils.m
-//  Somebody
+//  NSPCoreUtils
 //
 //  Created by Janos Tolgyesi on 02/01/15.
 //  Copyright (c) 2015 Neoseperience SpA. All rights reserved.
@@ -10,17 +10,35 @@
 
 @implementation NSArray (NSPCollectionUtils)
 
--(NSArray*)map:(id (^)(id))iteratee
+-(NSArray*)mapIncludingNullValues:(BOOL)includeNullValues iteratee:(id (^)(id))iteratee
 {
     NSParameterAssert(iteratee);
     NSMutableArray* result = [NSMutableArray arrayWithCapacity:[self count]];
-    for (id item in self) { [result addObject:(iteratee(item) ? : [NSNull null])]; }
+    for (id item in self) {
+        id mappedItem = iteratee(item);
+        if (mappedItem) {
+            [result addObject:mappedItem];
+        } else if (includeNullValues) {
+            [result addObject:[NSNull null]];
+        }
+    }
     return [result copy];
+
+}
+
+-(NSArray*)map:(id (^)(id))iteratee
+{
+    return [self mapIncludingNullValues:NO iteratee:iteratee];
+}
+
+-(NSArray*)mapIncludingNullValues:(BOOL)includeNullValues withDictionary:(NSDictionary*)map
+{
+    return [self mapIncludingNullValues:includeNullValues iteratee:^id(id item) { return map[item]; }];
 }
 
 -(NSArray*)mapWithDictionary:(NSDictionary*)map
 {
-    return [self map:^id(id item) { return map[item]; }];
+    return [self mapIncludingNullValues:NO withDictionary:map];
 }
 
 -(NSArray*)reduce
