@@ -12,6 +12,7 @@
 
 #import <CoreData/CoreData.h>
 #import <Bolts/Bolts.h>
+#import <NSPCoreUtils/NSPLogger.h>
 
 @interface NSPDynamoSyncManager ()
 
@@ -81,7 +82,7 @@
 
     if (modelError) {
         if (error) *error = modelError;
-        NSLog(@"NSPDynamoSyncManager: Error creating mapping model: %@", modelError);
+        NSPLogError(@"NSPDynamoSyncManager: Error creating mapping model: %@", modelError);
         return;
     }
 

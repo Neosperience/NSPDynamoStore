@@ -116,15 +116,7 @@ PODS:
   - Mantle (1.5.4):
     - Mantle/extobjc (= 1.5.4)
   - Mantle/extobjc (1.5.4)
-  - NSPCoreUtils (0.0.1):
-    - NSPCoreUtils/Core (= 0.0.1)
-  - NSPCoreUtils/Core (0.0.1):
-    - NSPCoreUtils/NSPCollectionUtils
-    - NSPCoreUtils/NSPDataUtils
-    - NSPCoreUtils/NSPTypeCheck
-  - NSPCoreUtils/NSPCollectionUtils (0.0.1)
-  - NSPCoreUtils/NSPDataUtils (0.0.1)
-  - NSPCoreUtils/NSPTypeCheck (0.0.1)
+  - NSPCoreUtils/NSPLogger (0.0.1)
   - Reachability (3.2)
   - TMCache (1.2.4)
   - UICKeyChainStore (2.0.4)
@@ -133,7 +125,7 @@ PODS:
 DEPENDENCIES:
   - AWSCognitoSync
   - AWSiOSSDKv2
-  - NSPCoreUtils
+  - NSPCoreUtils/NSPLogger
 
 SPEC CHECKSUMS:
   AWSAutoScaling: 7dce9232ff39ba7261879ebee44e99e20ae19ddf
@@ -155,10 +147,10 @@ SPEC CHECKSUMS:
   FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   GZIP: f0863fda354e8f83316508c0a2c7bbe385e39129
   Mantle: 60acd0cd363e27d945bda0a6b8e90577112d28f3
-  NSPCoreUtils: c9a7ce72ec691d3a3d29f94f0b560741adfe3230
+  NSPCoreUtils: 1b1f611679d30fe89da32ef95fef3cfe8cd744b6
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   TMCache: a93984b045a5ee84bd8941bd5e0b54296059cc52
   UICKeyChainStore: 69eb0c3a6f669bccf16ba88de3b9069b71501361
   XMLDictionary: f9f51601ba76678b594ab485f2b00ec1fed23724
 
-COCOAPODS: 0.36.3
+COCOAPODS: 0.36.4

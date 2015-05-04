@@ -22,6 +22,7 @@
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
+#import <NSPCoreUtils/NSPLogger.h>
 
 NSString* const NSPDynamoStoreType = @"NSPDynamoStore";
 NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
@@ -192,7 +193,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     // Check if we can use batch get. If yes, then we have all info for recostructing the managed object IDs without a fetch.
     if ([expression canBatchGetForKeyPair:primaryKeys explodedConditions:&explodedDynamoConditions]) {
 
-        NSLog(@"Creating RELATIONSHIP from without network request of entity: %@ for predicate: %@",
+        NSPLogDebug(@"Creating RELATIONSHIP from without network request of entity: %@ for predicate: %@",
               fetchRequest.entityName, fetchRequest.predicate);
 
         results = [explodedDynamoConditions map:^id(NSDictionary* item) {
@@ -262,8 +263,6 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 {
     AWSDynamoDBScanInput *scanInput = [AWSDynamoDBScanInput new];
     [self configureRequest:scanInput withFetchRequest:fetchRequest];
-
-//    NSLog(@"Executing SCAN for fetch request for entity name: %@, predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
 
     if (fetchRequest.predicate) {
         if ([NSStringFromClass([fetchRequest.predicate class]) isEqualToString:@"NSTruePredicate"]) {
@@ -347,16 +346,16 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
     if (batchGetInput) {
         task = [self.dynamoDB batchGetItem:batchGetInput];
-        NSLog(@"Executing BATCH GET of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+        NSPLogDebug(@"Executing BATCH GET of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
     } else {
         AWSDynamoDBQueryInput* queryInput = [self queryInputForFetchRequest:fetchRequest];
         if (queryInput) {
             task = [self.dynamoDB query:queryInput];
-            NSLog(@"Executing QUERY of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+            NSPLogDebug(@"Executing QUERY of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
         } else {
             AWSDynamoDBScanInput* scanInput = [self scanInputForFetchRequest:fetchRequest];
             task = [self.dynamoDB scan:scanInput];
-            NSLog(@"Executing SCAN of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+            NSPLogDebug(@"Executing SCAN of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
         }
     }
 

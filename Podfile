@@ -6,7 +6,7 @@ target 'NSPDynamoStore' do
 
 pod 'AWSiOSSDKv2'
 pod 'AWSCognitoSync'
-pod 'NSPCoreUtils' #, :path => '/Volumes/DataDisk/UserFolders/Documents/Dev/Projects/xcode/Neos/nspcoreutils-ios'
+pod 'NSPCoreUtils/NSPLogger'
 
 end
 

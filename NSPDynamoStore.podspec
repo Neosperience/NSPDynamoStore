@@ -30,13 +30,14 @@ Pod::Spec.new do |s|
 		sm.frameworks = 'CoreData'
 		sm.dependency 'AWSiOSSDKv2'
 		sm.dependency 'AWSCognitoSync'
+		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoStore/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoStore/NSPDynamoStore/**/*.h'
-		# sm.resources = ["NSPDynamoStore/NSPDynamoStore.xcdatamodeld"]
 	end
 	
 	# NSPDynamoSync
 	s.subspec 'NSPDynamoSync' do |sm|
+		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoSync/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoStore/NSPDynamoSync/**/*.h'
 	end
