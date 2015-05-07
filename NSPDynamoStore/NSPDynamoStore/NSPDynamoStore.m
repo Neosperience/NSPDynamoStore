@@ -360,7 +360,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     }
 
     __block NSError* fetchError = nil;
-    NSMutableArray* results = [NSMutableArray array];
+    __block NSArray* results = nil;
 
     [[task continueWithBlock:^id(BFTask *task) {
 
@@ -378,25 +378,32 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             items = [batchGetOutput.responses valueForKey:tableName];
         }
 
+        NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[items count]];
         for (NSDictionary* dynamoAttributes in items) {
             NSManagedObjectID* objectId = [self objectIDForNewObjectOfEntity:fetchRequest.entity
                                                             dynamoAttributes:dynamoAttributes
                                                                   putToCache:fetchRequest.includesPropertyValues];
             if (fetchRequest.resultType == NSManagedObjectResultType) {
-                [results addObject:[context objectWithID:objectId]];
+                [mutableResults addObject:[context objectWithID:objectId]];
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
-                [results addObject:objectId];
+                [mutableResults addObject:objectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
                 NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:fetchRequest.entity];
-                [results addObject:result];
+                [mutableResults addObject:result];
             }
         }
 
+        results = [mutableResults copy];
         return results;
 
     }] waitUntilFinished];
 
-    return results;
+    if (fetchError) {
+        if (error) *error = fetchError;
+        return nil;
+    } else {
+        return results;
+    }
 }
 
 -(id)nativeAttributeValueFromDynamoAttributeValue:(AWSDynamoDBAttributeValue*)dynamoAttributeValue ofAttribute:(NSAttributeDescription*)attribute
