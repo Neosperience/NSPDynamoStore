@@ -12,5 +12,6 @@
 
 -(NSString*)nsp_fetchRequestTemplateName;
 -(NSDictionary*)nsp_fetchRequestVariableKeyPathMap;
+-(BOOL)nsp_isUnmodeledInverseRelationship;
 
 @end

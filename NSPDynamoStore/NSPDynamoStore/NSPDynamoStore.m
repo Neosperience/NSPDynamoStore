@@ -136,10 +136,15 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                                         withContext:(NSManagedObjectContext *)context
                                               error:(NSError *__autoreleasing *)error
 {
+    NSPLogDebug(@"newValuesForObjectWithID: %@(%@)", objectID.entity.name, [self referenceObjectForObjectID:objectID]);
+
     NSDictionary* nativeAttributes = [self.cache objectForKey:objectID];
 
     if (!nativeAttributes) {
+        NSPLogDebug(@"    not found in cache, fetching...");
         nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
+    } else {
+        NSPLogDebug(@"    using values from cache");
     }
 
     if (nativeAttributes) {
@@ -156,9 +161,20 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                  withContext:(NSManagedObjectContext *)context
                        error:(NSError *__autoreleasing *)error
 {
+    NSPLogDebug(@"newValueForRelationship:%@(%@).%@", objectID.entity.name, [self referenceObjectForObjectID:objectID], relationship.name);
+
+    if ([relationship nsp_isUnmodeledInverseRelationship]) {
+        NSPLogDebug(@"    unmodeled inverse relationship, ignoring");
+        if (error) *error = [NSError errorWithDomain:NSPDynamoStoreErrorDomain code:666 userInfo:nil];
+        return nil;
+    }
+
     NSDictionary* nativeAttributes = [self.cache objectForKey:objectID];
     if (!nativeAttributes) {
+        NSPLogDebug(@"    not found in cache, fetching...");
         nativeAttributes = [self fetchNativeAttributesOfObjectWithId:objectID error:error];
+    } else {
+        NSPLogDebug(@"    using source object values from cache");
     }
 
     NSString* fetchRequestTemplateName = [relationship nsp_fetchRequestTemplateName];
@@ -175,6 +191,10 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     }];
 
     if (incompleteRequest) {
+        NSPLogWarning(@"WARNING: incomplete fetch request for relationship %@.%@ -> %@, "
+                      "fetchRequestTemplateName: %@, fetchRequestVariableKeyPathMap: %@, available attributes: %@",
+                      relationship.entity.name, relationship.name, relationship.destinationEntity.name,
+                      fetchRequestTemplateName, fetchRequestVariableKeyPathMap, nativeAttributes);
         return nil;
     }
 
@@ -183,6 +203,8 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                                                       substitutionVariables:substitutionDictionary] copy];
 
     fetchRequest.resultType = NSManagedObjectIDResultType;
+
+    NSPLogDebug(@"    assembled fetch request for relationship: %@", fetchRequest);
 
     NSPDynamoStoreExpression* expression = [NSPDynamoStoreExpression elementWithPredicate:fetchRequest.predicate];
     NSPDynamoStoreKeyPair* primaryKeys = [fetchRequest.entity nsp_primaryKeys];
@@ -193,8 +215,8 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     // Check if we can use batch get. If yes, then we have all info for recostructing the managed object IDs without a fetch.
     if ([expression canBatchGetForKeyPair:primaryKeys explodedConditions:&explodedDynamoConditions]) {
 
-        NSPLogDebug(@"Creating RELATIONSHIP from without network request of entity: %@ for predicate: %@",
-              fetchRequest.entityName, fetchRequest.predicate);
+        NSPLogDebug(@"Creating RELATIONSHIP %@.%@ -> %@ without network request for predicate: %@",
+              objectID.entity.name, relationship.name, fetchRequest.entityName, fetchRequest.predicate);
 
         results = [explodedDynamoConditions map:^id(NSDictionary* item) {
             return [self objectIDForNewObjectOfEntity:fetchRequest.entity
@@ -212,6 +234,11 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
             return nil;
         }
 
+    }
+
+    NSPLogDebug(@"    RELATIONSHIP target objectIDs:");
+    for (NSManagedObjectID* objectID in results) {
+        NSPLogDebug(@"    %@(%@)", objectID.entity.name, [self referenceObjectForObjectID:objectID]);
     }
 
     id result = nil;

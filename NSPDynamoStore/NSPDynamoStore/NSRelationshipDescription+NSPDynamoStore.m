@@ -11,6 +11,7 @@
 
 NSString* const kNSPDynamoRelationshipFetchRequestKey = @"NSPDynamoRelationshipFetchRequest";
 NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVariableMap";
+NSString* const kNSPDynamoRelationshipUnmodeledInverseKey = @"NSPDynamoRelationshipUnmodeledInverse";
 
 NSString* const kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessage =
     @"NSPDynamoStore: fetch request variable key path must be in the following format: "
@@ -43,6 +44,11 @@ NSString* const kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessag
     }];
 
     return map;
+}
+
+-(BOOL)nsp_isUnmodeledInverseRelationship
+{
+    return [self.userInfo[kNSPDynamoRelationshipUnmodeledInverseKey] boolValue];
 }
 
 @end

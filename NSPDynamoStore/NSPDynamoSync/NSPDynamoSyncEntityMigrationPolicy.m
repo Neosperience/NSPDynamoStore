@@ -8,7 +8,9 @@
 
 #import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
+#import "NSRelationshipDescription+NSPDynamoStore.h"
 #import "NSPDynamoStoreKeyPair.h"
+#import "NSPDynamoStoreErrors.h"
 
 #import <NSPCoreUtils/NSPLogger.h>
 
@@ -67,7 +69,6 @@ NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
     NSFetchRequest* existingInstancesRequest = [NSFetchRequest fetchRequestWithEntityName:mapping.destinationEntityName];
     NSError* fetchError = nil;
     NSEntityDescription* destinationEntity = [manager.destinationModel entitiesByName][mapping.destinationEntityName];
-
 
     NSArray* existingInstances = [manager.destinationContext executeFetchRequest:existingInstancesRequest error:&fetchError];
 
@@ -149,11 +150,76 @@ NSString* const kNSPDynamoSynchHashKeySeparator = @"<nsp_key_separator>";
         NSString* destinationAttributeName = attributeMapping.name;
         id expressionResult = evaluatePropertyMapping(attributeMapping, destinationInstance);
         [destinationInstance setValue:expressionResult forKey:destinationAttributeName];
-        NSPLogDebug(@"    set value for key: { %@ : %@ }", destinationAttributeName, expressionResult);
     }
 
     [manager associateSourceInstance:sourceInstance withDestinationInstance:destinationInstance forEntityMapping:mapping];
     return YES;
+}
+
+-(BOOL)createRelationshipsForDestinationInstance:(NSManagedObject *)destinationInstance
+                                   entityMapping:(NSEntityMapping *)mapping
+                                         manager:(NSMigrationManager *)manager
+                                           error:(NSError *__autoreleasing *)error
+{
+    NSArray* sourceInstances = [manager sourceInstancesForEntityMappingNamed:mapping.name destinationInstances:@[destinationInstance]];
+
+    NSPLogDebug(@"create relationships for mapping %@, sourceInstance: %@", mapping.sourceEntityName, [sourceInstances lastObject]);
+
+    for (NSPropertyMapping* relationshipMapping in mapping.relationshipMappings) {
+        NSRelationshipDescription* sourceRelationship = [manager sourceEntityForEntityMapping:mapping].relationshipsByName[relationshipMapping.name];
+        NSRelationshipDescription* destinationRelationship = [manager destinationEntityForEntityMapping:mapping].relationshipsByName[relationshipMapping.name];
+        if ([sourceRelationship nsp_isUnmodeledInverseRelationship]) continue;
+
+        NSEntityMapping* relationshipDestinationEntityMapping = [[manager.mappingModel.entityMappings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"destinationEntityName == %@", destinationRelationship.destinationEntity.name]] lastObject];
+
+        for (id sourceInstance in sourceInstances) {
+            id sourceRelationshipValue = [sourceInstance valueForKey:relationshipMapping.name];
+            NSArray* sourceRelationshipValueArray = nil;
+            if ([sourceRelationship isToMany]) {
+                NSMutableArray* sourceRelationshipValueMutableArray = [NSMutableArray array];
+                for (id sourceRelationshipInstance in sourceRelationshipValue) {
+                    [sourceRelationshipValueMutableArray addObject:sourceRelationshipInstance];
+                }
+                sourceRelationshipValueArray = [sourceRelationshipValueMutableArray copy];
+            } else {
+                sourceRelationshipValueArray = sourceRelationshipValue ? @[ sourceRelationshipValue ] : @[];
+            }
+            NSArray* destinationRelationshipValueArray = [manager destinationInstancesForEntityMappingNamed:relationshipDestinationEntityMapping.name
+                                                                                            sourceInstances:sourceRelationshipValueArray];
+            id destinationRelationshipValue = nil;
+            if ([destinationRelationship isToMany]) {
+                destinationRelationshipValue = [NSSet setWithArray:destinationRelationshipValueArray];
+            } else {
+                if ([destinationRelationshipValueArray count] <= 1) {
+                    destinationRelationshipValue = [destinationRelationshipValueArray lastObject];
+                } else {
+                    // TODO better error handling
+                    if (error) *error = [NSError errorWithDomain:NSPDynamoStoreErrorDomain code:111 userInfo:nil];
+                }
+            }
+            [destinationInstance setValue:destinationRelationshipValue forKey:destinationRelationship.name];
+        }
+    }
+
+    return YES;
+}
+
+-(BOOL)endInstanceCreationForEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
+{
+    BOOL result = [super endInstanceCreationForEntityMapping:mapping manager:manager error:error];
+
+    NSPLogDebug(@"end instance creation for entity mapping: %@", mapping.sourceEntityName);
+
+    return result;
+}
+
+-(BOOL)endRelationshipCreationForEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
+{
+    BOOL result = [super endRelationshipCreationForEntityMapping:mapping manager:manager error:error];
+
+    NSPLogDebug(@"end relationship creation for entity mapping: %@", mapping.sourceEntityName);
+
+    return result;
 }
 
 -(BOOL)endEntityMapping:(NSEntityMapping *)mapping manager:(NSMigrationManager *)manager error:(NSError *__autoreleasing *)error
