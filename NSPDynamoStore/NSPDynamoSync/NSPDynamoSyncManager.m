@@ -14,26 +14,33 @@
 #import <Bolts/Bolts.h>
 #import <NSPCoreUtils/NSPLogger.h>
 
+NSString* const kNSPDynamoSyncFetchRequestKey = @"NSPDynamoSyncFetchRequest";
+
 @interface NSPDynamoSyncManager ()
 
 @property (nonatomic, strong) NSMigrationManager* migrationManager;
 @property (nonatomic, strong) NSMappingModel* mappingModel;
 @property (nonatomic, copy) void (^progressBlock)(float progress);
+@property (nonatomic, strong) NSDictionary* fetchRequestParams;
 
 @end
 
 @implementation NSPDynamoSyncManager
 
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel*)managedObjectModel
+- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel*)managedObjectModel fetchRequestParams:(NSDictionary*)fetchRequestParams
 {
     self = [self init];
     if (self) {
         self.managedObjectModel = managedObjectModel;
         self.migrationManager = [[NSMigrationManager alloc] initWithSourceModel:managedObjectModel
                                                                destinationModel:managedObjectModel];
+        self.fetchRequestParams = fetchRequestParams;
         NSError* error = nil;
         [self setupMappingModelWithError:&error];
-        if (error) return nil;
+        if (error) {
+            NSPLogError(@"NSPDynamoSyncManager: Error setting up mapping model: %@", error);
+            return nil;
+        }
     }
     return self;
 }
@@ -44,16 +51,17 @@
                         sourceStoreOptions:(NSDictionary*)sourceStoreOptions
                        destinationStoreURL:(NSURL*)destinationStoreURL
                       destinationStoreType:(NSString*)destinationStoreType
-                  destionationStoreOptions:(NSDictionary*)destionationStoreOptions
+                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions
+                        fetchRequestParams:(NSDictionary*)fetchRequestParams
 {
-    self = [self initWithManagedObjectModel:managedObjectModel];
+    self = [self initWithManagedObjectModel:managedObjectModel fetchRequestParams:fetchRequestParams];
     if (self) {
         self.sourceStoreURL = sourceStoreURL;
         self.sourceStoreType = sourceStoreType;
         self.sourceStoreOptions = sourceStoreOptions;
         self.destinationStoreURL = destinationStoreURL;
         self.destinationStoreType = destinationStoreType;
-        self.destionationStoreOptions = destionationStoreOptions;
+        self.destinationStoreOptions = destinationStoreOptions;
     }
     return self;
 }
@@ -62,7 +70,8 @@
                                dynamoDBKey:(NSString *)dynamoDBKey
                        destinationStoreURL:(NSURL *)destinationStoreURL
                       destinationStoreType:(NSString *)destinationStoreType
-                  destionationStoreOptions:(NSDictionary *)destionationStoreOptions
+                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions
+                        fetchRequestParams:(NSDictionary*)fetchRequestParams
 {
     return [self initWithManagedObjectModel:managedObjectModel
                              sourceStoreURL:nil
@@ -70,7 +79,8 @@
                          sourceStoreOptions:@{ NSPDynamoStoreDynamoDBKey : dynamoDBKey }
                         destinationStoreURL:destinationStoreURL
                        destinationStoreType:destinationStoreType
-                   destionationStoreOptions:destionationStoreOptions];
+                    destinationStoreOptions:destinationStoreOptions
+                         fetchRequestParams:fetchRequestParams];
 }
 
 -(void)setupMappingModelWithError:(NSError* __autoreleasing *)error
@@ -88,6 +98,31 @@
 
     for (NSEntityMapping* entityMapping in self.mappingModel.entityMappings) {
         [entityMapping setEntityMigrationPolicyClassName:NSStringFromClass([NSPDynamoSyncEntityMigrationPolicy class])];
+
+        NSEntityDescription* sourceEntity = [self.managedObjectModel entitiesByName][entityMapping.sourceEntityName];
+        NSString* fetchRequestName = sourceEntity.userInfo[kNSPDynamoSyncFetchRequestKey];
+        if (fetchRequestName) {
+
+            NSExpression* fetchRequestExpression = self.fetchRequestParams ?
+                [NSExpression expressionForFunction:[NSExpression expressionForConstantValue:self.managedObjectModel]
+                                       selectorName:NSStringFromSelector(@selector(fetchRequestFromTemplateWithName:substitutionVariables:))
+                                          arguments:@[[NSExpression expressionForConstantValue:fetchRequestName],
+                                                      [NSExpression expressionForConstantValue:self.fetchRequestParams]]] :
+                [NSExpression expressionForFunction:[NSExpression expressionForConstantValue:self.managedObjectModel]
+                                       selectorName:NSStringFromSelector(@selector(fetchRequestTemplateForName:))
+                                          arguments:@[[NSExpression expressionForConstantValue:fetchRequestName]]];
+
+            NSExpression* sourceContextExpression =
+                [NSExpression expressionForFunction:[NSExpression expressionForVariable:@"manager"]
+                                       selectorName:NSStringFromSelector(@selector(sourceContext))
+                                          arguments:@[]];
+            NSExpression* fetchExpression = [NSFetchRequestExpression expressionForFetch:fetchRequestExpression
+                                                                                 context:sourceContextExpression
+                                                                               countOnly:NO];
+            entityMapping.sourceExpression = fetchExpression;
+        }
+
+
     }
 }
 
@@ -140,7 +175,7 @@
                                   withMappingModel:self.mappingModel
                                   toDestinationURL:self.destinationStoreURL
                                    destinationType:self.destinationStoreType
-                                destinationOptions:self.destionationStoreOptions
+                                destinationOptions:self.destinationStoreOptions
                                              error:&error];
 
         self.progressBlock = nil;

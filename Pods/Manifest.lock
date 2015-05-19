@@ -116,7 +116,10 @@ PODS:
   - Mantle (1.5.4):
     - Mantle/extobjc (= 1.5.4)
   - Mantle/extobjc (1.5.4)
+  - NSPCoreUtils/NSPCollectionUtils (0.0.1)
+  - NSPCoreUtils/NSPDefines (0.0.1)
   - NSPCoreUtils/NSPLogger (0.0.1)
+  - NSPCoreUtils/NSPTypeCheck (0.0.1)
   - Reachability (3.2)
   - TMCache (1.2.4)
   - UICKeyChainStore (2.0.4)
@@ -125,7 +128,10 @@ PODS:
 DEPENDENCIES:
   - AWSCognitoSync
   - AWSiOSSDKv2
+  - NSPCoreUtils/NSPCollectionUtils
+  - NSPCoreUtils/NSPDefines
   - NSPCoreUtils/NSPLogger
+  - NSPCoreUtils/NSPTypeCheck
 
 SPEC CHECKSUMS:
   AWSAutoScaling: 7dce9232ff39ba7261879ebee44e99e20ae19ddf

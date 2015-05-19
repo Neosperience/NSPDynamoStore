@@ -222,11 +222,29 @@
 #define COCOAPODS_VERSION_MINOR_Mantle_extobjc 5
 #define COCOAPODS_VERSION_PATCH_Mantle_extobjc 4
 
+// NSPCoreUtils/NSPCollectionUtils
+#define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPCollectionUtils
+#define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPCollectionUtils 0
+#define COCOAPODS_VERSION_MINOR_NSPCoreUtils_NSPCollectionUtils 0
+#define COCOAPODS_VERSION_PATCH_NSPCoreUtils_NSPCollectionUtils 1
+
+// NSPCoreUtils/NSPDefines
+#define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPDefines
+#define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPDefines 0
+#define COCOAPODS_VERSION_MINOR_NSPCoreUtils_NSPDefines 0
+#define COCOAPODS_VERSION_PATCH_NSPCoreUtils_NSPDefines 1
+
 // NSPCoreUtils/NSPLogger
 #define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPLogger
 #define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPLogger 0
 #define COCOAPODS_VERSION_MINOR_NSPCoreUtils_NSPLogger 0
 #define COCOAPODS_VERSION_PATCH_NSPCoreUtils_NSPLogger 1
+
+// NSPCoreUtils/NSPTypeCheck
+#define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPTypeCheck
+#define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPTypeCheck 0
+#define COCOAPODS_VERSION_MINOR_NSPCoreUtils_NSPTypeCheck 0
+#define COCOAPODS_VERSION_PATCH_NSPCoreUtils_NSPTypeCheck 1
 
 // Reachability
 #define COCOAPODS_POD_AVAILABLE_Reachability

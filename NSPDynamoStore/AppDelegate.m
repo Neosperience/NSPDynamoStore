@@ -44,7 +44,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
                                                                     dynamoDBKey:kDynamoDBKey
                                                             destinationStoreURL:[self cacheURL]
                                                            destinationStoreType:NSSQLiteStoreType
-                                                       destionationStoreOptions:nil];
+                                                        destinationStoreOptions:nil
+                                                             fetchRequestParams:nil];
     
     [[self.syncManager synchronizeWithProgressBlock:^(float progress) {
         NSLog(@"SYNC progress: %@", @(progress));

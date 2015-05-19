@@ -20,7 +20,7 @@
 
 @property (nonatomic, strong) NSURL* destinationStoreURL;
 @property (nonatomic, strong) NSString* destinationStoreType;
-@property (nonatomic, strong) NSDictionary* destionationStoreOptions;
+@property (nonatomic, strong) NSDictionary* destinationStoreOptions;
 
 - (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
                             sourceStoreURL:(NSURL*)sourceStoreURL
@@ -28,13 +28,15 @@
                         sourceStoreOptions:(NSDictionary*)sourceStoreOptions
                        destinationStoreURL:(NSURL*)destinationStoreURL
                       destinationStoreType:(NSString*)destinationStoreType
-                  destionationStoreOptions:(NSDictionary*)destionationStoreOptions;
+                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions
+                        fetchRequestParams:(NSDictionary*)fetchRequestParams;
 
 - (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
                                dynamoDBKey:(NSString *)dynamoDBKey
                        destinationStoreURL:(NSURL *)destinationStoreURL
                       destinationStoreType:(NSString *)destinationStoreType
-                  destionationStoreOptions:(NSDictionary *)destionationStoreOptions;
+                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions
+                        fetchRequestParams:(NSDictionary*)fetchRequestParams;
 
 -(BFTask*)synchronize;
 -(BFTask*)synchronizeWithProgressBlock:(void (^)(float progress))progressBlock;

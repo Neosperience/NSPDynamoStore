@@ -8,9 +8,6 @@
 
 #import "NSPDynamoStore.h"
 
-#import "NSObject+NSPTypeCheck.h"
-#import "NSArray+NSPCollectionUtils.h"
-#import "NSDictionary+NSPCollectionUtils.h"
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
 #import "NSPropertyDescription+NSPDynamoStore.h"
@@ -23,6 +20,9 @@
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 #import <NSPCoreUtils/NSPLogger.h>
+#import <NSArray+NSPCollectionUtils.h>
+#import <NSDictionary+NSPCollectionUtils.h>
+#import <NSObject+NSPTypeCheck.h>
 
 NSString* const NSPDynamoStoreType = @"NSPDynamoStore";
 NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";

@@ -6,7 +6,10 @@ target 'NSPDynamoStore' do
 
 pod 'AWSiOSSDKv2'
 pod 'AWSCognitoSync'
+pod 'NSPCoreUtils/NSPDefines'
 pod 'NSPCoreUtils/NSPLogger'
+pod 'NSPCoreUtils/NSPCollectionUtils'
+pod 'NSPCoreUtils/NSPTypeCheck'
 
 end
 
