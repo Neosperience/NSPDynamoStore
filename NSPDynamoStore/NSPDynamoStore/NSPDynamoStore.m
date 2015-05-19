@@ -237,7 +237,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     }
 
     NSPLogDebug(@"    RELATIONSHIP target objectIDs:");
-    for (NSManagedObjectID* objectID in results) {
+    for (NSManagedObjectID* objectID __attribute__((unused)) in results) {
         NSPLogDebug(@"    %@(%@)", objectID.entity.name, [self referenceObjectForObjectID:objectID]);
     }
 
@@ -363,9 +363,10 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     return batchGetInput;
 }
 
--(NSArray*)executeFetchRequest:(NSFetchRequest*)fetchRequest
-                   withContext:(NSManagedObjectContext *)context
-                         error:(NSError *__autoreleasing *)error
+-(BFTask*)executeAWSRequestForFetchRequest:(NSFetchRequest*)fetchRequest
+                               withContext:(NSManagedObjectContext *)context
+                                   results:(NSMutableArray*)results
+                         exclusiveStartKey:(NSDictionary*)exclusiveStartKey
 {
     BFTask* task = nil;
 
@@ -377,52 +378,78 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     } else {
         AWSDynamoDBQueryInput* queryInput = [self queryInputForFetchRequest:fetchRequest];
         if (queryInput) {
+            queryInput.exclusiveStartKey = exclusiveStartKey;
             task = [self.dynamoDB query:queryInput];
-            NSPLogDebug(@"Executing QUERY of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+            NSPLogDebug(@"Executing QUERY of entity: %@ for predicate: %@, request: %@", fetchRequest.entityName, fetchRequest.predicate, queryInput);
         } else {
             AWSDynamoDBScanInput* scanInput = [self scanInputForFetchRequest:fetchRequest];
+            scanInput.exclusiveStartKey = exclusiveStartKey;
             task = [self.dynamoDB scan:scanInput];
-            NSPLogDebug(@"Executing SCAN of entity: %@ for predicate: %@", fetchRequest.entityName, fetchRequest.predicate);
+            NSPLogDebug(@"Executing SCAN of entity: %@ for predicate: %@, request: %@", fetchRequest.entityName, fetchRequest.predicate, scanInput);
         }
     }
 
-    __block NSError* fetchError = nil;
-    __block NSArray* results = nil;
-
-    [[task continueWithBlock:^id(BFTask *task) {
+    return [task continueWithSuccessBlock:^id(BFTask *task) {
 
         if (task.error) {
-            fetchError = task.error;
             return [BFTask taskWithError:task.error];
         }
 
         NSArray* items = nil;
+        NSDictionary* lastEvaluatedKey = nil;
+
         if ([task.result isKindOfClass:[AWSDynamoDBScanOutput class]] || [task.result isKindOfClass:[AWSDynamoDBQueryOutput class]]) {
             items = [task.result valueForKey:@"items"];
+            lastEvaluatedKey = [task.result valueForKey:@"lastEvaluatedKey"];
         } else if ([task.result isKindOfClass:[AWSDynamoDBBatchGetItemOutput class]]) {
             AWSDynamoDBBatchGetItemOutput* batchGetOutput = task.result;
             NSString* tableName = [fetchRequest.entity nsp_dynamoTableName];
             items = [batchGetOutput.responses valueForKey:tableName];
         }
 
-        NSMutableArray* mutableResults = [NSMutableArray arrayWithCapacity:[items count]];
         for (NSDictionary* dynamoAttributes in items) {
             NSManagedObjectID* objectId = [self objectIDForNewObjectOfEntity:fetchRequest.entity
                                                             dynamoAttributes:dynamoAttributes
                                                                   putToCache:fetchRequest.includesPropertyValues];
             if (fetchRequest.resultType == NSManagedObjectResultType) {
-                [mutableResults addObject:[context objectWithID:objectId]];
+                [results addObject:[context objectWithID:objectId]];
             } else if (fetchRequest.resultType == NSManagedObjectIDResultType) {
-                [mutableResults addObject:objectId];
+                [results addObject:objectId];
             } else if (fetchRequest.resultType == NSDictionaryResultType) {
                 NSDictionary* result = [self nativeAttributeValuesFromDynamoAttributeValues:dynamoAttributes ofEntity:fetchRequest.entity];
-                [mutableResults addObject:result];
+                [results addObject:result];
             }
         }
 
-        results = [mutableResults copy];
-        return results;
+        if (lastEvaluatedKey) {
+            NSPLogDebug(@"   more pages found, continuing...");
+            return [self executeAWSRequestForFetchRequest:fetchRequest
+                                              withContext:context
+                                                  results:results
+                                        exclusiveStartKey:lastEvaluatedKey];
+        } else {
+            return results;
+        }
 
+    }];
+}
+
+-(NSArray*)executeFetchRequest:(NSFetchRequest*)fetchRequest
+                   withContext:(NSManagedObjectContext *)context
+                         error:(NSError *__autoreleasing *)error
+{
+    NSMutableArray* results = [NSMutableArray array];
+    BFTask* task = [self executeAWSRequestForFetchRequest:fetchRequest withContext:context results:results exclusiveStartKey:nil];
+
+    __block NSError* fetchError = nil;
+
+    [[task continueWithBlock:^id(BFTask *task) {
+
+        if (task.error) {
+            fetchError = task.error;
+        }
+
+        return task;
     }] waitUntilFinished];
 
     if (fetchError) {
