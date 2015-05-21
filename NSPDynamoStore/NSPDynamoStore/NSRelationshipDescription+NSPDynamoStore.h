@@ -14,4 +14,6 @@
 -(NSDictionary*)nsp_fetchRequestVariableKeyPathMap;
 -(BOOL)nsp_isUnmodeledInverseRelationship;
 
+-(NSFetchRequest*)nsp_destinationFetchRequestForSourceObject:(id)sourceObject;
+
 @end

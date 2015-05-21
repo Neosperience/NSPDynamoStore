@@ -222,6 +222,12 @@
 #define COCOAPODS_VERSION_MINOR_Mantle_extobjc 5
 #define COCOAPODS_VERSION_PATCH_Mantle_extobjc 4
 
+// NSPCoreUtils/NSPBoltsUtils
+#define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPBoltsUtils
+#define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPBoltsUtils 0
+#define COCOAPODS_VERSION_MINOR_NSPCoreUtils_NSPBoltsUtils 0
+#define COCOAPODS_VERSION_PATCH_NSPCoreUtils_NSPBoltsUtils 1
+
 // NSPCoreUtils/NSPCollectionUtils
 #define COCOAPODS_POD_AVAILABLE_NSPCoreUtils_NSPCollectionUtils
 #define COCOAPODS_VERSION_MAJOR_NSPCoreUtils_NSPCollectionUtils 0

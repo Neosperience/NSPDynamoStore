@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1B1917281AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B1917251AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.m */; };
-		1B1917291AE694FD00002D8F /* NSPDynamoSyncManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B1917271AE694FD00002D8F /* NSPDynamoSyncManager.m */; };
 		1B4EBD9C1ACAAD2B00BCC188 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBD9B1ACAAD2B00BCC188 /* main.m */; };
 		1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBD9E1ACAAD2B00BCC188 /* AppDelegate.m */; };
 		1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA01ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld */; };
@@ -22,6 +20,7 @@
 		1B6B75191ACD928F00F3EE2E /* NSPDynamoStoreExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75131ACD928F00F3EE2E /* NSPDynamoStoreExpression.m */; };
 		1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B75151ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m */; };
 		1B6B75401ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B6B753F1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m */; };
+		1B7140431B0E104000457C9E /* NSPDynamoSync.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B7140421B0E104000457C9E /* NSPDynamoSync.m */; };
 		1B8E26531ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E26521ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.m */; };
 		1B8E26561ADE968E00D33906 /* NSPCanopus.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E26541ADE968E00D33906 /* NSPCanopus.xcdatamodeld */; };
 		1B8E26591ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E26581ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.m */; };
@@ -36,10 +35,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1B1917241AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoSyncEntityMigrationPolicy.h; sourceTree = "<group>"; };
-		1B1917251AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoSyncEntityMigrationPolicy.m; sourceTree = "<group>"; };
-		1B1917261AE694FD00002D8F /* NSPDynamoSyncManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoSyncManager.h; sourceTree = "<group>"; };
-		1B1917271AE694FD00002D8F /* NSPDynamoSyncManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoSyncManager.m; sourceTree = "<group>"; };
 		1B4EBD961ACAAD2A00BCC188 /* NSPDynamoStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSPDynamoStore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B4EBD9A1ACAAD2B00BCC188 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1B4EBD9B1ACAAD2B00BCC188 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -63,6 +58,8 @@
 		1B6B75151ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPropertyDescription+NSPDynamoStore.m"; sourceTree = "<group>"; };
 		1B6B753E1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoStoreErrors.h; sourceTree = "<group>"; };
 		1B6B753F1ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoStoreErrors.m; sourceTree = "<group>"; };
+		1B7140411B0E104000457C9E /* NSPDynamoSync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSPDynamoSync.h; sourceTree = "<group>"; };
+		1B7140421B0E104000457C9E /* NSPDynamoSync.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSPDynamoSync.m; sourceTree = "<group>"; };
 		1B8E26511ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAttributeDescription+NSPDynamoStore.h"; sourceTree = "<group>"; };
 		1B8E26521ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSAttributeDescription+NSPDynamoStore.m"; sourceTree = "<group>"; };
 		1B8E26551ADE968E00D33906 /* NSPCanopus.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = NSPCanopus.xcdatamodel; sourceTree = "<group>"; };
@@ -100,17 +97,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1B1917231AE694FD00002D8F /* NSPDynamoSync */ = {
-			isa = PBXGroup;
-			children = (
-				1B1917241AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.h */,
-				1B1917251AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.m */,
-				1B1917261AE694FD00002D8F /* NSPDynamoSyncManager.h */,
-				1B1917271AE694FD00002D8F /* NSPDynamoSyncManager.m */,
-			);
-			path = NSPDynamoSync;
-			sourceTree = "<group>";
-		};
 		1B4EBD8D1ACAAD2A00BCC188 = {
 			isa = PBXGroup;
 			children = (
@@ -132,7 +118,7 @@
 		1B4EBD981ACAAD2A00BCC188 /* NSPDynamoStore */ = {
 			isa = PBXGroup;
 			children = (
-				1B1917231AE694FD00002D8F /* NSPDynamoSync */,
+				1B71403D1B0E0BC200457C9E /* NSPDynamoSync */,
 				1BE406671AE5461700EE4F4B /* NSPExampleModel */,
 				1B8E26631AE0174600D33906 /* NSPModel */,
 				1B8E26541ADE968E00D33906 /* NSPCanopus.xcdatamodeld */,
@@ -182,6 +168,15 @@
 				1BE406651AE1375600EE4F4B /* NSPDynamoStoreKeyPair.m */,
 			);
 			path = NSPDynamoStore;
+			sourceTree = "<group>";
+		};
+		1B71403D1B0E0BC200457C9E /* NSPDynamoSync */ = {
+			isa = PBXGroup;
+			children = (
+				1B7140411B0E104000457C9E /* NSPDynamoSync.h */,
+				1B7140421B0E104000457C9E /* NSPDynamoSync.m */,
+			);
+			path = NSPDynamoSync;
 			sourceTree = "<group>";
 		};
 		1B8E26631AE0174600D33906 /* NSPModel */ = {
@@ -333,17 +328,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B1917291AE694FD00002D8F /* NSPDynamoSyncManager.m in Sources */,
 				1B8E26591ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.m in Sources */,
 				1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */,
 				1B8E26901AE104CB00D33906 /* NSPModelItem.m in Sources */,
 				1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */,
 				1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */,
 				1BE4066E1AE5461700EE4F4B /* NSPExampleCategory.m in Sources */,
-				1B1917281AE694FD00002D8F /* NSPDynamoSyncEntityMigrationPolicy.m in Sources */,
 				1B6B75401ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m in Sources */,
 				1B8E26561ADE968E00D33906 /* NSPCanopus.xcdatamodeld in Sources */,
 				1B8E26961AE104CC00D33906 /* NSPModelContent.m in Sources */,
+				1B7140431B0E104000457C9E /* NSPDynamoSync.m in Sources */,
 				1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */,
 				1B8E26931AE104CC00D33906 /* NSPModelTag.m in Sources */,
 				1BE406701AE5461700EE4F4B /* NSPExamplePerson.m in Sources */,

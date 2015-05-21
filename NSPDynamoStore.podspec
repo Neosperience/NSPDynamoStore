@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
 	s.author       = { "Janos Tolgyes" => "janos.tolgyesi@neosperience.com" }
 
 	s.platform     = :ios, '6.0'
-	s.source       = { :git => "https://bitbucket.org/neosperience/nspdynamostore.git", :tag => "0.0.1" }
+	s.source       = { :git => "https://bitbucket.org/neosperience/nspdynamostore.git", :tag => "0.0.2" }
 
 	s.requires_arc = true
 	s.dependency 'NSPCoreUtils'

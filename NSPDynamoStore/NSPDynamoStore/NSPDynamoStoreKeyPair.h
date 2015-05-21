@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class NSPredicate;
+
 @interface NSPDynamoStoreKeyPair : NSObject
 
 -(instancetype)initWithString:(NSString*)string;
@@ -22,5 +24,7 @@
 @property (nonatomic, strong) NSString* rangeKeyName;
 
 -(NSString*)dynamoProjectionExpression;
+
+-(NSPredicate *)predicateForKeyObject:(id)object;
 
 @end

@@ -10,6 +10,7 @@ pod 'NSPCoreUtils/NSPDefines'
 pod 'NSPCoreUtils/NSPLogger'
 pod 'NSPCoreUtils/NSPCollectionUtils'
 pod 'NSPCoreUtils/NSPTypeCheck'
+pod 'NSPCoreUtils/NSPBoltsUtils'
 
 end
 

@@ -64,4 +64,18 @@
     return [result copy];
 }
 
+-(NSArray*)shiftedArray:(id __autoreleasing *)shiftedElement
+{
+    NSParameterAssert([self count] > 0);
+    if (shiftedElement) *shiftedElement = [self firstObject];
+    return [self subarrayWithRange:NSMakeRange(1, [self count] - 1)];
+}
+
+-(NSArray *)poppedArray:(__autoreleasing id *)poppedElement
+{
+    NSParameterAssert([self count] > 0);
+    if (poppedElement) *poppedElement = [self lastObject];
+    return [self subarrayWithRange:NSMakeRange(0, [self count] - 1)];
+}
+
 @end

@@ -9,6 +9,9 @@
 #import "NSRelationshipDescription+NSPDynamoStore.h"
 #import "NSObject+NSPTypeCheck.h"
 
+#import <NSDictionary+NSPCollectionUtils.h>
+#import <NSPLogger.h>
+
 NSString* const kNSPDynamoRelationshipFetchRequestKey = @"NSPDynamoRelationshipFetchRequest";
 NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVariableMap";
 NSString* const kNSPDynamoRelationshipUnmodeledInverseKey = @"NSPDynamoRelationshipUnmodeledInverse";
@@ -49,6 +52,39 @@ NSString* const kNSPDynamoStoreFetchRequestVariableKeyPathMapInvalidFormatMessag
 -(BOOL)nsp_isUnmodeledInverseRelationship
 {
     return [self.userInfo[kNSPDynamoRelationshipUnmodeledInverseKey] boolValue];
+}
+
+-(NSFetchRequest*)nsp_destinationFetchRequestForSourceObject:(id)sourceObject
+{
+    if ([self nsp_isUnmodeledInverseRelationship]) {
+        return nil;
+    }
+
+    NSString* fetchRequestTemplateName = [self nsp_fetchRequestTemplateName];
+    NSDictionary* fetchRequestVariableKeyPathMap = [self nsp_fetchRequestVariableKeyPathMap];
+
+    __block BOOL incompleteRequest = NO;
+    NSDictionary* substitutionDictionary = [fetchRequestVariableKeyPathMap map:^id(id key, id value) {
+        id attributeKeyPathValue = [sourceObject valueForKeyPath:value];
+        if (!attributeKeyPathValue) {
+            // no relationship value for this object
+            incompleteRequest = YES;
+        }
+        return attributeKeyPathValue;
+    }];
+
+    if (incompleteRequest) {
+        NSPLogWarning(@"WARNING: incomplete fetch request for relationship %@.%@ -> %@, "
+                      "fetchRequestTemplateName: %@, fetchRequestVariableKeyPathMap: %@, available attributes: %@",
+                      relationship.entity.name, relationship.name, relationship.destinationEntity.name,
+                      fetchRequestTemplateName, fetchRequestVariableKeyPathMap, nativeAttributes);
+        return nil;
+    }
+
+    NSManagedObjectModel* model = self.entity.managedObjectModel;
+    NSFetchRequest* fetchRequest = [model fetchRequestFromTemplateWithName:fetchRequestTemplateName
+                                                     substitutionVariables:substitutionDictionary];
+    return fetchRequest;
 }
 
 @end

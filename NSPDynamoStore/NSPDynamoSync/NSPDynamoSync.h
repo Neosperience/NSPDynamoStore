@@ -1,16 +1,28 @@
 //
-//  NSPDynamoSyncManager.h
+//  NSPDynamoSync.h
 //  NSPDynamoStore
 //
-//  Created by Janos Tolgyesi on 20/04/15.
+//  Created by Janos Tolgyesi on 20/05/15.
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import <NSPCoreUtils/NSPDefines.h>
+
+NSP_EXTERN NSString* const NSPDynamoSyncErrorDomain;
+
+NSP_EXTERN NSString* const NSPDynamoSyncErrorRelationshipKey;
+NSP_EXTERN NSString* const NSPDynamoSyncErrorFetchRequestKey;
+
+typedef enum : NSUInteger {
+    NSPDynamoSyncErrorAddingSourceStore           = 100,
+    NSPDynamoSyncErrorAddingDestinationStore,
+    NSPDynamoSyncErrorTooManyRelationshipDestinations,
+} NSPDynamoSyncErrorCode;
 
 @class NSManagedObjectModel, BFTask;
 
-@interface NSPDynamoSyncManager : NSObject
+@interface NSPDynamoSync : NSObject
 
 @property (nonatomic, strong) NSManagedObjectModel* managedObjectModel;
 
@@ -28,17 +40,15 @@
                         sourceStoreOptions:(NSDictionary*)sourceStoreOptions
                        destinationStoreURL:(NSURL*)destinationStoreURL
                       destinationStoreType:(NSString*)destinationStoreType
-                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions
-                        fetchRequestParams:(NSDictionary*)fetchRequestParams;
+                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions;
 
 - (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
                                dynamoDBKey:(NSString *)dynamoDBKey
                        destinationStoreURL:(NSURL *)destinationStoreURL
                       destinationStoreType:(NSString *)destinationStoreType
-                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions
-                        fetchRequestParams:(NSDictionary*)fetchRequestParams;
+                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions;
 
--(BFTask*)synchronize;
--(BFTask*)synchronizeWithProgressBlock:(void (^)(float progress))progressBlock;
+- (BFTask*)synchronizeWithFetchRequestParams:(NSDictionary*)fetchRequestParams progressBlock:(void (^)(float progress))progressBlock;
+- (BFTask*)synchronizeWithFetchRequestParams:(NSDictionary*)fetchRequestParams;
 
 @end

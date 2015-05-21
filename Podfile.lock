@@ -116,6 +116,9 @@ PODS:
   - Mantle (1.5.4):
     - Mantle/extobjc (= 1.5.4)
   - Mantle/extobjc (1.5.4)
+  - NSPCoreUtils/NSPBoltsUtils (0.0.1):
+    - Bolts
+    - NSPCoreUtils/NSPCollectionUtils
   - NSPCoreUtils/NSPCollectionUtils (0.0.1)
   - NSPCoreUtils/NSPDefines (0.0.1)
   - NSPCoreUtils/NSPLogger (0.0.1)
@@ -128,6 +131,7 @@ PODS:
 DEPENDENCIES:
   - AWSCognitoSync
   - AWSiOSSDKv2
+  - NSPCoreUtils/NSPBoltsUtils
   - NSPCoreUtils/NSPCollectionUtils
   - NSPCoreUtils/NSPDefines
   - NSPCoreUtils/NSPLogger
@@ -153,7 +157,7 @@ SPEC CHECKSUMS:
   FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
   GZIP: f0863fda354e8f83316508c0a2c7bbe385e39129
   Mantle: 60acd0cd363e27d945bda0a6b8e90577112d28f3
-  NSPCoreUtils: 1b1f611679d30fe89da32ef95fef3cfe8cd744b6
+  NSPCoreUtils: 3f7a605651907c8944101abd9dc107ee3569c461
   Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   TMCache: a93984b045a5ee84bd8941bd5e0b54296059cc52
   UICKeyChainStore: 69eb0c3a6f669bccf16ba88de3b9069b71501361

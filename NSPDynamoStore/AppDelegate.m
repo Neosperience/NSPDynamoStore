@@ -12,9 +12,8 @@
 #import "NSPExamplePerson.h"
 #import "NSPExampleCategory.h"
 #import "NSManagedObjectModel+NSPUtils.h"
-#import "NSPDynamoSyncEntityMigrationPolicy.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
-#import "NSPDynamoSyncManager.h"
+#import "NSPDynamoSync.h"
 
 #import "NSPModel.h"
 
@@ -28,7 +27,7 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 @interface AppDelegate ()
 
-@property (nonatomic, strong) NSPDynamoSyncManager* syncManager;
+@property (nonatomic, strong) NSPDynamoSync* syncManager;
 
 @end
 
@@ -40,14 +39,14 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-    self.syncManager = [[NSPDynamoSyncManager alloc] initWithManagedObjectModel:self.managedObjectModel
-                                                                    dynamoDBKey:kDynamoDBKey
-                                                            destinationStoreURL:[self cacheURL]
-                                                           destinationStoreType:NSSQLiteStoreType
-                                                        destinationStoreOptions:nil
-                                                             fetchRequestParams:nil];
+    self.syncManager = [[NSPDynamoSync alloc] initWithManagedObjectModel:self.managedObjectModel
+                                                             dynamoDBKey:kDynamoDBKey
+                                                     destinationStoreURL:[self cacheURL]
+                                                    destinationStoreType:NSSQLiteStoreType
+                                                 destinationStoreOptions:nil];
     
-    [[self.syncManager synchronizeWithProgressBlock:^(float progress) {
+    [[self.syncManager synchronizeWithFetchRequestParams:@{}
+                                           progressBlock:^(float progress) {
         NSLog(@"SYNC progress: %@", @(progress));
     }] continueWithBlock:^id(BFTask *task) {
         if (task.error) {

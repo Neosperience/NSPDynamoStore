@@ -10,6 +10,8 @@
 #import "NSDictionary+NSPCollectionUtils.h"
 #import "NSObject+NSPTypeCheck.h"
 
+@import CoreData;
+
 NSString* const kNSPDynamoStoreIndexDescriptorInvalidFormatMessage =
     @"NSPDynamoStore: indices value must be in the following format: "
     "{ indexName1 : [ hashKeyName1, rangeKeyName1 ],  indexName2 : [ hashKeyName2, rangeKeyName2 ] }";
@@ -72,6 +74,26 @@ NSString* const kNSPDynamoStoreKeyPairDescriptorInvalidFormatMessage =
 -(NSString *)dynamoProjectionExpression
 {
     return self.rangeKeyName ? [NSString stringWithFormat:@"%@,%@", self.hashKeyName, self.rangeKeyName] : self.hashKeyName;
+}
+
+-(NSPredicate *)predicateForKeyObject:(id)object
+{
+    id hashKeyValue = [object valueForKey:self.hashKeyName];
+    NSAssert(hashKeyValue, @"NSPDynamoStoreKeyPair: no hash key value for key %@ in instance %@",
+             self.hashKeyName, object);
+
+    NSPredicate* predicate = nil;
+    if (!self.rangeKeyName) {
+        predicate = [NSPredicate predicateWithFormat:@"%K == %@", self.hashKeyName, hashKeyValue];
+    } else {
+        id rangeKeyValue = [object valueForKey:self.rangeKeyName];
+        NSAssert(rangeKeyValue, @"NSPDataSynchronizer: no range key value for key %@ in instance %@",
+                 self.rangeKeyName, object);
+
+        predicate = [NSPredicate predicateWithFormat:@"%K == %@ AND %K == %@", self.hashKeyName, hashKeyValue, self.rangeKeyName, rangeKeyValue];
+    }
+    
+    return predicate;
 }
 
 -(NSString *)description

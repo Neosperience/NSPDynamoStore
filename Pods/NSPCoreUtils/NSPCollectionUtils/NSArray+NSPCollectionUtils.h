@@ -64,4 +64,20 @@
  */
 -(NSArray*)explodeToSubarraysWithLength:(NSUInteger)subArrayLength;
 
+/**
+ @brief Removes an element from the beginning of the array.
+ @param shiftedElement On return contains the removed element.
+ @return The array that contains all elements from the receiver starting from the second element.
+ @discussion The array must have at least one element.
+ */
+-(NSArray*)shiftedArray:(id __autoreleasing *)shiftedElement;
+
+/**
+ @brief Removes an element from the end of the array.
+ @param shiftedElement On return contains the removed element.
+ @return The array that contains all elements from the receiver up to but not containing the last element.
+ @discussion The array must have at least one element.
+ */
+-(NSArray*)poppedArray:(id __autoreleasing *)poppedElement;
+
 @end

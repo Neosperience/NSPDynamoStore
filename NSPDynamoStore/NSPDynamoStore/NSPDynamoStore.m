@@ -177,32 +177,14 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         NSPLogDebug(@"    using source object values from cache");
     }
 
-    NSString* fetchRequestTemplateName = [relationship nsp_fetchRequestTemplateName];
-    NSDictionary* fetchRequestVariableKeyPathMap = [relationship nsp_fetchRequestVariableKeyPathMap];
+    NSFetchRequest* fetchRequest = [relationship nsp_destinationFetchRequestForSourceObject:nativeAttributes];
+    fetchRequest.resultType = NSManagedObjectIDResultType;
 
-    __block BOOL incompleteRequest = NO;
-    NSDictionary* substitutionDictionary = [fetchRequestVariableKeyPathMap map:^id(id key, id value) {
-        id attributeKeyPathValue = [nativeAttributes valueForKeyPath:value];
-        if (!attributeKeyPathValue) {
-            // no relationship value for this object
-            incompleteRequest = YES;
-        }
-        return attributeKeyPathValue;
-    }];
-
-    if (incompleteRequest) {
-        NSPLogWarning(@"WARNING: incomplete fetch request for relationship %@.%@ -> %@, "
-                      "fetchRequestTemplateName: %@, fetchRequestVariableKeyPathMap: %@, available attributes: %@",
-                      relationship.entity.name, relationship.name, relationship.destinationEntity.name,
-                      fetchRequestTemplateName, fetchRequestVariableKeyPathMap, nativeAttributes);
+    if (!fetchRequest) {
+        NSPLogDebug(@"    can not construct relationship fetch request");
+        if (error) *error = [NSError errorWithDomain:NSPDynamoStoreErrorDomain code:666 userInfo:nil];
         return nil;
     }
-
-    NSManagedObjectModel* model = relationship.entity.managedObjectModel;
-    NSFetchRequest* fetchRequest = [[model fetchRequestFromTemplateWithName:fetchRequestTemplateName
-                                                      substitutionVariables:substitutionDictionary] copy];
-
-    fetchRequest.resultType = NSManagedObjectIDResultType;
 
     NSPLogDebug(@"    assembled fetch request for relationship: %@", fetchRequest);
 
@@ -247,7 +229,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
         // TODO: this should be a runtime error, not an assert
         NSAssert([results count] <= 1, @"NSPDynamoStore: fetch request %@ for to-one relationship %@.%@ returned more then one result "
-                 "for objectId: %@", fetchRequestTemplateName, relationship.entity.name, relationship.name, objectID);
+                 "for objectId: %@", fetchRequest, relationship.entity.name, relationship.name, objectID);
         result = [results lastObject];
     } else {
         result = [results count] > 0 ? results : nil;
