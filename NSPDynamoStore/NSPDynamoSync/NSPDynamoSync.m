@@ -224,6 +224,7 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
     return [[synchronizeAttributesTask continueWithSuccessBlock:^id(BFTask *task) {
         return [self reconstructRelationshipsWithFetchRequestParams:fetchRequestParams progressInfo:progressInfos[1]];
     }] continueWithSuccessBlock:^id(BFTask *task) {
+        [progressInfo setAbsoluteProgress:1.0];
         return [self.destinationContext performBlockInBackground:^id(NSError *__autoreleasing *error) {
             NSError* saveError = nil;
             if ([self.destinationContext save:&saveError]) {

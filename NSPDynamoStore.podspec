@@ -44,6 +44,7 @@ Pod::Spec.new do |s|
 		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'
 		sm.dependency 'NSPCoreUtils/NSPTypeCheck'
+		sm.dependency 'NSPCoreUtils/NSPBoltsUtils'
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoSync/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoStore/NSPDynamoSync/**/*.h'
 	end
