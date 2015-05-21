@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "NSPDynamoStore"
-	s.version      = "0.0.1"
+	s.version      = "0.0.2"
 	s.summary      = "NSPDynamoStore - Core data store for Amazon Dynamo DB"
 	s.description  = <<-DESC
 						This library allow to use DynamoDB as a backing store for core data contexts, also handling the sync process.
