@@ -79,7 +79,8 @@
     } else if (self.L) {
         NSMutableArray *list = [NSMutableArray arrayWithCapacity:self.L.count];
         for (id listItemAttributeValue in self.L) {
-            [list addObject: [listItemAttributeValue nsp_getAttributeValue]];
+            id attributeValue = [listItemAttributeValue nsp_getAttributeValue];
+            if (attributeValue) [list addObject:attributeValue];
         }
         return list;
 
@@ -87,10 +88,10 @@
         NSMutableDictionary *map = [NSMutableDictionary dictionaryWithCapacity:self.M.count];
         for (NSString *entryAttributeKey in self.M) {
             id entryAttributeValue = self.M[entryAttributeKey];
-            [map setObject:[entryAttributeValue nsp_getAttributeValue] forKey:entryAttributeKey];
+            [map setValue:[entryAttributeValue nsp_getAttributeValue] forKey:entryAttributeKey];
         }
         return map;
-    }
+    } 
 
     return nil;
 }
