@@ -23,6 +23,7 @@
 #import <NSArray+NSPCollectionUtils.h>
 #import <NSDictionary+NSPCollectionUtils.h>
 #import <NSObject+NSPTypeCheck.h>
+#import <Bolts/Bolts.h>
 
 NSString* const NSPDynamoStoreType = @"NSPDynamoStore";
 NSString* const NSPDynamoStoreDynamoDBKey = @"NSPDynamoStoreDynamoDBKey";
