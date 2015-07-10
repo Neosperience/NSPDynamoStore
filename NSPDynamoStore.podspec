@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
 	#Core - NSPDynamoStore
 	s.subspec 'Core' do |sm|
 		sm.frameworks = 'CoreData'
-		sm.dependency 'AWSiOSSDKv2'
+		sm.dependency 'AWSiOSSDKv2', '~> 2.1'
 		sm.dependency 'Bolts'
 		sm.dependency 'AWSCognitoSync'
 		sm.dependency 'NSPCoreUtils/NSPDefines'
