@@ -29,6 +29,7 @@ Pod::Spec.new do |s|
 	s.subspec 'Core' do |sm|
 		sm.frameworks = 'CoreData'
 		sm.dependency 'AWSiOSSDKv2'
+		sm.dependency 'Bolts'
 		sm.dependency 'AWSCognitoSync'
 		sm.dependency 'NSPCoreUtils/NSPDefines'
 		sm.dependency 'NSPCoreUtils/NSPLogger'
@@ -40,6 +41,7 @@ Pod::Spec.new do |s|
 	
 	# NSPDynamoSync
 	s.subspec 'NSPDynamoSync' do |sm|
+		sm.dependency 'Bolts'
 		sm.dependency 'NSPCoreUtils/NSPDefines'
 		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'
