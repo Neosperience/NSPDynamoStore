@@ -20,9 +20,9 @@
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
 #import <NSPCoreUtils/NSPLogger.h>
-#import <NSArray+NSPCollectionUtils.h>
-#import <NSDictionary+NSPCollectionUtils.h>
-#import <NSObject+NSPTypeCheck.h>
+#import <NSPCoreUtils/NSArray+NSPCollectionUtils.h>
+#import <NSPCoreUtils/NSDictionary+NSPCollectionUtils.h>
+#import <NSPCoreUtils/NSObject+NSPTypeCheck.h>
 #import <Bolts/Bolts.h>
 
 NSString* const NSPDynamoStoreType = @"NSPDynamoStore";

@@ -9,8 +9,8 @@
 #import "NSRelationshipDescription+NSPDynamoStore.h"
 #import "NSObject+NSPTypeCheck.h"
 
-#import <NSDictionary+NSPCollectionUtils.h>
-#import <NSPLogger.h>
+#import <NSPCoreUtils/NSDictionary+NSPCollectionUtils.h>
+#import <NSPCoreUtils/NSPLogger.h>
 
 NSString* const kNSPDynamoRelationshipFetchRequestKey = @"NSPDynamoRelationshipFetchRequest";
 NSString* const kNSPDynamoRelationshipVariableMapKey = @"NSPDynamoRelationshipVariableMap";

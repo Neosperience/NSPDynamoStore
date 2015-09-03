@@ -11,7 +11,7 @@
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 #import "NSPDynamoStoreKeyPair.h"
 
-#import <AWSDynamoDB.h>
+#import <AWSDynamoDB/AWSDynamoDB.h>
 
 NSString* const kNSPDynamoPrimaryKeysKey = @"NSPDynamoPrimaryKeys";
 NSString* const kNSPDynamoTableNameKey = @"NSPDynamoTableName";

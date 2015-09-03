@@ -8,7 +8,7 @@
 
 #import "AWSDynamoDBAttributeValue+NSPDynamoStore.h"
 
-#import <AWSCategory.h>
+#import <AWSCore/AWSCategory.h>
 
 @implementation AWSDynamoDBAttributeValue (NSPDynamoStore)
 
