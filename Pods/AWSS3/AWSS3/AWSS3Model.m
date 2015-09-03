@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -40,11 +40,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)grantsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 @end
@@ -59,7 +59,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)creationDateJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -77,7 +77,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)loggingEnabledJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3LoggingEnabled class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3LoggingEnabled class]];
 }
 
 @end
@@ -91,7 +91,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)CORSRulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CORSRule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CORSRule class]];
 }
 
 @end
@@ -123,7 +123,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)eventJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"s3:ReducedRedundancyLostObject"]) {
             return @(AWSS3EventS3ReducedRedundancyLostObject);
         }
@@ -187,7 +187,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -217,7 +217,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)multipartUploadJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3CompletedMultipartUpload class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3CompletedMultipartUpload class]];
 }
 
 @end
@@ -231,7 +231,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)partsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CompletedPart class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CompletedPart class]];
 }
 
 @end
@@ -267,7 +267,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)locationConstraintJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"EU"]) {
             return @(AWSS3BucketLocationConstraintEU);
         }
@@ -301,6 +301,9 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
         if ([value isEqualToString:@"eu-central-1"]) {
             return @(AWSS3BucketLocationConstraintEUCentral1);
         }
+        if ([value isEqualToString:@"us-gov-west-1"]) {
+            return @(AWSS3BucketLocationConstraintUSGovWest1);
+        }
         return @(AWSS3BucketLocationConstraintUnknown);
     } reverseBlock:^NSString *(NSNumber *value) {
         switch ([value integerValue]) {
@@ -326,6 +329,8 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
                 return @"cn-north-1";
             case AWSS3BucketLocationConstraintEUCentral1:
                 return @"eu-central-1";
+            case AWSS3BucketLocationConstraintUSGovWest1:
+                return @"us-gov-west-1";
             case AWSS3BucketLocationConstraintUnknown:
             default:
                 return nil;
@@ -361,7 +366,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3BucketCannedACLPrivate);
         }
@@ -393,7 +398,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)createBucketConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3CreateBucketConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3CreateBucketConfiguration class]];
 }
 
 @end
@@ -413,7 +418,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -460,7 +465,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3ObjectCannedACLPrivate);
         }
@@ -502,7 +507,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -510,7 +515,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -527,7 +532,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3StorageClassStandard);
         }
@@ -623,7 +628,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -631,7 +636,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 @end
@@ -670,11 +675,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)deletedJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3DeletedObject class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3DeletedObject class]];
 }
 
 + (NSValueTransformer *)errorsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Error class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Error class]];
 }
 
 @end
@@ -690,7 +695,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)removeJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Remove class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Remove class]];
 }
 
 @end
@@ -741,11 +746,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)grantsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 @end
@@ -769,7 +774,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)CORSRulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CORSRule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CORSRule class]];
 }
 
 @end
@@ -793,7 +798,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)rulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Rule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Rule class]];
 }
 
 @end
@@ -817,7 +822,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)locationConstraintJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"EU"]) {
             return @(AWSS3BucketLocationConstraintEU);
         }
@@ -851,6 +856,9 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
         if ([value isEqualToString:@"eu-central-1"]) {
             return @(AWSS3BucketLocationConstraintEUCentral1);
         }
+        if ([value isEqualToString:@"us-gov-west-1"]) {
+            return @(AWSS3BucketLocationConstraintUSGovWest1);
+        }
         return @(AWSS3BucketLocationConstraintUnknown);
     } reverseBlock:^NSString *(NSNumber *value) {
         switch ([value integerValue]) {
@@ -876,6 +884,8 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
                 return @"cn-north-1";
             case AWSS3BucketLocationConstraintEUCentral1:
                 return @"eu-central-1";
+            case AWSS3BucketLocationConstraintUSGovWest1:
+                return @"us-gov-west-1";
             case AWSS3BucketLocationConstraintUnknown:
             default:
                 return nil;
@@ -904,7 +914,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)loggingEnabledJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3LoggingEnabled class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3LoggingEnabled class]];
 }
 
 @end
@@ -930,15 +940,15 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)cloudFunctionConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3CloudFunctionConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3CloudFunctionConfiguration class]];
 }
 
 + (NSValueTransformer *)queueConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3QueueConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3QueueConfiguration class]];
 }
 
 + (NSValueTransformer *)topicConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3TopicConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3TopicConfiguration class]];
 }
 
 @end
@@ -982,7 +992,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)payerJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Requester"]) {
             return @(AWSS3PayerRequester);
         }
@@ -1024,7 +1034,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)tagSetJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Tag class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Tag class]];
 }
 
 @end
@@ -1049,7 +1059,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)MFADeleteJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Enabled"]) {
             return @(AWSS3MFADeleteStatusEnabled);
         }
@@ -1071,7 +1081,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)statusJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Enabled"]) {
             return @(AWSS3BucketVersioningStatusEnabled);
         }
@@ -1116,19 +1126,19 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)errorDocumentJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3ErrorDocument class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3ErrorDocument class]];
 }
 
 + (NSValueTransformer *)indexDocumentJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3IndexDocument class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3IndexDocument class]];
 }
 
 + (NSValueTransformer *)redirectAllRequestsToJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3RedirectAllRequestsTo class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3RedirectAllRequestsTo class]];
 }
 
 + (NSValueTransformer *)routingRulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3RoutingRule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3RoutingRule class]];
 }
 
 @end
@@ -1153,11 +1163,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)grantsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Grant class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 @end
@@ -1204,7 +1214,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1212,7 +1222,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1220,7 +1230,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -1263,7 +1273,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ifModifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateRFC822DateFormat1];
@@ -1271,7 +1281,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ifUnmodifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateRFC822DateFormat1];
@@ -1279,7 +1289,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)responseExpiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1319,11 +1329,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)granteeJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Grantee class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Grantee class]];
 }
 
 + (NSValueTransformer *)permissionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"FULL_CONTROL"]) {
             return @(AWSS3PermissionFullControl);
         }
@@ -1374,7 +1384,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)typesJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"CanonicalUser"]) {
             return @(AWSS3TypesCanonicalUser);
         }
@@ -1441,7 +1451,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1449,7 +1459,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1457,7 +1467,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -1494,7 +1504,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ifModifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateRFC822DateFormat1];
@@ -1502,7 +1512,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ifUnmodifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateRFC822DateFormat1];
@@ -1541,7 +1551,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)rulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Rule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Rule class]];
 }
 
 @end
@@ -1556,7 +1566,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)dateJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1575,11 +1585,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)bucketsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Bucket class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Bucket class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 @end
@@ -1604,11 +1614,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)commonPrefixesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1625,7 +1635,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)uploadsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3MultipartUpload class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3MultipartUpload class]];
 }
 
 @end
@@ -1645,7 +1655,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1684,15 +1694,15 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)commonPrefixesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
 }
 
 + (NSValueTransformer *)deleteMarkersJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3DeleteMarkerEntry class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3DeleteMarkerEntry class]];
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1709,7 +1719,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)versionsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3ObjectVersion class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3ObjectVersion class]];
 }
 
 @end
@@ -1729,7 +1739,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1765,15 +1775,15 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)commonPrefixesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3CommonPrefix class]];
 }
 
 + (NSValueTransformer *)contentsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Object class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Object class]];
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1805,7 +1815,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)encodingTypeJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"url"]) {
             return @(AWSS3EncodingTypeURL);
         }
@@ -1842,19 +1852,19 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)initiatorJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Initiator class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Initiator class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 + (NSValueTransformer *)partsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Part class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Part class]];
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3StorageClassStandard);
         }
@@ -1902,7 +1912,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)targetGrantsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3TargetGrant class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3TargetGrant class]];
 }
 
 @end
@@ -1921,7 +1931,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)initiatedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -1929,15 +1939,15 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)initiatorJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Initiator class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Initiator class]];
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3StorageClassStandard);
         }
@@ -1980,7 +1990,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"GLACIER"]) {
             return @(AWSS3TransitionStorageClassGlacier);
         }
@@ -2009,15 +2019,15 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)cloudFunctionConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3CloudFunctionConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3CloudFunctionConfiguration class]];
 }
 
 + (NSValueTransformer *)queueConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3QueueConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3QueueConfiguration class]];
 }
 
 + (NSValueTransformer *)topicConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3TopicConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3TopicConfiguration class]];
 }
 
 @end
@@ -2036,7 +2046,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2044,11 +2054,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3ObjectStorageClassStandard);
         }
@@ -2103,7 +2113,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2111,11 +2121,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ownerJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Owner class]];
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3ObjectVersionStorageClassStandard);
         }
@@ -2156,7 +2166,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2182,7 +2192,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3BucketCannedACLPrivate);
         }
@@ -2214,7 +2224,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)accessControlPolicyJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3AccessControlPolicy class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3AccessControlPolicy class]];
 }
 
 @end
@@ -2230,7 +2240,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)CORSConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3CORSConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3CORSConfiguration class]];
 }
 
 @end
@@ -2246,7 +2256,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lifecycleConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3LifecycleConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3LifecycleConfiguration class]];
 }
 
 @end
@@ -2262,7 +2272,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)bucketLoggingStatusJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3BucketLoggingStatus class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3BucketLoggingStatus class]];
 }
 
 @end
@@ -2278,7 +2288,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)notificationConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3NotificationConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3NotificationConfiguration class]];
 }
 
 @end
@@ -2306,7 +2316,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)requestPaymentConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3RequestPaymentConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3RequestPaymentConfiguration class]];
 }
 
 @end
@@ -2322,7 +2332,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)taggingJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Tagging class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Tagging class]];
 }
 
 @end
@@ -2339,7 +2349,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)versioningConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3VersioningConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3VersioningConfiguration class]];
 }
 
 @end
@@ -2355,7 +2365,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)websiteConfigurationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3WebsiteConfiguration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3WebsiteConfiguration class]];
 }
 
 @end
@@ -2378,7 +2388,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3ObjectCannedACLPrivate);
         }
@@ -2420,7 +2430,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)accessControlPolicyJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3AccessControlPolicy class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3AccessControlPolicy class]];
 }
 
 @end
@@ -2440,7 +2450,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -2490,7 +2500,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3ObjectCannedACLPrivate);
         }
@@ -2532,7 +2542,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2540,7 +2550,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -2557,7 +2567,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3StorageClassStandard);
         }
@@ -2592,7 +2602,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)eventJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"s3:ReducedRedundancyLostObject"]) {
             return @(AWSS3EventS3ReducedRedundancyLostObject);
         }
@@ -2643,7 +2653,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)protocolsJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"http"]) {
             return @(AWSS3ProtocolsHTTP);
         }
@@ -2676,7 +2686,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)protocolsJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"http"]) {
             return @(AWSS3ProtocolsHTTP);
         }
@@ -2709,7 +2719,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)objectsJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3ObjectIdentifier class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3ObjectIdentifier class]];
 }
 
 @end
@@ -2729,11 +2739,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicateObjectResultJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3ReplicateObjectResult class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3ReplicateObjectResult class]];
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -2789,7 +2799,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)ACLJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"private"]) {
             return @(AWSS3ObjectCannedACLPrivate);
         }
@@ -2831,7 +2841,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expiresJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2839,7 +2849,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)metadataDirectiveJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"COPY"]) {
             return @(AWSS3MetadataDirectiveCopy);
         }
@@ -2861,7 +2871,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicateSourceIfModifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2869,7 +2879,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicateSourceIfUnmodifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2877,7 +2887,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -2894,7 +2904,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"STANDARD"]) {
             return @(AWSS3StorageClassStandard);
         }
@@ -2927,7 +2937,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2946,7 +2956,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)lastModifiedJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -2964,7 +2974,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)payerJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Requester"]) {
             return @(AWSS3PayerRequester);
         }
@@ -2999,7 +3009,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)restoreRequestJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3RestoreRequest class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3RestoreRequest class]];
 }
 
 @end
@@ -3024,11 +3034,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)conditionJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Condition class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Condition class]];
 }
 
 + (NSValueTransformer *)redirectJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Redirect class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Redirect class]];
 }
 
 @end
@@ -3048,19 +3058,19 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)expirationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3LifecycleExpiration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3LifecycleExpiration class]];
 }
 
 + (NSValueTransformer *)noncurrentVersionExpirationJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3NoncurrentVersionExpiration class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3NoncurrentVersionExpiration class]];
 }
 
 + (NSValueTransformer *)noncurrentVersionTransitionJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3NoncurrentVersionTransition class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3NoncurrentVersionTransition class]];
 }
 
 + (NSValueTransformer *)statusJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Enabled"]) {
             return @(AWSS3ExpirationStatusEnabled);
         }
@@ -3082,7 +3092,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)transitionJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Transition class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Transition class]];
 }
 
 @end
@@ -3107,7 +3117,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)tagSetJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3Tag class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3Tag class]];
 }
 
 @end
@@ -3122,11 +3132,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)granteeJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3Grantee class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3Grantee class]];
 }
 
 + (NSValueTransformer *)permissionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"FULL_CONTROL"]) {
             return @(AWSS3BucketLogsPermissionFullControl);
         }
@@ -3166,7 +3176,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)eventJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"s3:ReducedRedundancyLostObject"]) {
             return @(AWSS3EventS3ReducedRedundancyLostObject);
         }
@@ -3215,7 +3225,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)dateJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -3223,7 +3233,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)storageClassJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"GLACIER"]) {
             return @(AWSS3TransitionStorageClassGlacier);
         }
@@ -3255,11 +3265,11 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicatePartResultJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3ReplicatePartResult class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3ReplicatePartResult class]];
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -3301,7 +3311,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicateSourceIfModifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -3309,7 +3319,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)replicateSourceIfUnmodifiedSinceJSONTransformer {
-	return [MTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
+	return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^id(NSString *str) {
         return [NSDate aws_dateFromString:str];
     } reverseBlock:^id(NSDate *date) {
         return [date aws_stringValue:AWSDateISO8601DateFormat1];
@@ -3331,7 +3341,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)serverSideEncryptionJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"AES256"]) {
             return @(AWSS3ServerSideEncryptionAES256);
         }
@@ -3378,7 +3388,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)MFADeleteJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Enabled"]) {
             return @(AWSS3MFADeleteEnabled);
         }
@@ -3400,7 +3410,7 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)statusJSONTransformer {
-    return [MTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
+    return [AWSMTLValueTransformer reversibleTransformerWithForwardBlock:^NSNumber *(NSString *value) {
         if ([value isEqualToString:@"Enabled"]) {
             return @(AWSS3BucketVersioningStatusEnabled);
         }
@@ -3435,19 +3445,19 @@ NSString *const AWSS3ErrorDomain = @"com.amazonaws.AWSS3ErrorDomain";
 }
 
 + (NSValueTransformer *)errorDocumentJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3ErrorDocument class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3ErrorDocument class]];
 }
 
 + (NSValueTransformer *)indexDocumentJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3IndexDocument class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3IndexDocument class]];
 }
 
 + (NSValueTransformer *)redirectAllRequestsToJSONTransformer {
-	return [NSValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[AWSS3RedirectAllRequestsTo class]];
+	return [NSValueTransformer awsmtl_JSONDictionaryTransformerWithModelClass:[AWSS3RedirectAllRequestsTo class]];
 }
 
 + (NSValueTransformer *)routingRulesJSONTransformer {
-	return [NSValueTransformer mtl_JSONArrayTransformerWithModelClass:[AWSS3RoutingRule class]];
+	return [NSValueTransformer awsmtl_JSONArrayTransformerWithModelClass:[AWSS3RoutingRule class]];
 }
 
 @end

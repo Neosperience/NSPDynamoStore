@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -17,7 +17,7 @@
 #import <UIKit/UIKit.h>
 #import <sys/types.h>
 #import <sys/sysctl.h>
-#import <UICKeyChainStore/UICKeyChainStore.h>
+#import "AWSUICKeyChainStore.h"
 #import "AWSLogging.h"
 
 // Public constants
@@ -32,8 +32,6 @@ NSString *const AWSClientContextKeychainInstallationIdKey = @"com.amazonaws.AWSC
 
 @interface AWSClientContext()
 
-@property (nonatomic, strong) NSDictionary *serviceDetails;
-
 @end
 
 @implementation AWSClientContext
@@ -42,7 +40,7 @@ NSString *const AWSClientContextKeychainInstallationIdKey = @"com.amazonaws.AWSC
 
 - (instancetype)init {
     if (self = [super init]) {
-        UICKeyChainStore *keychain = [UICKeyChainStore keyChainStoreWithService:AWSClientContextKeychainService];
+        AWSUICKeyChainStore *keychain = [AWSUICKeyChainStore keyChainStoreWithService:AWSClientContextKeychainService];
         _installationId = [keychain stringForKey:AWSClientContextKeychainInstallationIdKey];
         if (!_installationId) {
             static dispatch_once_t onceToken;
@@ -51,6 +49,9 @@ NSString *const AWSClientContextKeychainInstallationIdKey = @"com.amazonaws.AWSC
                              forKey:AWSClientContextKeychainInstallationIdKey];
             });
             _installationId = [keychain stringForKey:AWSClientContextKeychainInstallationIdKey];
+        }
+        if (_installationId == nil) {
+            AWSLogError(@"Failed to generate installation_id");
         }
 
         NSString *appVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
@@ -82,7 +83,7 @@ NSString *const AWSClientContextKeychainInstallationIdKey = @"com.amazonaws.AWSC
 }
 
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *clientDetails = @{@"installation_id": self.installationId,
+    NSDictionary *clientDetails = @{@"installation_id": self.installationId?self.installationId:@"UNKNOWN_INSTALLATION_ID",
                                     @"app_package_name": self.appPackageName,
                                     @"app_version_name": self.appBuild,
                                     @"app_version_code": self.appVersion,

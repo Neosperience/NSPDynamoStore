@@ -1,136 +1,89 @@
 PODS:
-  - AWSAutoScaling (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSCloudWatch (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSCognito (2.1.1):
-    - AWSCore (~> 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-    - Reachability (~> 3.1)
-    - UICKeyChainStore (~> 2.0)
-  - AWSCognitoSync (2.1.1):
-    - AWSCognito (= 2.1.1)
-    - AWSCore (~> 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSCore (2.1.1):
-    - Bolts (~> 1.1.0)
-    - GZIP (~> 1.0.3)
-    - Mantle (~> 1.4)
-    - Reachability (~> 3.1)
-    - UICKeyChainStore (~> 2.0)
-    - XMLDictionary (~> 1.4.0)
-  - AWSDynamoDB (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSEC2 (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSElasticLoadBalancing (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSiOSSDKv2 (2.1.1):
-    - AWSiOSSDKv2/AutoScaling (= 2.1.1)
-    - AWSiOSSDKv2/AWSCore (= 2.1.1)
-    - AWSiOSSDKv2/CloudWatch (= 2.1.1)
-    - AWSiOSSDKv2/DynamoDB (= 2.1.1)
-    - AWSiOSSDKv2/EC2 (= 2.1.1)
-    - AWSiOSSDKv2/ElasticLoadBalancing (= 2.1.1)
-    - AWSiOSSDKv2/Kinesis (= 2.1.1)
-    - AWSiOSSDKv2/S3 (= 2.1.1)
-    - AWSiOSSDKv2/SES (= 2.1.1)
-    - AWSiOSSDKv2/SimpleDB (= 2.1.1)
-    - AWSiOSSDKv2/SNS (= 2.1.1)
-    - AWSiOSSDKv2/SQS (= 2.1.1)
-  - AWSiOSSDKv2/AutoScaling (2.1.1):
-    - AWSAutoScaling (= 2.1.1)
-  - AWSiOSSDKv2/AWSCore (2.1.1):
-    - AWSCore (= 2.1.1)
-  - AWSiOSSDKv2/CloudWatch (2.1.1):
-    - AWSCloudWatch (= 2.1.1)
-  - AWSiOSSDKv2/DynamoDB (2.1.1):
-    - AWSDynamoDB (= 2.1.1)
-  - AWSiOSSDKv2/EC2 (2.1.1):
-    - AWSEC2 (= 2.1.1)
-  - AWSiOSSDKv2/ElasticLoadBalancing (2.1.1):
-    - AWSElasticLoadBalancing (= 2.1.1)
-  - AWSiOSSDKv2/Kinesis (2.1.1):
-    - AWSKinesis (= 2.1.1)
-  - AWSiOSSDKv2/S3 (2.1.1):
-    - AWSS3 (= 2.1.1)
-  - AWSiOSSDKv2/SES (2.1.1):
-    - AWSSES (= 2.1.1)
-  - AWSiOSSDKv2/SimpleDB (2.1.1):
-    - AWSSimpleDB (= 2.1.1)
-  - AWSiOSSDKv2/SNS (2.1.1):
-    - AWSSNS (= 2.1.1)
-  - AWSiOSSDKv2/SQS (2.1.1):
-    - AWSSQS (= 2.1.1)
-  - AWSKinesis (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - FMDB (~> 2.4)
-    - Mantle (~> 1.4)
-    - TMCache (~> 1.2.1)
-  - AWSS3 (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-    - TMCache (~> 1.2.1)
-  - AWSSES (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSSimpleDB (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSSNS (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - AWSSQS (2.1.1):
-    - AWSCore (= 2.1.1)
-    - Bolts (~> 1.1.0)
-    - Mantle (~> 1.4)
-  - Bolts (1.1.5):
-    - Bolts/AppLinks (= 1.1.5)
-    - Bolts/Tasks (= 1.1.5)
-  - Bolts/AppLinks (1.1.5):
+  - AWSAutoScaling (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSCloudWatch (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSCognito (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSCore (2.2.5)
+  - AWSDynamoDB (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSEC2 (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSElasticLoadBalancing (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSiOSSDKv2 (2.2.5):
+    - AWSiOSSDKv2/AutoScaling (= 2.2.5)
+    - AWSiOSSDKv2/AWSCore (= 2.2.5)
+    - AWSiOSSDKv2/CloudWatch (= 2.2.5)
+    - AWSiOSSDKv2/DynamoDB (= 2.2.5)
+    - AWSiOSSDKv2/EC2 (= 2.2.5)
+    - AWSiOSSDKv2/ElasticLoadBalancing (= 2.2.5)
+    - AWSiOSSDKv2/Kinesis (= 2.2.5)
+    - AWSiOSSDKv2/MobileAnalytics (= 2.2.5)
+    - AWSiOSSDKv2/S3 (= 2.2.5)
+    - AWSiOSSDKv2/SES (= 2.2.5)
+    - AWSiOSSDKv2/SimpleDB (= 2.2.5)
+    - AWSiOSSDKv2/SNS (= 2.2.5)
+    - AWSiOSSDKv2/SQS (= 2.2.5)
+  - AWSiOSSDKv2/AutoScaling (2.2.5):
+    - AWSAutoScaling (= 2.2.5)
+  - AWSiOSSDKv2/AWSCore (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSiOSSDKv2/CloudWatch (2.2.5):
+    - AWSCloudWatch (= 2.2.5)
+  - AWSiOSSDKv2/DynamoDB (2.2.5):
+    - AWSDynamoDB (= 2.2.5)
+  - AWSiOSSDKv2/EC2 (2.2.5):
+    - AWSEC2 (= 2.2.5)
+  - AWSiOSSDKv2/ElasticLoadBalancing (2.2.5):
+    - AWSElasticLoadBalancing (= 2.2.5)
+  - AWSiOSSDKv2/Kinesis (2.2.5):
+    - AWSKinesis (= 2.2.5)
+  - AWSiOSSDKv2/MobileAnalytics (2.2.5):
+    - AWSMobileAnalytics (= 2.2.5)
+  - AWSiOSSDKv2/S3 (2.2.5):
+    - AWSS3 (= 2.2.5)
+  - AWSiOSSDKv2/SES (2.2.5):
+    - AWSSES (= 2.2.5)
+  - AWSiOSSDKv2/SimpleDB (2.2.5):
+    - AWSSimpleDB (= 2.2.5)
+  - AWSiOSSDKv2/SNS (2.2.5):
+    - AWSSNS (= 2.2.5)
+  - AWSiOSSDKv2/SQS (2.2.5):
+    - AWSSQS (= 2.2.5)
+  - AWSKinesis (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSMobileAnalytics (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSS3 (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSSES (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSSimpleDB (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSSNS (2.2.5):
+    - AWSCore (= 2.2.5)
+  - AWSSQS (2.2.5):
+    - AWSCore (= 2.2.5)
+  - Bolts (1.2.1):
+    - Bolts/AppLinks (= 1.2.1)
+    - Bolts/Tasks (= 1.2.1)
+  - Bolts/AppLinks (1.2.1):
     - Bolts/Tasks
-  - Bolts/Tasks (1.1.5)
-  - FMDB (2.5):
-    - FMDB/standard (= 2.5)
-  - FMDB/common (2.5)
-  - FMDB/standard (2.5):
-    - FMDB/common
-  - GZIP (1.0.3)
-  - Mantle (1.5.4):
-    - Mantle/extobjc (= 1.5.4)
-  - Mantle/extobjc (1.5.4)
-  - NSPCoreUtils/NSPBoltsUtils (0.0.1):
+  - Bolts/Tasks (1.2.1)
+  - NSPCoreUtils/NSPBoltsUtils (0.0.3):
     - Bolts
     - NSPCoreUtils/NSPCollectionUtils
-  - NSPCoreUtils/NSPCollectionUtils (0.0.1)
-  - NSPCoreUtils/NSPDefines (0.0.1)
-  - NSPCoreUtils/NSPLogger (0.0.1)
-  - NSPCoreUtils/NSPTypeCheck (0.0.1)
-  - Reachability (3.2)
-  - TMCache (1.2.4)
-  - UICKeyChainStore (2.0.4)
-  - XMLDictionary (1.4)
+  - NSPCoreUtils/NSPCollectionUtils (0.0.3)
+  - NSPCoreUtils/NSPDefines (0.0.3)
+  - NSPCoreUtils/NSPLogger (0.0.3)
+  - NSPCoreUtils/NSPTypeCheck (0.0.3)
 
 DEPENDENCIES:
-  - AWSCognitoSync
-  - AWSiOSSDKv2
+  - AWSCognito (~> 2.2.0)
+  - AWSCore (~> 2.2.0)
+  - AWSiOSSDKv2 (~> 2.2.0)
   - Bolts
   - NSPCoreUtils/NSPBoltsUtils
   - NSPCoreUtils/NSPCollectionUtils
@@ -139,29 +92,22 @@ DEPENDENCIES:
   - NSPCoreUtils/NSPTypeCheck
 
 SPEC CHECKSUMS:
-  AWSAutoScaling: 7dce9232ff39ba7261879ebee44e99e20ae19ddf
-  AWSCloudWatch: a71dec2b429d09e7d5baf2959548accf606b5f4e
-  AWSCognito: c251f1f166c74343493451e238ca7157e1e33dda
-  AWSCognitoSync: b9dad0d509063f2faeb9302537cfa1d02a0b1762
-  AWSCore: 0e82eabc27a96d765b1e2ad4d30b96c1cd298300
-  AWSDynamoDB: 8afd8c76c9f19adfbd095abd3b6ca0cdb6a8c2e8
-  AWSEC2: 8ffacce17f49dd121ab18d468fae2db5db408500
-  AWSElasticLoadBalancing: a90d47b67609bcf2c1c2e3bccc23b51a9d0240d3
-  AWSiOSSDKv2: 4c97dae74014729e840146295edc1d6c023d176b
-  AWSKinesis: 4ef3a2c9683d50a4ccc2ecdd173c8b04ca9b6118
-  AWSS3: 891d269735be0f3c63eab5a2d1ee9d788f2c64ee
-  AWSSES: 04f6db9fcf3792a2374db5692701445df517e5f3
-  AWSSimpleDB: e863f52f11557d8af42e5fd47e702ea01e6446e2
-  AWSSNS: 49d9144ec52c8650ba9207232fdd17c68289fac8
-  AWSSQS: bb6b810a5d9826b4b25ed520e344b71a90d6e48f
-  Bolts: aac24961496d504aa56fc267cde95162a71bac39
-  FMDB: 96e8f1bcc1329e269330f99770ad4285d9003e52
-  GZIP: f0863fda354e8f83316508c0a2c7bbe385e39129
-  Mantle: 60acd0cd363e27d945bda0a6b8e90577112d28f3
-  NSPCoreUtils: 4c79e0f4eaa27bd35708b9c15655c532e79a6be5
-  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
-  TMCache: a93984b045a5ee84bd8941bd5e0b54296059cc52
-  UICKeyChainStore: 69eb0c3a6f669bccf16ba88de3b9069b71501361
-  XMLDictionary: f9f51601ba76678b594ab485f2b00ec1fed23724
+  AWSAutoScaling: 0a0888d1646695c6668ba060108b7a690c2304f6
+  AWSCloudWatch: 70aa7722b0368e8ce5c893564885d8ad57b606c3
+  AWSCognito: df121e01df20a03de311a9cf708cbc25efdb3248
+  AWSCore: 101929899cea9febd4ea4fc85774a63ff17cf809
+  AWSDynamoDB: ddb6d2cea58673ba44266534e87409f42fdda1ec
+  AWSEC2: a2d751cd48da9735316bb1870eb83b8592f227e6
+  AWSElasticLoadBalancing: 569afd311e807514c9105100c8b978373983bca6
+  AWSiOSSDKv2: 57ce73d0e0f113c93952a5aeaeec16bf54bcc662
+  AWSKinesis: 60ec71d37e1498e8677d5559a8f1777bc37cc0fe
+  AWSMobileAnalytics: 926bd6e293f4796faa59697bd380eb21b0484fbe
+  AWSS3: 78a5be4417c5fe1d9a1c301b05bbfbb6719d4f18
+  AWSSES: 88deab0d0ca1ba7cd987d512f8ad3e0f83cba1c8
+  AWSSimpleDB: 89a6f82d45d1858030b5ee6ac7f4a801403df656
+  AWSSNS: df046002638a67d879757718d240401317a39646
+  AWSSQS: 73d134eb630090ce5ed26882c4a3c621896750ab
+  Bolts: 7686a5cb204d1ac54cee26f12d9b7622db3f80d1
+  NSPCoreUtils: 57a85bd0ff1ea0a3470fe571e9e8369b5dbcf645
 
-COCOAPODS: 0.37.2
+COCOAPODS: 0.38.2

@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -24,6 +24,7 @@
 #import "AWSURLResponseSerialization.h"
 #import "AWSURLRequestRetryHandler.h"
 #import "AWSSynchronizedMutableDictionary.h"
+#import "AWSSTSResources.h"
 
 NSString *const AWSSTSDefinitionFileName = @"sts-2011-06-15";
 
@@ -81,7 +82,7 @@ static NSDictionary *errorCodeDictionary = nil;
                                          userInfo:errorInfo];
             }
         } else if (self.outputClass) {
-            responseObject = [MTLJSONAdapter modelOfClass:self.outputClass
+            responseObject = [AWSMTLJSONAdapter modelOfClass:self.outputClass
                                        fromJSONDictionary:responseObject
                                                     error:error];
         }
@@ -217,15 +218,14 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         _configuration.baseURL = _configuration.endpoint.URL;
         _configuration.requestInterceptors = @[[AWSNetworkingRequestInterceptor new], signer];
         _configuration.retryHandler = [[AWSSTSRequestRetryHandler alloc] initWithMaximumRetryCount:_configuration.maxRetryCount];
-        _configuration.headers = @{@"Host" : _configuration.endpoint.hostName};
 
-        _networking = [AWSNetworking networking:_configuration];
+        _networking = [[AWSNetworking alloc] initWithConfiguration:_configuration];
     }
 
     return self;
 }
 
-- (BFTask *)invokeRequest:(AWSRequest *)request
+- (AWSTask *)invokeRequest:(AWSRequest *)request
                HTTPMethod:(AWSHTTPMethod)HTTPMethod
                 URLString:(NSString *) URLString
              targetPrefix:(NSString *)targetPrefix
@@ -239,25 +239,23 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         
         AWSNetworkingRequest *networkingRequest = request.internalRequest;
         if (request) {
-            networkingRequest.parameters = [[MTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
+            networkingRequest.parameters = [[AWSMTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
         } else {
             networkingRequest.parameters = @{};
         }
         networkingRequest.HTTPMethod = HTTPMethod;
-        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithResource:AWSSTSDefinitionFileName
+        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithJSONDefinition:[[AWSSTSResources sharedInstance] JSONObject]
+                                                                                                   actionName:operationName];
+        networkingRequest.responseSerializer = [[AWSSTSResponseSerializer alloc] initWithJSONDefinition:[[AWSSTSResources sharedInstance] JSONObject]
                                                                                              actionName:operationName
-                                                                                         classForBundle:[self class]];
-        networkingRequest.responseSerializer = [[AWSSTSResponseSerializer alloc] initWithResource:AWSSTSDefinitionFileName
-                                                                                       actionName:operationName
-                                                                                      outputClass:outputClass
-                                                                                   classForBundle:[self class]];
+                                                                                            outputClass:outputClass];
         return [self.networking sendRequest:networkingRequest];
     }
 }
 
 #pragma mark - Service method
 
-- (BFTask *)assumeRole:(AWSSTSAssumeRoleRequest *)request {
+- (AWSTask *)assumeRole:(AWSSTSAssumeRoleRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -266,7 +264,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSTSAssumeRoleResponse class]];
 }
 
-- (BFTask *)assumeRoleWithSAML:(AWSSTSAssumeRoleWithSAMLRequest *)request {
+- (AWSTask *)assumeRoleWithSAML:(AWSSTSAssumeRoleWithSAMLRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -275,7 +273,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSTSAssumeRoleWithSAMLResponse class]];
 }
 
-- (BFTask *)assumeRoleWithWebIdentity:(AWSSTSAssumeRoleWithWebIdentityRequest *)request {
+- (AWSTask *)assumeRoleWithWebIdentity:(AWSSTSAssumeRoleWithWebIdentityRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -284,7 +282,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSTSAssumeRoleWithWebIdentityResponse class]];
 }
 
-- (BFTask *)decodeAuthorizationMessage:(AWSSTSDecodeAuthorizationMessageRequest *)request {
+- (AWSTask *)decodeAuthorizationMessage:(AWSSTSDecodeAuthorizationMessageRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -293,7 +291,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSTSDecodeAuthorizationMessageResponse class]];
 }
 
-- (BFTask *)getFederationToken:(AWSSTSGetFederationTokenRequest *)request {
+- (AWSTask *)getFederationToken:(AWSSTSGetFederationTokenRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -302,7 +300,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSTSGetFederationTokenResponse class]];
 }
 
-- (BFTask *)getSessionToken:(AWSSTSGetSessionTokenRequest *)request {
+- (AWSTask *)getSessionToken:(AWSSTSGetSessionTokenRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""

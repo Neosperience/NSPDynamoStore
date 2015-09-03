@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -20,17 +20,15 @@
 
 @interface AWSJSONRequestSerializer : NSObject <AWSURLRequestSerializer>
 
-- (instancetype)initWithResource:(NSString *)resource
-                      actionName:(NSString *)actionName
-                  classForBundle:(Class)classForBundle;
+- (instancetype)initWithJSONDefinition:(NSDictionary *)JSONDefinition
+                            actionName:(NSString *)actionName;
 
 @end
 
 @interface AWSXMLRequestSerializer : NSObject <AWSURLRequestSerializer>
 
-- (instancetype)initWithResource:(NSString *)resource
-                      actionName:(NSString *)actionName
-                  classForBundle:(Class)classForBundle;
+- (instancetype)initWithJSONDefinition:(NSDictionary *)JSONDefinition
+                      actionName:(NSString *)actionName;
 
 + (BOOL)constructURIandHeadersAndBody:(NSMutableURLRequest *)request
                                 rules:(AWSJSONDictionary *)rules
@@ -41,12 +39,10 @@
 
 @interface AWSQueryStringRequestSerializer : NSObject <AWSURLRequestSerializer>
 
-- (instancetype)initWithResource:(NSString *)resource
-                      actionName:(NSString *)actionName
-                  classForBundle:(Class)classForBundle;
+- (instancetype)initWithJSONDefinition:(NSDictionary *)JSONDefinition
+                            actionName:(NSString *)actionName;
 
 @property (nonatomic, strong) NSDictionary *additionalParameters;
-@property (nonatomic, strong) NSString *dateFormat;
 
 @end
 

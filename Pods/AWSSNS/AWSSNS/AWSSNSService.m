@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -24,6 +24,7 @@
 #import "AWSURLResponseSerialization.h"
 #import "AWSURLRequestRetryHandler.h"
 #import "AWSSynchronizedMutableDictionary.h"
+#import "AWSSNSResources.h"
 
 NSString *const AWSSNSDefinitionFileName = @"sns-2010-03-31";
 
@@ -87,9 +88,9 @@ static NSDictionary *errorCodeDictionary = nil;
         }
 
         if (self.outputClass) {
-            responseObject = [MTLJSONAdapter modelOfClass:self.outputClass
-                                       fromJSONDictionary:responseObject
-                                                    error:error];
+            responseObject = [AWSMTLJSONAdapter modelOfClass:self.outputClass
+                                          fromJSONDictionary:responseObject
+                                                       error:error];
         }
     }
 
@@ -223,15 +224,14 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         _configuration.baseURL = _configuration.endpoint.URL;
         _configuration.requestInterceptors = @[[AWSNetworkingRequestInterceptor new], signer];
         _configuration.retryHandler = [[AWSSNSRequestRetryHandler alloc] initWithMaximumRetryCount:_configuration.maxRetryCount];
-        _configuration.headers = @{@"Host" : _configuration.endpoint.hostName};
 
-        _networking = [AWSNetworking networking:_configuration];
+        _networking = [[AWSNetworking alloc] initWithConfiguration:_configuration];
     }
 
     return self;
 }
 
-- (BFTask *)invokeRequest:(AWSRequest *)request
+- (AWSTask *)invokeRequest:(AWSRequest *)request
                HTTPMethod:(AWSHTTPMethod)HTTPMethod
                 URLString:(NSString *) URLString
              targetPrefix:(NSString *)targetPrefix
@@ -245,25 +245,23 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         
         AWSNetworkingRequest *networkingRequest = request.internalRequest;
         if (request) {
-            networkingRequest.parameters = [[MTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
+            networkingRequest.parameters = [[AWSMTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
         } else {
             networkingRequest.parameters = @{};
         }
         networkingRequest.HTTPMethod = HTTPMethod;
-        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithResource:AWSSNSDefinitionFileName
+        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithJSONDefinition:[[AWSSNSResources sharedInstance] JSONObject]
+                                                                                                   actionName:operationName];
+        networkingRequest.responseSerializer = [[AWSSNSResponseSerializer alloc] initWithJSONDefinition:[[AWSSNSResources sharedInstance] JSONObject]
                                                                                              actionName:operationName
-                                                                                         classForBundle:[self class]];
-        networkingRequest.responseSerializer = [[AWSSNSResponseSerializer alloc] initWithResource:AWSSNSDefinitionFileName
-                                                                                       actionName:operationName
-                                                                                      outputClass:outputClass
-                                                                                   classForBundle:[self class]];
+                                                                                            outputClass:outputClass];
         return [self.networking sendRequest:networkingRequest];
     }
 }
 
 #pragma mark - Service method
 
-- (BFTask *)addPermission:(AWSSNSAddPermissionInput *)request {
+- (AWSTask *)addPermission:(AWSSNSAddPermissionInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -272,7 +270,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)confirmSubscription:(AWSSNSConfirmSubscriptionInput *)request {
+- (AWSTask *)confirmSubscription:(AWSSNSConfirmSubscriptionInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -281,7 +279,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSConfirmSubscriptionResponse class]];
 }
 
-- (BFTask *)createPlatformApplication:(AWSSNSCreatePlatformApplicationInput *)request {
+- (AWSTask *)createPlatformApplication:(AWSSNSCreatePlatformApplicationInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -290,7 +288,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSCreatePlatformApplicationResponse class]];
 }
 
-- (BFTask *)createPlatformEndpoint:(AWSSNSCreatePlatformEndpointInput *)request {
+- (AWSTask *)createPlatformEndpoint:(AWSSNSCreatePlatformEndpointInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -299,7 +297,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSCreateEndpointResponse class]];
 }
 
-- (BFTask *)createTopic:(AWSSNSCreateTopicInput *)request {
+- (AWSTask *)createTopic:(AWSSNSCreateTopicInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -308,7 +306,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSCreateTopicResponse class]];
 }
 
-- (BFTask *)deleteEndpoint:(AWSSNSDeleteEndpointInput *)request {
+- (AWSTask *)deleteEndpoint:(AWSSNSDeleteEndpointInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -317,7 +315,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deletePlatformApplication:(AWSSNSDeletePlatformApplicationInput *)request {
+- (AWSTask *)deletePlatformApplication:(AWSSNSDeletePlatformApplicationInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -326,7 +324,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteTopic:(AWSSNSDeleteTopicInput *)request {
+- (AWSTask *)deleteTopic:(AWSSNSDeleteTopicInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -335,7 +333,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)getEndpointAttributes:(AWSSNSGetEndpointAttributesInput *)request {
+- (AWSTask *)getEndpointAttributes:(AWSSNSGetEndpointAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -344,7 +342,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSGetEndpointAttributesResponse class]];
 }
 
-- (BFTask *)getPlatformApplicationAttributes:(AWSSNSGetPlatformApplicationAttributesInput *)request {
+- (AWSTask *)getPlatformApplicationAttributes:(AWSSNSGetPlatformApplicationAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -353,7 +351,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSGetPlatformApplicationAttributesResponse class]];
 }
 
-- (BFTask *)getSubscriptionAttributes:(AWSSNSGetSubscriptionAttributesInput *)request {
+- (AWSTask *)getSubscriptionAttributes:(AWSSNSGetSubscriptionAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -362,7 +360,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSGetSubscriptionAttributesResponse class]];
 }
 
-- (BFTask *)getTopicAttributes:(AWSSNSGetTopicAttributesInput *)request {
+- (AWSTask *)getTopicAttributes:(AWSSNSGetTopicAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -371,7 +369,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSGetTopicAttributesResponse class]];
 }
 
-- (BFTask *)listEndpointsByPlatformApplication:(AWSSNSListEndpointsByPlatformApplicationInput *)request {
+- (AWSTask *)listEndpointsByPlatformApplication:(AWSSNSListEndpointsByPlatformApplicationInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -380,7 +378,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSListEndpointsByPlatformApplicationResponse class]];
 }
 
-- (BFTask *)listPlatformApplications:(AWSSNSListPlatformApplicationsInput *)request {
+- (AWSTask *)listPlatformApplications:(AWSSNSListPlatformApplicationsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -389,7 +387,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSListPlatformApplicationsResponse class]];
 }
 
-- (BFTask *)listSubscriptions:(AWSSNSListSubscriptionsInput *)request {
+- (AWSTask *)listSubscriptions:(AWSSNSListSubscriptionsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -398,7 +396,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSListSubscriptionsResponse class]];
 }
 
-- (BFTask *)listSubscriptionsByTopic:(AWSSNSListSubscriptionsByTopicInput *)request {
+- (AWSTask *)listSubscriptionsByTopic:(AWSSNSListSubscriptionsByTopicInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -407,7 +405,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSListSubscriptionsByTopicResponse class]];
 }
 
-- (BFTask *)listTopics:(AWSSNSListTopicsInput *)request {
+- (AWSTask *)listTopics:(AWSSNSListTopicsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -416,7 +414,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSListTopicsResponse class]];
 }
 
-- (BFTask *)publish:(AWSSNSPublishInput *)request {
+- (AWSTask *)publish:(AWSSNSPublishInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -425,7 +423,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSPublishResponse class]];
 }
 
-- (BFTask *)removePermission:(AWSSNSRemovePermissionInput *)request {
+- (AWSTask *)removePermission:(AWSSNSRemovePermissionInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -434,7 +432,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setEndpointAttributes:(AWSSNSSetEndpointAttributesInput *)request {
+- (AWSTask *)setEndpointAttributes:(AWSSNSSetEndpointAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -443,7 +441,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setPlatformApplicationAttributes:(AWSSNSSetPlatformApplicationAttributesInput *)request {
+- (AWSTask *)setPlatformApplicationAttributes:(AWSSNSSetPlatformApplicationAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -452,7 +450,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setSubscriptionAttributes:(AWSSNSSetSubscriptionAttributesInput *)request {
+- (AWSTask *)setSubscriptionAttributes:(AWSSNSSetSubscriptionAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -461,7 +459,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setTopicAttributes:(AWSSNSSetTopicAttributesInput *)request {
+- (AWSTask *)setTopicAttributes:(AWSSNSSetTopicAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -470,7 +468,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)subscribe:(AWSSNSSubscribeInput *)request {
+- (AWSTask *)subscribe:(AWSSNSSubscribeInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -479,7 +477,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSSNSSubscribeResponse class]];
 }
 
-- (BFTask *)unsubscribe:(AWSSNSUnsubscribeInput *)request {
+- (AWSTask *)unsubscribe:(AWSSNSUnsubscribeInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""

@@ -1,6 +1,0 @@
-#include "Pods-NSPDynamoStore-AWSCloudWatch.xcconfig"
-GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
-HEADER_SEARCH_PATHS = "${PODS_ROOT}/Headers/Private" "${PODS_ROOT}/Headers/Private/AWSCloudWatch" "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/AWSAutoScaling" "${PODS_ROOT}/Headers/Public/AWSCloudWatch" "${PODS_ROOT}/Headers/Public/AWSCognito" "${PODS_ROOT}/Headers/Public/AWSCognitoSync" "${PODS_ROOT}/Headers/Public/AWSCore" "${PODS_ROOT}/Headers/Public/AWSDynamoDB" "${PODS_ROOT}/Headers/Public/AWSEC2" "${PODS_ROOT}/Headers/Public/AWSElasticLoadBalancing" "${PODS_ROOT}/Headers/Public/AWSKinesis" "${PODS_ROOT}/Headers/Public/AWSS3" "${PODS_ROOT}/Headers/Public/AWSSES" "${PODS_ROOT}/Headers/Public/AWSSNS" "${PODS_ROOT}/Headers/Public/AWSSQS" "${PODS_ROOT}/Headers/Public/AWSSimpleDB" "${PODS_ROOT}/Headers/Public/AWSiOSSDKv2" "${PODS_ROOT}/Headers/Public/Bolts" "${PODS_ROOT}/Headers/Public/FMDB" "${PODS_ROOT}/Headers/Public/GZIP" "${PODS_ROOT}/Headers/Public/Mantle" "${PODS_ROOT}/Headers/Public/NSPCoreUtils" "${PODS_ROOT}/Headers/Public/Reachability" "${PODS_ROOT}/Headers/Public/TMCache" "${PODS_ROOT}/Headers/Public/UICKeyChainStore" "${PODS_ROOT}/Headers/Public/XMLDictionary"
-OTHER_LDFLAGS = -ObjC
-PODS_ROOT = ${SRCROOT}
-SKIP_INSTALL = YES

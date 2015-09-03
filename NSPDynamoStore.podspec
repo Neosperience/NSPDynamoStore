@@ -8,9 +8,9 @@ Pod::Spec.new do |s|
 						DESC
 	s.homepage     = "https://bitbucket.org/neosperience/nspdynamostore.git"
 	s.license      = { :type => 'MIT', :file => 'LICENSE' }
-	s.author       = { "Janos Tolgyes" => "janos.tolgyesi@neosperience.com" }
+	s.author       = { "Janos Tolgyesi" => "janos.tolgyesi@neosperience.com" }
 
-	s.platform     = :ios, '6.0'
+	s.platform     = :ios, '7.0'
 	s.source       = { :git => "https://bitbucket.org/neosperience/nspdynamostore.git", :tag => "0.0.2" }
 
 	s.requires_arc = true
@@ -28,21 +28,24 @@ Pod::Spec.new do |s|
 	#Core - NSPDynamoStore
 	s.subspec 'Core' do |sm|
 		sm.frameworks = 'CoreData'
-		sm.dependency 'AWSiOSSDKv2', '~> 2.1.2'
-		sm.dependency 'AWSDynamoDB', '~> 2.1.2'
+		sm.dependency 'AWSCore', '~> 2.2.0'
+		sm.dependency 'AWSiOSSDKv2', '~> 2.2.0'
+		sm.dependency 'AWSDynamoDB', '~> 2.2.0'
 		sm.dependency 'Bolts'
-		sm.dependency 'AWSCognitoSync'
+		sm.dependency 'AWSCognito'
 		sm.dependency 'NSPCoreUtils/NSPDefines'
 		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'
 		sm.dependency 'NSPCoreUtils/NSPTypeCheck'
+		sm.dependency 'NSPCoreUtils/NSPBoltsUtils'
 		sm.source_files  = 'NSPDynamoStore/NSPDynamoStore/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoStore/NSPDynamoStore/**/*.h'
 	end
-	
+
 	# NSPDynamoSync
 	s.subspec 'NSPDynamoSync' do |sm|
 		sm.dependency 'Bolts'
+		sm.dependency 'NSPDynamoStore/Core'
 		sm.dependency 'NSPCoreUtils/NSPDefines'
 		sm.dependency 'NSPCoreUtils/NSPLogger'
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'

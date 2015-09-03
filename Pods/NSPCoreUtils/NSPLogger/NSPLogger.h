@@ -36,9 +36,9 @@
 
 #elif (NSPLOGGER_SELECTED_LOGGER == NSPLOGGER_COCOALUMBERJACK)
 
-#import <DDLog.h>
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
-extern const int ddLogLevel;
+extern const DDLogLevel ddLogLevel;
 
 #define NSPLogVerbose(fmt, ...)     DDLogVerbose(fmt, ##__VA_ARGS__);
 #define NSPLogInfo(fmt, ...)        DDLogInfo(fmt, ##__VA_ARGS__);

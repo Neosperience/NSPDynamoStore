@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -17,7 +17,12 @@
 #import <objc/runtime.h>
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonDigest.h>
+#import <UIKit/UIKit.h>
 #import "AWSLogging.h"
+#import "AWSGZIP.h"
+#import "AWSMantle.h"
+
+NSString *const AWSiOSSDKVersion = @"2.2.5";
 
 NSString *const AWSDateRFC822DateFormat1 = @"EEE, dd MMM yyyy HH:mm:ss z";
 NSString *const AWSDateISO8601DateFormat1 = @"yyyy-MM-dd'T'HH:mm:ss'Z'";
@@ -25,9 +30,32 @@ NSString *const AWSDateISO8601DateFormat2 = @"yyyyMMdd'T'HHmmss'Z'";
 NSString *const AWSDateISO8601DateFormat3 = @"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 NSString *const AWSDateShortDateFormat1 = @"yyyyMMdd";
 
+@interface AWSCategory : NSObject
+
++ (void)loadCategories;
+
+@end
+
+@implementation AWSCategory
+
++ (void)loadCategories {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        awsgzip_loadGZIP();
+        awsmtl_loadMTLPredefinedTransformerAdditions();
+        awsmtl_loadMTLNSCoding();
+    });
+}
+
+@end
+
 @implementation NSDate (AWS)
 
 static NSTimeInterval _clockskew = 0.0;
+
++ (NSDate *)aws_clockSkewFixedDate {
+    return [[NSDate date] dateByAddingTimeInterval:-1 * _clockskew];
+}
 
 + (NSDate *)aws_dateFromString:(NSString *)string {
     NSDate *parsedDate = nil;
@@ -50,11 +78,7 @@ static NSTimeInterval _clockskew = 0.0;
     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
     dateFormatter.dateFormat = dateFormat;
 
-    NSDate *parsed = [dateFormatter dateFromString:string];
-
-    NSDate *localDate = [parsed dateByAddingTimeInterval:_clockskew];
-
-    return localDate;
+    return [dateFormatter dateFromString:string];
 }
 
 - (NSString *)aws_stringValue:(NSString *)dateFormat {
@@ -63,56 +87,18 @@ static NSTimeInterval _clockskew = 0.0;
     dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
     dateFormatter.dateFormat = dateFormat;
 
-    //ClockSkew Correction
-    NSDate *correctDate = [self dateByAddingTimeInterval:-1*_clockskew];
-    NSString *formatted = [dateFormatter stringFromDate:correctDate];
-
-    return formatted;
+    return [dateFormatter stringFromDate:self];
 }
 
-+ (void)aws_setRuntimeClockSkew:(NSTimeInterval)clockskew
-{
++ (void)aws_setRuntimeClockSkew:(NSTimeInterval)clockskew {
     @synchronized(self) {
         _clockskew = clockskew;
     }
 }
 
-+ (NSTimeInterval)aws_getRuntimeClockSkew
-{
++ (NSTimeInterval)aws_getRuntimeClockSkew {
     @synchronized(self) {
         return _clockskew;
-    }
-}
-
-+ (NSDate *)aws_getDateFromMessageBody:(NSString *)messageBody
-{
-    if ([messageBody length] == 0) {
-        return nil;
-    }
-    NSString *time = nil;
-    // if local device time is behind than server time
-    if ([messageBody rangeOfString:@" + 15"].location == NSNotFound) {
-        time = [self getTimeUsingBeginTag:@" (" andEndTag:@" - 15 min.)" fromResponseBody:messageBody];
-    }
-    else {
-        time =  [self getTimeUsingBeginTag:@" (" andEndTag:@" + 15 min.)" fromResponseBody:messageBody];
-    }
-
-    return [self aws_dateFromString:time];
-}
-
-+ (NSString *)getTimeUsingBeginTag:(NSString *)bTag andEndTag:(NSString *)eTag fromResponseBody:(NSString *)responseBody {
-    // Extract server time from response message body.
-    @try {
-        NSRange rLeft = [responseBody rangeOfString:bTag];
-        NSRange rRight = [responseBody rangeOfString:eTag];
-        NSUInteger loc = rLeft.location + rLeft.length;
-        NSUInteger len = rRight.location - rLeft.location - rLeft.length;
-        NSRange sub = NSMakeRange(loc, len);
-        NSString *date = [responseBody substringWithRange:sub];
-        return date;
-    } @catch (NSException *e) {
-        return nil;
     }
 }
 
@@ -121,14 +107,25 @@ static NSTimeInterval _clockskew = 0.0;
 @implementation NSDictionary (AWS)
 
 - (NSDictionary *)aws_removeNullValues {
-    NSMutableDictionary *mutableDictionary = [NSMutableDictionary new];
-    [self enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if (obj != [NSNull null]) {
-            [mutableDictionary setObject:obj forKey:key];
-        }
-    }];
+    return [self aws_recursivelyRemoveNullEntries:self];
+}
 
-    return mutableDictionary;
+- (NSDictionary *)aws_recursivelyRemoveNullEntries:(NSDictionary *)inputDictionary {
+    
+    NSMutableDictionary *resultMutableDictionary = [NSMutableDictionary new];
+    
+    for (NSString *key in inputDictionary) {
+        id value = inputDictionary[key];
+        if ([value isEqual:[NSNull null]]) {
+            continue;
+        }
+        if([value isKindOfClass:[NSDictionary class]]) {
+            [resultMutableDictionary setObject:[self aws_recursivelyRemoveNullEntries:value] forKey:key];
+        } else {
+            [resultMutableDictionary setObject:value forKey:key];
+        }
+    }
+    return resultMutableDictionary;
 }
 
 -(id) aws_objectForCaseInsensitiveKey:(id)aKey {
@@ -232,55 +229,39 @@ static NSTimeInterval _clockskew = 0.0;
     }
 }
 
-- (BOOL)aws_isDNSBucketName:(NSString *)theBucketName;
-{
-    if (theBucketName == nil) {
-        return NO;
-    }
-    
-    if ( [theBucketName length] < 3 || [theBucketName length] > 63) {
-        return NO;
-    }
-    
-    if ( [theBucketName hasSuffix:@"-"]) {
-        return NO;
-    }
-    
-    if ( [self aws_contains:theBucketName searchString:@"_"]) {
-        return NO;
-    }
-    
-    if ( [self aws_contains:theBucketName searchString:@"-."] ||
-        [self aws_contains:theBucketName searchString:@".-"]) {
-        return NO;
-    }
-    
-    if ( [[theBucketName lowercaseString] isEqualToString:theBucketName] == NO) {
-        return NO;
-    }
-    
-    return YES;
-}
-
-- (BOOL)aws_isVirtualHostedStyleCompliant:(NSString *)theBucketName
-{
-    if (![self aws_isDNSBucketName:theBucketName]) {
-        return NO;
-    } else {
-        return ![self aws_contains:theBucketName searchString:@"."];
-    }
-}
-
-- (BOOL)aws_contains:(NSString *)sourceString searchString:(NSString *)searchString
-{
-    NSRange range = [sourceString rangeOfString:searchString];
-    
-    return (range.location != NSNotFound);
-}
-
 @end
 
 @implementation NSString (AWS)
+
++ (NSString *)aws_base64md5FromData:(NSData *)data {
+    
+    if([data length] > UINT32_MAX)
+    {
+        //The NSData size is too large. The maximum allowable size is UINT32_MAX.
+        return nil;
+    }
+    
+    const void    *cStr = [data bytes];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+    
+    CC_MD5(cStr, (uint32_t)[data length], result);
+    
+    NSData *md5 = [[NSData alloc] initWithBytes:result length:CC_MD5_DIGEST_LENGTH];
+    return [md5 base64EncodedStringWithOptions:kNilOptions];
+}
+
++ (NSString *)aws_baseUserAgent {
+    static NSString *_userAgent = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *systemName = [[[UIDevice currentDevice] systemName] stringByReplacingOccurrencesOfString:@" " withString:@"-"];
+        NSString *systemVersion = [[UIDevice currentDevice] systemVersion];
+        NSString *localeIdentifier = [[NSLocale currentLocale] localeIdentifier];
+        _userAgent = [NSString stringWithFormat:@"aws-sdk-iOS/%@ %@/%@ %@", AWSiOSSDKVersion, systemName, systemVersion, localeIdentifier];
+    });
+
+    return _userAgent;
+}
 
 - (BOOL)aws_isBase64Data {
     if ([self length] % 4 == 0) {
@@ -324,6 +305,18 @@ static NSTimeInterval _clockskew = 0.0;
 }
 
 - (NSString *)aws_md5String {
+    NSData *dataString = [self dataUsingEncoding:NSUTF8StringEncoding];
+    unsigned char digestArray[CC_MD5_DIGEST_LENGTH];
+    CC_MD5([dataString bytes], (CC_LONG)[dataString length], digestArray);
+
+    NSMutableString *md5String = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+        [md5String appendFormat:@"%02x", digestArray[i]];
+    }
+    return md5String;
+}
+
+- (NSString *)aws_md5StringLittleEndian {
     NSData *dataString = [self dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
     unsigned char digestArray[CC_MD5_DIGEST_LENGTH];
     CC_MD5([dataString bytes], (CC_LONG)[dataString length], digestArray);
@@ -335,44 +328,104 @@ static NSTimeInterval _clockskew = 0.0;
     return md5String;
 }
 
+- (BOOL)aws_isDNSBucketName {
+    if ([self length] < 3 || [self length] > 63) {
+        return NO;
+    }
+
+    if ([self hasSuffix:@"-"]) {
+        return NO;
+    }
+
+    if ([self aws_contains:@"_"]) {
+        return NO;
+    }
+
+    if ([self aws_contains:@"-."] || [self aws_contains:@".-"]) {
+        return NO;
+    }
+
+    if ([[self lowercaseString] isEqualToString:self] == NO) {
+        return NO;
+    }
+
+    return YES;
+}
+
+- (BOOL)aws_isVirtualHostedStyleCompliant {
+    if (![self aws_isDNSBucketName]) {
+        return NO;
+    } else {
+        return ![self aws_contains:@"."];
+    }
+}
+
+- (BOOL)aws_contains:(NSString *)searchString {
+    NSRange range = [self rangeOfString:searchString];
+
+    return (range.location != NSNotFound);
+}
+
 @end
 
-@implementation NSURL (AWS)
+@implementation NSFileManager (AWS)
 
-- (NSURL *)aws_URLByAppendingQuery:(NSDictionary *)query {
-    if ([query count] == 0) {
-        return self;
-    }
-
-    NSMutableString *queryString = [NSMutableString new];
-    for (NSString *key in query) {
-
-        //lowercase first char
-        //TODO this is a temporary fix, parse the query string properly and setup the dictionary with the key as the parameter, not the token
-        NSString * correctedKey = [[[key substringToIndex:1] lowercaseString] stringByAppendingString: [key length]>1 ? [key substringFromIndex:1] : @"" ];
-
-        if ([queryString length] > 0) {
-            [queryString appendString:@"&"];
+- (BOOL)aws_atomicallyCopyItemAtURL:(NSURL *)sourceURL
+                              toURL:(NSURL *)destinationURL
+                     backupItemName:(NSString *)backupItemName
+                              error:(NSError **)outError {
+    
+    NSURL *tempDir = [self URLForDirectory:NSItemReplacementDirectory
+                                  inDomain:NSUserDomainMask
+                         appropriateForURL:destinationURL
+                                    create:YES
+                                     error:outError];
+    
+    if (!tempDir) return NO;
+    
+    NSURL *tempURL = [tempDir URLByAppendingPathComponent:[destinationURL lastPathComponent]];
+    
+    BOOL result = [self copyItemAtURL:sourceURL toURL:tempURL error:outError];
+    if (result) {
+        
+        result = [self replaceItemAtURL:destinationURL
+                          withItemAtURL:tempURL
+                         backupItemName:backupItemName
+                                options:NSFileManagerItemReplacementUsingNewMetadataOnly
+                       resultingItemURL:nil
+                                  error:outError];
+        if ( NO == result ) {
+            if (backupItemName) {
+                NSURL *backupItemURL = [[destinationURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:backupItemName];
+                NSError *error = nil;
+                BOOL success = [self replaceItemAtURL:destinationURL
+                                        withItemAtURL:backupItemURL
+                                       backupItemName:nil
+                                              options:NSFileManagerItemReplacementUsingNewMetadataOnly
+                                     resultingItemURL:nil error:&error];
+                if (NO == success) {
+                    if (error) {
+                        AWSLogError(@"Failed to move backupItemURL directory(%@) to destinationURL(%@): %@" ,backupItemURL,destinationURL,error);
+                    }
+                    if ([self fileExistsAtPath:[destinationURL path]]) {
+                        NSError *removeError = nil;
+                        if (NO == [self removeItemAtURL:destinationURL error:&removeError]) {
+                            AWSLogError(@"Failed to remove destinationURL(%@): %@",destinationURL,removeError);
+                        }
+                    }
+                    
+                }
+            }
         }
-
-        NSString *value = nil;
-        if ([query[key] isKindOfClass:[NSString class]]) {
-            value = query[key];
-        } else if ([query[key] isKindOfClass:[NSNumber class]]) {
-            value = [query[key] stringValue];
-        } else {
-            value = [query[key] description];
-            AWSLogWarn(@"Query value is neither NSString nor NSNumber. This method should properly handle this datatype. [%@]", query[key]);
-        }
-        [queryString appendString:[NSString stringWithFormat:@"%@=%@",
-                                   [correctedKey aws_stringWithURLEncoding],
-                                   [value aws_stringWithURLEncoding]]];
     }
-
-    return [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@",
-                                 [self absoluteString],
-                                 [self query] ? @"&" : @"?",
-                                 queryString]];
+    
+    NSError *error;
+    if (![self removeItemAtURL:tempDir error:&error])
+    {
+        AWSLogError(@"Failed to remove temp(%@) directory after atomic copy: %@",tempDir,error);
+    }
+    
+    return result;
 }
 
 @end

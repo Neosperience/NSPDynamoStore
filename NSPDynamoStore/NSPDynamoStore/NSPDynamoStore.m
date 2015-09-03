@@ -19,6 +19,7 @@
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <AWSCognito/AWSCognito.h>
+#import <AWSCore/AWSCore.h>
 #import <NSPCoreUtils/NSPLogger.h>
 #import <NSPCoreUtils/NSArray+NSPCollectionUtils.h>
 #import <NSPCoreUtils/NSDictionary+NSPCollectionUtils.h>
@@ -107,7 +108,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
 
     __block NSDictionary* dynamoAttributes = nil;
     __block NSError* fetchError = nil;
-    [[[self.dynamoDB getItem:getItemInput] continueWithBlock:^id(BFTask *task) {
+    [[[self.dynamoDB getItem:getItemInput] continueWithBlock:^id(AWSTask *task) {
 
         if (task.error) {
             fetchError = task.error;
@@ -346,12 +347,12 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
     return batchGetInput;
 }
 
--(BFTask*)executeAWSRequestForFetchRequest:(NSFetchRequest*)fetchRequest
+-(AWSTask*)executeAWSRequestForFetchRequest:(NSFetchRequest*)fetchRequest
                                withContext:(NSManagedObjectContext *)context
                                    results:(NSMutableArray*)results
                          exclusiveStartKey:(NSDictionary*)exclusiveStartKey
 {
-    BFTask* task = nil;
+    AWSTask* task = nil;
 
     AWSDynamoDBBatchGetItemInput* batchGetInput = [self batchGetInputForFetchRequest:fetchRequest];
 
@@ -372,7 +373,7 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
         }
     }
 
-    return [task continueWithSuccessBlock:^id(BFTask *task) {
+    return [task continueWithSuccessBlock:^id(AWSTask *task) {
 
         if (task.error) {
             return [BFTask taskWithError:task.error];
@@ -422,11 +423,11 @@ NSString* const NSPDynamoStoreKeySeparator = @"<nsp_key_separator>";
                          error:(NSError *__autoreleasing *)error
 {
     NSMutableArray* results = [NSMutableArray array];
-    BFTask* task = [self executeAWSRequestForFetchRequest:fetchRequest withContext:context results:results exclusiveStartKey:nil];
+    AWSTask* task = [self executeAWSRequestForFetchRequest:fetchRequest withContext:context results:results exclusiveStartKey:nil];
 
     __block NSError* fetchError = nil;
 
-    [[task continueWithBlock:^id(BFTask *task) {
+    [[task continueWithBlock:^id(AWSTask *task) {
 
         if (task.error) {
             fetchError = task.error;

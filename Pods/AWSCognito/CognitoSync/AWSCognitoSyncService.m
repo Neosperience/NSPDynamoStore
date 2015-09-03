@@ -1,18 +1,18 @@
-/**
+/*
  Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  */
 
 #import "AWSCognitoSyncService.h"
-#import "AWSNetworking.h"
-#import "AWSCategory.h"
-#import "AWSNetworking.h"
-#import "AWSSignature.h"
-#import "AWSService.h"
-#import "AWSNetworking.h"
-#import "AWSURLRequestSerialization.h"
-#import "AWSURLResponseSerialization.h"
-#import "AWSURLRequestRetryHandler.h"
-#import "AWSSynchronizedMutableDictionary.h"
+#import <AWSCore/AWSNetworking.h>
+#import <AWSCore/AWSCategory.h>
+#import <AWSCore/AWSNetworking.h>
+#import <AWSCore/AWSSignature.h>
+#import <AWSCore/AWSService.h>
+#import <AWSCore/AWSURLRequestSerialization.h>
+#import <AWSCore/AWSURLResponseSerialization.h>
+#import <AWSCore/AWSURLRequestRetryHandler.h>
+#import <AWSCore/AWSSynchronizedMutableDictionary.h>
+#import "AWSCognitoSyncResources.h"
 
 NSString *const AWSCognitoSyncDefinitionFileName = @"cognito-sync-2014-06-30";
 
@@ -80,7 +80,7 @@ static NSDictionary *errorCodeDictionary = nil;
         }
 
         if (self.outputClass) {
-            responseObject = [MTLJSONAdapter modelOfClass:self.outputClass
+            responseObject = [AWSMTLJSONAdapter modelOfClass:self.outputClass
                                        fromJSONDictionary:responseObject
                                                     error:error];
         }
@@ -205,13 +205,13 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         _configuration.headers = @{@"Host" : _endpoint.hostName,
                                    @"Content-Type" : @"application/x-amz-json-1.1"};
 
-        _networking = [AWSNetworking networking:_configuration];
+        _networking = [[AWSNetworking alloc] initWithConfiguration:_configuration];
     }
 
     return self;
 }
 
-- (BFTask *)invokeRequest:(AWSRequest *)request
+- (AWSTask *)invokeRequest:(AWSRequest *)request
                HTTPMethod:(AWSHTTPMethod)HTTPMethod
                 URLString:(NSString *) URLString
              targetPrefix:(NSString *)targetPrefix
@@ -223,7 +223,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
 
     AWSNetworkingRequest *networkingRequest = request.internalRequest;
     if (request) {
-        networkingRequest.parameters = [[MTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
+        networkingRequest.parameters = [[AWSMTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
     } else {
         networkingRequest.parameters = @{};
     }
@@ -233,19 +233,17 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
 
     networkingRequest.headers = headers;
     networkingRequest.HTTPMethod = HTTPMethod;
-    networkingRequest.requestSerializer = [[AWSJSONRequestSerializer alloc] initWithResource:AWSCognitoSyncDefinitionFileName
-                                                                                  actionName:operationName
-                                                                              classForBundle:[self class]];
-    networkingRequest.responseSerializer = [[AWSCognitoSyncResponseSerializer alloc] initWithResource:AWSCognitoSyncDefinitionFileName
-                                                                                           actionName:operationName
-                                                                                          outputClass:outputClass
-                                                                                       classForBundle:[self class]];
+    networkingRequest.requestSerializer = [[AWSJSONRequestSerializer alloc] initWithJSONDefinition:[[AWSCognitoSyncResources sharedInstance] JSONObject]
+                                                                                        actionName:operationName];
+    networkingRequest.responseSerializer = [[AWSCognitoSyncResponseSerializer alloc] initWithJSONDefinition:[[AWSCognitoSyncResources sharedInstance] JSONObject]
+                                                                                                     actionName:operationName
+                                                                                                    outputClass:outputClass];
     return [self.networking sendRequest:networkingRequest];
 }
 
 #pragma mark - Service method
 
-- (BFTask *)bulkPublish:(AWSCognitoSyncBulkPublishRequest *)request {
+- (AWSTask *)bulkPublish:(AWSCognitoSyncBulkPublishRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/bulkpublish"
@@ -254,7 +252,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncBulkPublishResponse class]];
 }
 
-- (BFTask *)deleteDataset:(AWSCognitoSyncDeleteDatasetRequest *)request {
+- (AWSTask *)deleteDataset:(AWSCognitoSyncDeleteDatasetRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodDELETE
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}"
@@ -263,7 +261,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncDeleteDatasetResponse class]];
 }
 
-- (BFTask *)describeDataset:(AWSCognitoSyncDescribeDatasetRequest *)request {
+- (AWSTask *)describeDataset:(AWSCognitoSyncDescribeDatasetRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}"
@@ -272,7 +270,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncDescribeDatasetResponse class]];
 }
 
-- (BFTask *)describeIdentityPoolUsage:(AWSCognitoSyncDescribeIdentityPoolUsageRequest *)request {
+- (AWSTask *)describeIdentityPoolUsage:(AWSCognitoSyncDescribeIdentityPoolUsageRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}"
@@ -281,7 +279,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncDescribeIdentityPoolUsageResponse class]];
 }
 
-- (BFTask *)describeIdentityUsage:(AWSCognitoSyncDescribeIdentityUsageRequest *)request {
+- (AWSTask *)describeIdentityUsage:(AWSCognitoSyncDescribeIdentityUsageRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}"
@@ -290,7 +288,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncDescribeIdentityUsageResponse class]];
 }
 
-- (BFTask *)getBulkPublishDetails:(AWSCognitoSyncGetBulkPublishDetailsRequest *)request {
+- (AWSTask *)getBulkPublishDetails:(AWSCognitoSyncGetBulkPublishDetailsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/getBulkPublishDetails"
@@ -299,7 +297,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncGetBulkPublishDetailsResponse class]];
 }
 
-- (BFTask *)getCognitoEvents:(AWSCognitoSyncGetCognitoEventsRequest *)request {
+- (AWSTask *)getCognitoEvents:(AWSCognitoSyncGetCognitoEventsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/events"
@@ -308,7 +306,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncGetCognitoEventsResponse class]];
 }
 
-- (BFTask *)getIdentityPoolConfiguration:(AWSCognitoSyncGetIdentityPoolConfigurationRequest *)request {
+- (AWSTask *)getIdentityPoolConfiguration:(AWSCognitoSyncGetIdentityPoolConfigurationRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/configuration"
@@ -317,7 +315,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncGetIdentityPoolConfigurationResponse class]];
 }
 
-- (BFTask *)listDatasets:(AWSCognitoSyncListDatasetsRequest *)request {
+- (AWSTask *)listDatasets:(AWSCognitoSyncListDatasetsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets"
@@ -326,7 +324,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncListDatasetsResponse class]];
 }
 
-- (BFTask *)listIdentityPoolUsage:(AWSCognitoSyncListIdentityPoolUsageRequest *)request {
+- (AWSTask *)listIdentityPoolUsage:(AWSCognitoSyncListIdentityPoolUsageRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools"
@@ -335,7 +333,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncListIdentityPoolUsageResponse class]];
 }
 
-- (BFTask *)listRecords:(AWSCognitoSyncListRecordsRequest *)request {
+- (AWSTask *)listRecords:(AWSCognitoSyncListRecordsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodGET
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}/records"
@@ -344,7 +342,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncListRecordsResponse class]];
 }
 
-- (BFTask *)registerDevice:(AWSCognitoSyncRegisterDeviceRequest *)request {
+- (AWSTask *)registerDevice:(AWSCognitoSyncRegisterDeviceRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/identity/{IdentityId}/device"
@@ -353,7 +351,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncRegisterDeviceResponse class]];
 }
 
-- (BFTask *)setCognitoEvents:(AWSCognitoSyncSetCognitoEventsRequest *)request {
+- (AWSTask *)setCognitoEvents:(AWSCognitoSyncSetCognitoEventsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/events"
@@ -362,7 +360,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setIdentityPoolConfiguration:(AWSCognitoSyncSetIdentityPoolConfigurationRequest *)request {
+- (AWSTask *)setIdentityPoolConfiguration:(AWSCognitoSyncSetIdentityPoolConfigurationRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/configuration"
@@ -371,7 +369,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncSetIdentityPoolConfigurationResponse class]];
 }
 
-- (BFTask *)subscribeToDataset:(AWSCognitoSyncSubscribeToDatasetRequest *)request {
+- (AWSTask *)subscribeToDataset:(AWSCognitoSyncSubscribeToDatasetRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}/subscriptions/{DeviceId}"
@@ -380,7 +378,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncSubscribeToDatasetResponse class]];
 }
 
-- (BFTask *)unsubscribeFromDataset:(AWSCognitoSyncUnsubscribeFromDatasetRequest *)request {
+- (AWSTask *)unsubscribeFromDataset:(AWSCognitoSyncUnsubscribeFromDatasetRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodDELETE
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}/subscriptions/{DeviceId}"
@@ -389,7 +387,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSCognitoSyncUnsubscribeFromDatasetResponse class]];
 }
 
-- (BFTask *)updateRecords:(AWSCognitoSyncUpdateRecordsRequest *)request {
+- (AWSTask *)updateRecords:(AWSCognitoSyncUpdateRecordsRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@"/identitypools/{IdentityPoolId}/identities/{IdentityId}/datasets/{DatasetName}"

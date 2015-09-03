@@ -1,1 +1,0 @@
-../../../AWSCore/AWSCore/MobileAnalytics/Internal/AWSMobileAnalyticsPausedSessionState.h

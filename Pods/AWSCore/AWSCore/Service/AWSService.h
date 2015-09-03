@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -41,7 +41,7 @@
 /**
  The default service configuration object. This property can be set only once, and any subsequent setters are ignored.
  */
-@property (nonatomic, strong) AWSServiceConfiguration *defaultServiceConfiguration;
+@property (nonatomic, copy) AWSServiceConfiguration *defaultServiceConfiguration;
 
 /**
  Returns a default singleton object. You should use this singleton method instead of creating an instance of the service manager.
@@ -66,7 +66,6 @@
 @property (nonatomic, assign, readonly) AWSRegionType regionType;
 @property (nonatomic, strong, readonly) id<AWSCredentialsProvider> credentialsProvider;
 @property (nonatomic, strong, readonly) AWSEndpoint *endpoint;
-@property (nonatomic, assign) uint32_t maxRetryCount;
 
 - (instancetype)initWithRegion:(AWSRegionType)regionType
            credentialsProvider:(id<AWSCredentialsProvider>)credentialsProvider;
@@ -91,5 +90,9 @@
 - (instancetype)initWithRegion:(AWSRegionType)regionType
                        service:(AWSServiceType)serviceType
                   useUnsafeURL:(BOOL)useUnsafeURL;
+
+- (instancetype)initWithRegion:(AWSRegionType)regionType
+                       service:(AWSServiceType)serviceType
+                           URL:(NSURL *)URL;
 
 @end

@@ -8,10 +8,6 @@
 
 #import "NSPDynamoSync.h"
 
-#import "NSManagedObjectContext+NSPTask.h"
-
-#import "BFTask+NSPUtils.h"
-
 #import "NSPDynamoStore.h"
 #import "NSPDynamoStoreKeyPair.h"
 #import "NSEntityDescription+NSPDynamoStore.h"
@@ -20,6 +16,8 @@
 #import <NSPCoreUtils/NSArray+NSPCollectionUtils.h>
 #import <NSPCoreUtils/NSDictionary+NSPCollectionUtils.h>
 #import <NSPCoreUtils/NSPLogger.h>
+#import <NSPCoreUtils/BFTask+NSPUtils.h>
+#import <NSPCoreUtils/NSManagedObjectContext+NSPTask.h>
 
 #import <Bolts/Bolts.h>
 

@@ -1,1 +1,0 @@
-../../../AWSCore/AWSCore/MobileAnalyticsERS/AWSMobileAnalyticsERS.h

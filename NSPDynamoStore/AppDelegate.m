@@ -18,6 +18,7 @@
 #import "NSPModel.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
+#import <Bolts/Bolts.h>
 
 NSString* const kAWSAccountID = @"[AWS account ID here]";
 NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";

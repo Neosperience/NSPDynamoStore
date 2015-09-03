@@ -1,0 +1,1 @@
+AWSCORE_OTHER_LDFLAGS = -l"sqlite3" -l"z" -framework "Foundation" -framework "SystemConfiguration" -framework "UIKit"

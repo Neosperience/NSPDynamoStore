@@ -457,9 +457,15 @@
 			baseConfigurationReference = 6AA7DF1A53149253BE8BD47A /* Pods-NSPDynamoStore.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"NSPDYNAMOSTORE_DEMO=$NSPDYNAMOSTORE_DEMO",
+				);
 				INFOPLIST_FILE = NSPDynamoStore/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				NSPDYNAMOSTORE_DEMO = 1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -469,9 +475,15 @@
 			baseConfigurationReference = F90992F0DDCC886C9EF12A58 /* Pods-NSPDynamoStore.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"COCOAPODS=1",
+					"NSPDYNAMOSTORE_DEMO=$NSPDYNAMOSTORE_DEMO",
+				);
 				INFOPLIST_FILE = NSPDynamoStore/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				NSPDYNAMOSTORE_DEMO = 1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

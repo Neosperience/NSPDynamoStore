@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -24,6 +24,7 @@
 #import "AWSURLResponseSerialization.h"
 #import "AWSURLRequestRetryHandler.h"
 #import "AWSSynchronizedMutableDictionary.h"
+#import "AWSAutoScalingResources.h"
 
 NSString *const AWSAutoScalingDefinitionFileName = @"autoscaling-2011-01-01";
 
@@ -84,9 +85,9 @@ static NSDictionary *errorCodeDictionary = nil;
 
 
         if (self.outputClass) {
-            responseObject = [MTLJSONAdapter modelOfClass:self.outputClass
-                                       fromJSONDictionary:responseObject
-                                                    error:error];
+            responseObject = [AWSMTLJSONAdapter modelOfClass:self.outputClass
+                                          fromJSONDictionary:responseObject
+                                                       error:error];
         }
     }
 
@@ -220,15 +221,14 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         _configuration.baseURL = _configuration.endpoint.URL;
         _configuration.requestInterceptors = @[[AWSNetworkingRequestInterceptor new], signer];
         _configuration.retryHandler = [[AWSAutoScalingRequestRetryHandler alloc] initWithMaximumRetryCount:_configuration.maxRetryCount];
-        _configuration.headers = @{@"Host" : _configuration.endpoint.hostName};
 
-        _networking = [AWSNetworking networking:_configuration];
+        _networking = [[AWSNetworking alloc] initWithConfiguration:_configuration];
     }
 
     return self;
 }
 
-- (BFTask *)invokeRequest:(AWSRequest *)request
+- (AWSTask *)invokeRequest:(AWSRequest *)request
                HTTPMethod:(AWSHTTPMethod)HTTPMethod
                 URLString:(NSString *) URLString
              targetPrefix:(NSString *)targetPrefix
@@ -242,25 +242,23 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         
         AWSNetworkingRequest *networkingRequest = request.internalRequest;
         if (request) {
-            networkingRequest.parameters = [[MTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
+            networkingRequest.parameters = [[AWSMTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
         } else {
             networkingRequest.parameters = @{};
         }
         networkingRequest.HTTPMethod = HTTPMethod;
-        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithResource:AWSAutoScalingDefinitionFileName
-                                                                                             actionName:operationName
-                                                                                         classForBundle:[self class]];
-        networkingRequest.responseSerializer = [[AWSAutoScalingResponseSerializer alloc] initWithResource:AWSAutoScalingDefinitionFileName
-                                                                                               actionName:operationName
-                                                                                              outputClass:outputClass
-                                                                                           classForBundle:[self class]];
+        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithJSONDefinition:[[AWSAutoScalingResources sharedInstance] JSONObject]
+                                                                                                   actionName:operationName];
+        networkingRequest.responseSerializer = [[AWSAutoScalingResponseSerializer alloc] initWithJSONDefinition:[[AWSAutoScalingResources sharedInstance] JSONObject]
+                                                                                                     actionName:operationName
+                                                                                                    outputClass:outputClass];
         return [self.networking sendRequest:networkingRequest];
     }
 }
 
 #pragma mark - Service method
 
-- (BFTask *)attachInstances:(AWSAutoScalingAttachInstancesQuery *)request {
+- (AWSTask *)attachInstances:(AWSAutoScalingAttachInstancesQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -269,7 +267,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)completeLifecycleAction:(AWSAutoScalingCompleteLifecycleActionType *)request {
+- (AWSTask *)completeLifecycleAction:(AWSAutoScalingCompleteLifecycleActionType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -278,7 +276,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingCompleteLifecycleActionAnswer class]];
 }
 
-- (BFTask *)createAutoScalingGroup:(AWSAutoScalingCreateAutoScalingGroupType *)request {
+- (AWSTask *)createAutoScalingGroup:(AWSAutoScalingCreateAutoScalingGroupType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -287,7 +285,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)createLaunchConfiguration:(AWSAutoScalingCreateLaunchConfigurationType *)request {
+- (AWSTask *)createLaunchConfiguration:(AWSAutoScalingCreateLaunchConfigurationType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -296,7 +294,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)createOrUpdateTags:(AWSAutoScalingCreateOrUpdateTagsType *)request {
+- (AWSTask *)createOrUpdateTags:(AWSAutoScalingCreateOrUpdateTagsType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -305,7 +303,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteAutoScalingGroup:(AWSAutoScalingDeleteAutoScalingGroupType *)request {
+- (AWSTask *)deleteAutoScalingGroup:(AWSAutoScalingDeleteAutoScalingGroupType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -314,7 +312,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteLaunchConfiguration:(AWSAutoScalingLaunchConfigurationNameType *)request {
+- (AWSTask *)deleteLaunchConfiguration:(AWSAutoScalingLaunchConfigurationNameType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -323,7 +321,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteLifecycleHook:(AWSAutoScalingDeleteLifecycleHookType *)request {
+- (AWSTask *)deleteLifecycleHook:(AWSAutoScalingDeleteLifecycleHookType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -332,7 +330,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDeleteLifecycleHookAnswer class]];
 }
 
-- (BFTask *)deleteNotificationConfiguration:(AWSAutoScalingDeleteNotificationConfigurationType *)request {
+- (AWSTask *)deleteNotificationConfiguration:(AWSAutoScalingDeleteNotificationConfigurationType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -341,7 +339,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deletePolicy:(AWSAutoScalingDeletePolicyType *)request {
+- (AWSTask *)deletePolicy:(AWSAutoScalingDeletePolicyType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -350,7 +348,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteScheduledAction:(AWSAutoScalingDeleteScheduledActionType *)request {
+- (AWSTask *)deleteScheduledAction:(AWSAutoScalingDeleteScheduledActionType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -359,7 +357,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)deleteTags:(AWSAutoScalingDeleteTagsType *)request {
+- (AWSTask *)deleteTags:(AWSAutoScalingDeleteTagsType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -368,7 +366,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)describeAccountLimits:(AWSRequest *)request {
+- (AWSTask *)describeAccountLimits:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -377,7 +375,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeAccountLimitsAnswer class]];
 }
 
-- (BFTask *)describeAdjustmentTypes:(AWSRequest *)request {
+- (AWSTask *)describeAdjustmentTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -386,7 +384,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeAdjustmentTypesAnswer class]];
 }
 
-- (BFTask *)describeAutoScalingGroups:(AWSAutoScalingAutoScalingGroupNamesType *)request {
+- (AWSTask *)describeAutoScalingGroups:(AWSAutoScalingAutoScalingGroupNamesType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -395,7 +393,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingAutoScalingGroupsType class]];
 }
 
-- (BFTask *)describeAutoScalingInstances:(AWSAutoScalingDescribeAutoScalingInstancesType *)request {
+- (AWSTask *)describeAutoScalingInstances:(AWSAutoScalingDescribeAutoScalingInstancesType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -404,7 +402,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingAutoScalingInstancesType class]];
 }
 
-- (BFTask *)describeAutoScalingNotificationTypes:(AWSRequest *)request {
+- (AWSTask *)describeAutoScalingNotificationTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -413,7 +411,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeAutoScalingNotificationTypesAnswer class]];
 }
 
-- (BFTask *)describeLaunchConfigurations:(AWSAutoScalingLaunchConfigurationNamesType *)request {
+- (AWSTask *)describeLaunchConfigurations:(AWSAutoScalingLaunchConfigurationNamesType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -422,7 +420,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingLaunchConfigurationsType class]];
 }
 
-- (BFTask *)describeLifecycleHookTypes:(AWSRequest *)request {
+- (AWSTask *)describeLifecycleHookTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -431,7 +429,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeLifecycleHookTypesAnswer class]];
 }
 
-- (BFTask *)describeLifecycleHooks:(AWSAutoScalingDescribeLifecycleHooksType *)request {
+- (AWSTask *)describeLifecycleHooks:(AWSAutoScalingDescribeLifecycleHooksType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -440,7 +438,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeLifecycleHooksAnswer class]];
 }
 
-- (BFTask *)describeMetricCollectionTypes:(AWSRequest *)request {
+- (AWSTask *)describeMetricCollectionTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -449,7 +447,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeMetricCollectionTypesAnswer class]];
 }
 
-- (BFTask *)describeNotificationConfigurations:(AWSAutoScalingDescribeNotificationConfigurationsType *)request {
+- (AWSTask *)describeNotificationConfigurations:(AWSAutoScalingDescribeNotificationConfigurationsType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -458,7 +456,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeNotificationConfigurationsAnswer class]];
 }
 
-- (BFTask *)describePolicies:(AWSAutoScalingDescribePoliciesType *)request {
+- (AWSTask *)describePolicies:(AWSAutoScalingDescribePoliciesType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -467,7 +465,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingPoliciesType class]];
 }
 
-- (BFTask *)describeScalingActivities:(AWSAutoScalingDescribeScalingActivitiesType *)request {
+- (AWSTask *)describeScalingActivities:(AWSAutoScalingDescribeScalingActivitiesType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -476,7 +474,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingActivitiesType class]];
 }
 
-- (BFTask *)describeScalingProcessTypes:(AWSRequest *)request {
+- (AWSTask *)describeScalingProcessTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -485,7 +483,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingProcessesType class]];
 }
 
-- (BFTask *)describeScheduledActions:(AWSAutoScalingDescribeScheduledActionsType *)request {
+- (AWSTask *)describeScheduledActions:(AWSAutoScalingDescribeScheduledActionsType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -494,7 +492,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingScheduledActionsType class]];
 }
 
-- (BFTask *)describeTags:(AWSAutoScalingDescribeTagsType *)request {
+- (AWSTask *)describeTags:(AWSAutoScalingDescribeTagsType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -503,7 +501,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingTagsType class]];
 }
 
-- (BFTask *)describeTerminationPolicyTypes:(AWSRequest *)request {
+- (AWSTask *)describeTerminationPolicyTypes:(AWSRequest *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -512,7 +510,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDescribeTerminationPolicyTypesAnswer class]];
 }
 
-- (BFTask *)detachInstances:(AWSAutoScalingDetachInstancesQuery *)request {
+- (AWSTask *)detachInstances:(AWSAutoScalingDetachInstancesQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -521,7 +519,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingDetachInstancesAnswer class]];
 }
 
-- (BFTask *)disableMetricsCollection:(AWSAutoScalingDisableMetricsCollectionQuery *)request {
+- (AWSTask *)disableMetricsCollection:(AWSAutoScalingDisableMetricsCollectionQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -530,7 +528,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)enableMetricsCollection:(AWSAutoScalingEnableMetricsCollectionQuery *)request {
+- (AWSTask *)enableMetricsCollection:(AWSAutoScalingEnableMetricsCollectionQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -539,7 +537,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)enterStandby:(AWSAutoScalingEnterStandbyQuery *)request {
+- (AWSTask *)enterStandby:(AWSAutoScalingEnterStandbyQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -548,7 +546,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingEnterStandbyAnswer class]];
 }
 
-- (BFTask *)executePolicy:(AWSAutoScalingExecutePolicyType *)request {
+- (AWSTask *)executePolicy:(AWSAutoScalingExecutePolicyType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -557,7 +555,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)exitStandby:(AWSAutoScalingExitStandbyQuery *)request {
+- (AWSTask *)exitStandby:(AWSAutoScalingExitStandbyQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -566,7 +564,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingExitStandbyAnswer class]];
 }
 
-- (BFTask *)putLifecycleHook:(AWSAutoScalingPutLifecycleHookType *)request {
+- (AWSTask *)putLifecycleHook:(AWSAutoScalingPutLifecycleHookType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -575,7 +573,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingPutLifecycleHookAnswer class]];
 }
 
-- (BFTask *)putNotificationConfiguration:(AWSAutoScalingPutNotificationConfigurationType *)request {
+- (AWSTask *)putNotificationConfiguration:(AWSAutoScalingPutNotificationConfigurationType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -584,7 +582,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)putScalingPolicy:(AWSAutoScalingPutScalingPolicyType *)request {
+- (AWSTask *)putScalingPolicy:(AWSAutoScalingPutScalingPolicyType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -593,7 +591,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingPolicyARNType class]];
 }
 
-- (BFTask *)putScheduledUpdateGroupAction:(AWSAutoScalingPutScheduledUpdateGroupActionType *)request {
+- (AWSTask *)putScheduledUpdateGroupAction:(AWSAutoScalingPutScheduledUpdateGroupActionType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -602,7 +600,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)recordLifecycleActionHeartbeat:(AWSAutoScalingRecordLifecycleActionHeartbeatType *)request {
+- (AWSTask *)recordLifecycleActionHeartbeat:(AWSAutoScalingRecordLifecycleActionHeartbeatType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -611,7 +609,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingRecordLifecycleActionHeartbeatAnswer class]];
 }
 
-- (BFTask *)resumeProcesses:(AWSAutoScalingScalingProcessQuery *)request {
+- (AWSTask *)resumeProcesses:(AWSAutoScalingScalingProcessQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -620,7 +618,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setDesiredCapacity:(AWSAutoScalingSetDesiredCapacityType *)request {
+- (AWSTask *)setDesiredCapacity:(AWSAutoScalingSetDesiredCapacityType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -629,7 +627,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)setInstanceHealth:(AWSAutoScalingSetInstanceHealthQuery *)request {
+- (AWSTask *)setInstanceHealth:(AWSAutoScalingSetInstanceHealthQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -638,7 +636,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)suspendProcesses:(AWSAutoScalingScalingProcessQuery *)request {
+- (AWSTask *)suspendProcesses:(AWSAutoScalingScalingProcessQuery *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -647,7 +645,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:nil];
 }
 
-- (BFTask *)terminateInstanceInAutoScalingGroup:(AWSAutoScalingTerminateInstanceInAutoScalingGroupType *)request {
+- (AWSTask *)terminateInstanceInAutoScalingGroup:(AWSAutoScalingTerminateInstanceInAutoScalingGroupType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -656,7 +654,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSAutoScalingActivityType class]];
 }
 
-- (BFTask *)updateAutoScalingGroup:(AWSAutoScalingUpdateAutoScalingGroupType *)request {
+- (AWSTask *)updateAutoScalingGroup:(AWSAutoScalingUpdateAutoScalingGroupType *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""

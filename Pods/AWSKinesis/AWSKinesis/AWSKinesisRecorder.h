@@ -16,7 +16,7 @@
 #import <Foundation/Foundation.h>
 #import <AWSCore/AWSService.h>
 
-@class BFTask;
+@class AWSTask;
 
 FOUNDATION_EXPORT NSString *const AWSKinesisRecorderErrorDomain;
 
@@ -26,9 +26,15 @@ typedef NS_ENUM(NSInteger, AWSKinesisRecorderErrorType) {
 };
 
 /**
- When a `saveRecord:streamName:` operation causes the disk size to exceed `notificationByteThreshold`, it posts AWSKinesisRecorderByteThresholdReachedNotification.
+ When a `saveRecord:streamName:` operation causes the disk size to exceed `notificationByteThreshold`, it posts `AWSKinesisRecorderByteThresholdReachedNotification`.
  */
 FOUNDATION_EXPORT NSString *const AWSKinesisRecorderByteThresholdReachedNotification;
+
+/**
+ You can retrieve the disk bytes used from the `notification.userInfo` dictionary with this key.
+ */
+FOUNDATION_EXPORT NSString *const AWSKinesisRecorderByteThresholdReachedNotificationDiskBytesUsedKey;
+
 
 /**
   The AWSKinesisRecorder is a high level client meant for storing put record requests on the user's device. This allows developers to retain requests when the device is offline. It can also increase performance and battery efficiency since the Wi-Fi or cell network does not need to be woken up as frequently.
@@ -215,23 +221,23 @@ FOUNDATION_EXPORT NSString *const AWSKinesisRecorderByteThresholdReachedNotifica
  @param data       The data to send to Amazon Kinesis.
  @param streamName The stream name for Amazon Kinesis.
 
- @return BFTask- task.result contains an instance of AWSKinesisPutRecordInput persisted.
+ @return AWSTask - task.result is always nil.
  */
-- (BFTask *)saveRecord:(NSData *)data
-            streamName:(NSString *)streamName;
+- (AWSTask *)saveRecord:(NSData *)data
+             streamName:(NSString *)streamName;
 
 /**
  Submits all locally saved requests to Amazon Kinesis. Requests that are successfully sent will be deleted from the device. Requests that fail due to the device being offline will stop the submission process and be kept. Requests that fail due to other reasons (such as the request being invalid) will be deleted.
 
- @return BFTask - task.result is always nil.
+ @return AWSTask - task.result is always nil.
  */
-- (BFTask *)submitAllRecords;
+- (AWSTask *)submitAllRecords;
 
 /**
  Removes all requests saved to disk.
 
- @return BFTask- task.result is always nil.
+ @return AWSTask - task.result is always nil.
  */
-- (BFTask *)removeAllRecords;
+- (AWSTask *)removeAllRecords;
 
 @end

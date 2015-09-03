@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -47,24 +47,16 @@ static NSDictionary *errorCodeDictionary = nil;
                             };
 }
 
-- (instancetype)initWithResource:(NSString *)resource
-                      actionName:(NSString *)actionName
-                     outputClass:(Class)outputClass
-                  classForBundle:(Class)classForBundle {
+- (instancetype)initWithJSONDefinition:(NSDictionary *)JSONDefinition
+                            actionName:(NSString *)actionName
+                           outputClass:(Class)outputClass {
     if (self = [super init]) {
-        NSError *error = nil;
-        NSString *filePath = [[NSBundle bundleForClass:classForBundle] pathForResource:resource ofType:@"json"];
-        if (filePath == nil) {
-            AWSLogError(@"can not find %@.json file in the project",resource);
-        } else {
-            _serviceDefinitionJSON = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:filePath]
-                                                                     options:kNilOptions
-                                                                       error:&error];
+        
+        _serviceDefinitionJSON = JSONDefinition;
+        if (_serviceDefinitionJSON == nil) {
+            AWSLogError(@"serviceDefinitionJSON of is nil.");
+            return nil;
         }
-        if (error) {
-            AWSLogError(@"Error: [%@]", error);
-        }
-
         _actionName = actionName;
 
         _outputClass = outputClass;
@@ -113,7 +105,7 @@ static NSDictionary *errorCodeDictionary = nil;
     id result = nil;
 
     //parse JSON data
-    result = [AWSJSONParser dictionaryForJsonData:data actionName:self.actionName serviceDefinitionRule:self.serviceDefinitionJSON error:error];
+    result = [AWSJSONParser dictionaryForJsonData:data response:response actionName:self.actionName serviceDefinitionRule:self.serviceDefinitionJSON error:error];
 
     //Parse AWSGeneralError
     if ([result isKindOfClass:[NSDictionary class]]) {
@@ -162,24 +154,16 @@ static NSDictionary *errorCodeDictionary = nil;
                             };
 }
 
-- (instancetype)initWithResource:(NSString *)resource
-                      actionName:(NSString *)actionName
-                     outputClass:(Class)outputClass
-                  classForBundle:(Class)classForBundle {
+- (instancetype)initWithJSONDefinition:(NSDictionary *)JSONDefinition
+                            actionName:(NSString *)actionName
+                           outputClass:(Class)outputClass {
     if (self = [super init]) {
-        NSError *error = nil;
-        NSString *filePath = [[NSBundle bundleForClass:classForBundle] pathForResource:resource ofType:@"json"];
-        if (filePath == nil) {
-            AWSLogError(@"can not find %@.json file in the project",resource);
-        } else {
-            _serviceDefinitionJSON = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:filePath]
-                                                                     options:kNilOptions
-                                                                       error:&error];
+        
+        _serviceDefinitionJSON = JSONDefinition;
+        if (_serviceDefinitionJSON == nil) {
+            AWSLogError(@"serviceDefinitionJSON of is nil.");
+            return nil;
         }
-        if (error) {
-            AWSLogError(@"Error: [%@]", error);
-        }
-
         _actionName = actionName;
 
         _outputClass = outputClass;
@@ -250,7 +234,7 @@ static NSDictionary *errorCodeDictionary = nil;
         }
         
         //may also need to pass the response statusCode if the memberRule ask for it
-        if ([memberRules isKindOfClass:[NSDictionary class]] && [memberRules[@"location"] isEqualToString:@"statusCode"]) {
+        if (memberName && [memberRules isKindOfClass:[NSDictionary class]] && [memberRules[@"location"] isEqualToString:@"statusCode"]) {
             NSString *rulesType = memberRules[@"type"];
             NSNumber *statusCode = @(response.statusCode);
             if ([rulesType isEqualToString:@"integer"] || [rulesType isEqualToString:@"long"] || [rulesType isEqualToString:@"float"] || [rulesType isEqualToString:@"double"]) {

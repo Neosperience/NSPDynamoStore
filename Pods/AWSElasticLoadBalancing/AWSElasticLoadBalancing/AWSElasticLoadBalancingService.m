@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -24,6 +24,7 @@
 #import "AWSURLResponseSerialization.h"
 #import "AWSURLRequestRetryHandler.h"
 #import "AWSSynchronizedMutableDictionary.h"
+#import "AWSElasticLoadBalancingResources.h"
 
 NSString *const AWSELBDefinitionFileName = @"elasticloadbalancing-2012-06-01";
 
@@ -94,9 +95,9 @@ static NSDictionary *errorCodeDictionary = nil;
             }
         }
         if (self.outputClass) {
-            responseObject = [MTLJSONAdapter modelOfClass:self.outputClass
-                                       fromJSONDictionary:responseObject
-                                                    error:error];
+            responseObject = [AWSMTLJSONAdapter modelOfClass:self.outputClass
+                                          fromJSONDictionary:responseObject
+                                                       error:error];
         }
     }
 
@@ -230,15 +231,14 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         _configuration.baseURL = _configuration.endpoint.URL;
         _configuration.requestInterceptors = @[[AWSNetworkingRequestInterceptor new], signer];
         _configuration.retryHandler = [[AWSElasticLoadBalancingRequestRetryHandler alloc] initWithMaximumRetryCount:_configuration.maxRetryCount];
-        _configuration.headers = @{@"Host" : _configuration.endpoint.hostName};
 
-        _networking = [AWSNetworking networking:_configuration];
+        _networking = [[AWSNetworking alloc] initWithConfiguration:_configuration];
     }
 
     return self;
 }
 
-- (BFTask *)invokeRequest:(AWSRequest *)request
+- (AWSTask *)invokeRequest:(AWSRequest *)request
                HTTPMethod:(AWSHTTPMethod)HTTPMethod
                 URLString:(NSString *) URLString
              targetPrefix:(NSString *)targetPrefix
@@ -252,25 +252,23 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
         
         AWSNetworkingRequest *networkingRequest = request.internalRequest;
         if (request) {
-            networkingRequest.parameters = [[MTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
+            networkingRequest.parameters = [[AWSMTLJSONAdapter JSONDictionaryFromModel:request] aws_removeNullValues];
         } else {
             networkingRequest.parameters = @{};
         }
         networkingRequest.HTTPMethod = HTTPMethod;
-        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithResource:AWSELBDefinitionFileName
-                                                                                             actionName:operationName
-                                                                                         classForBundle:[self class]];
-        networkingRequest.responseSerializer = [[AWSElasticLoadBalancingResponseSerializer alloc] initWithResource:AWSELBDefinitionFileName
-                                                                                                        actionName:operationName
-                                                                                                       outputClass:outputClass
-                                                                                                    classForBundle:[self class]];
+        networkingRequest.requestSerializer = [[AWSQueryStringRequestSerializer alloc] initWithJSONDefinition:[[AWSElasticLoadBalancingResources sharedInstance] JSONObject]
+                                                                                                   actionName:operationName];
+        networkingRequest.responseSerializer = [[AWSElasticLoadBalancingResponseSerializer alloc] initWithJSONDefinition:[[AWSElasticLoadBalancingResources sharedInstance] JSONObject]
+                                                                                                              actionName:operationName
+                                                                                                             outputClass:outputClass];
         return [self.networking sendRequest:networkingRequest];
     }
 }
 
 #pragma mark - Service method
 
-- (BFTask *)addTags:(AWSElasticLoadBalancingAddTagsInput *)request {
+- (AWSTask *)addTags:(AWSElasticLoadBalancingAddTagsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -279,7 +277,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingAddTagsOutput class]];
 }
 
-- (BFTask *)applySecurityGroupsToLoadBalancer:(AWSElasticLoadBalancingApplySecurityGroupsToLoadBalancerInput *)request {
+- (AWSTask *)applySecurityGroupsToLoadBalancer:(AWSElasticLoadBalancingApplySecurityGroupsToLoadBalancerInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -288,7 +286,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingApplySecurityGroupsToLoadBalancerOutput class]];
 }
 
-- (BFTask *)attachLoadBalancerToSubnets:(AWSElasticLoadBalancingAttachLoadBalancerToSubnetsInput *)request {
+- (AWSTask *)attachLoadBalancerToSubnets:(AWSElasticLoadBalancingAttachLoadBalancerToSubnetsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -297,7 +295,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingAttachLoadBalancerToSubnetsOutput class]];
 }
 
-- (BFTask *)configureHealthCheck:(AWSElasticLoadBalancingConfigureHealthCheckInput *)request {
+- (AWSTask *)configureHealthCheck:(AWSElasticLoadBalancingConfigureHealthCheckInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -306,7 +304,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingConfigureHealthCheckOutput class]];
 }
 
-- (BFTask *)createAppCookieStickinessPolicy:(AWSElasticLoadBalancingCreateAppCookieStickinessPolicyInput *)request {
+- (AWSTask *)createAppCookieStickinessPolicy:(AWSElasticLoadBalancingCreateAppCookieStickinessPolicyInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -315,7 +313,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingCreateAppCookieStickinessPolicyOutput class]];
 }
 
-- (BFTask *)createLBCookieStickinessPolicy:(AWSElasticLoadBalancingCreateLBCookieStickinessPolicyInput *)request {
+- (AWSTask *)createLBCookieStickinessPolicy:(AWSElasticLoadBalancingCreateLBCookieStickinessPolicyInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -324,7 +322,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingCreateLBCookieStickinessPolicyOutput class]];
 }
 
-- (BFTask *)createLoadBalancer:(AWSElasticLoadBalancingCreateAccessPointInput *)request {
+- (AWSTask *)createLoadBalancer:(AWSElasticLoadBalancingCreateAccessPointInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -333,7 +331,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingCreateAccessPointOutput class]];
 }
 
-- (BFTask *)createLoadBalancerListeners:(AWSElasticLoadBalancingCreateLoadBalancerListenerInput *)request {
+- (AWSTask *)createLoadBalancerListeners:(AWSElasticLoadBalancingCreateLoadBalancerListenerInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -342,7 +340,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingCreateLoadBalancerListenerOutput class]];
 }
 
-- (BFTask *)createLoadBalancerPolicy:(AWSElasticLoadBalancingCreateLoadBalancerPolicyInput *)request {
+- (AWSTask *)createLoadBalancerPolicy:(AWSElasticLoadBalancingCreateLoadBalancerPolicyInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -351,7 +349,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingCreateLoadBalancerPolicyOutput class]];
 }
 
-- (BFTask *)deleteLoadBalancer:(AWSElasticLoadBalancingDeleteAccessPointInput *)request {
+- (AWSTask *)deleteLoadBalancer:(AWSElasticLoadBalancingDeleteAccessPointInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -360,7 +358,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDeleteAccessPointOutput class]];
 }
 
-- (BFTask *)deleteLoadBalancerListeners:(AWSElasticLoadBalancingDeleteLoadBalancerListenerInput *)request {
+- (AWSTask *)deleteLoadBalancerListeners:(AWSElasticLoadBalancingDeleteLoadBalancerListenerInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -369,7 +367,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDeleteLoadBalancerListenerOutput class]];
 }
 
-- (BFTask *)deleteLoadBalancerPolicy:(AWSElasticLoadBalancingDeleteLoadBalancerPolicyInput *)request {
+- (AWSTask *)deleteLoadBalancerPolicy:(AWSElasticLoadBalancingDeleteLoadBalancerPolicyInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -378,7 +376,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDeleteLoadBalancerPolicyOutput class]];
 }
 
-- (BFTask *)deregisterInstancesFromLoadBalancer:(AWSElasticLoadBalancingDeregisterEndPointsInput *)request {
+- (AWSTask *)deregisterInstancesFromLoadBalancer:(AWSElasticLoadBalancingDeregisterEndPointsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -387,7 +385,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDeregisterEndPointsOutput class]];
 }
 
-- (BFTask *)describeInstanceHealth:(AWSElasticLoadBalancingDescribeEndPointStateInput *)request {
+- (AWSTask *)describeInstanceHealth:(AWSElasticLoadBalancingDescribeEndPointStateInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -396,7 +394,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeEndPointStateOutput class]];
 }
 
-- (BFTask *)describeLoadBalancerAttributes:(AWSElasticLoadBalancingDescribeLoadBalancerAttributesInput *)request {
+- (AWSTask *)describeLoadBalancerAttributes:(AWSElasticLoadBalancingDescribeLoadBalancerAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -405,7 +403,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeLoadBalancerAttributesOutput class]];
 }
 
-- (BFTask *)describeLoadBalancerPolicies:(AWSElasticLoadBalancingDescribeLoadBalancerPoliciesInput *)request {
+- (AWSTask *)describeLoadBalancerPolicies:(AWSElasticLoadBalancingDescribeLoadBalancerPoliciesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -414,7 +412,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeLoadBalancerPoliciesOutput class]];
 }
 
-- (BFTask *)describeLoadBalancerPolicyTypes:(AWSElasticLoadBalancingDescribeLoadBalancerPolicyTypesInput *)request {
+- (AWSTask *)describeLoadBalancerPolicyTypes:(AWSElasticLoadBalancingDescribeLoadBalancerPolicyTypesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -423,7 +421,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeLoadBalancerPolicyTypesOutput class]];
 }
 
-- (BFTask *)describeLoadBalancers:(AWSElasticLoadBalancingDescribeAccessPointsInput *)request {
+- (AWSTask *)describeLoadBalancers:(AWSElasticLoadBalancingDescribeAccessPointsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -432,7 +430,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeAccessPointsOutput class]];
 }
 
-- (BFTask *)describeTags:(AWSElasticLoadBalancingDescribeTagsInput *)request {
+- (AWSTask *)describeTags:(AWSElasticLoadBalancingDescribeTagsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -441,7 +439,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDescribeTagsOutput class]];
 }
 
-- (BFTask *)detachLoadBalancerFromSubnets:(AWSElasticLoadBalancingDetachLoadBalancerFromSubnetsInput *)request {
+- (AWSTask *)detachLoadBalancerFromSubnets:(AWSElasticLoadBalancingDetachLoadBalancerFromSubnetsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -450,7 +448,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingDetachLoadBalancerFromSubnetsOutput class]];
 }
 
-- (BFTask *)disableAvailabilityZonesForLoadBalancer:(AWSElasticLoadBalancingRemoveAvailabilityZonesInput *)request {
+- (AWSTask *)disableAvailabilityZonesForLoadBalancer:(AWSElasticLoadBalancingRemoveAvailabilityZonesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -459,7 +457,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingRemoveAvailabilityZonesOutput class]];
 }
 
-- (BFTask *)enableAvailabilityZonesForLoadBalancer:(AWSElasticLoadBalancingAddAvailabilityZonesInput *)request {
+- (AWSTask *)enableAvailabilityZonesForLoadBalancer:(AWSElasticLoadBalancingAddAvailabilityZonesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -468,7 +466,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingAddAvailabilityZonesOutput class]];
 }
 
-- (BFTask *)modifyLoadBalancerAttributes:(AWSElasticLoadBalancingModifyLoadBalancerAttributesInput *)request {
+- (AWSTask *)modifyLoadBalancerAttributes:(AWSElasticLoadBalancingModifyLoadBalancerAttributesInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -477,7 +475,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingModifyLoadBalancerAttributesOutput class]];
 }
 
-- (BFTask *)registerInstancesWithLoadBalancer:(AWSElasticLoadBalancingRegisterEndPointsInput *)request {
+- (AWSTask *)registerInstancesWithLoadBalancer:(AWSElasticLoadBalancingRegisterEndPointsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -486,7 +484,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingRegisterEndPointsOutput class]];
 }
 
-- (BFTask *)removeTags:(AWSElasticLoadBalancingRemoveTagsInput *)request {
+- (AWSTask *)removeTags:(AWSElasticLoadBalancingRemoveTagsInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -495,7 +493,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingRemoveTagsOutput class]];
 }
 
-- (BFTask *)setLoadBalancerListenerSSLCertificate:(AWSElasticLoadBalancingSetLoadBalancerListenerSSLCertificateInput *)request {
+- (AWSTask *)setLoadBalancerListenerSSLCertificate:(AWSElasticLoadBalancingSetLoadBalancerListenerSSLCertificateInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -504,7 +502,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingSetLoadBalancerListenerSSLCertificateOutput class]];
 }
 
-- (BFTask *)setLoadBalancerPoliciesForBackendServer:(AWSElasticLoadBalancingSetLoadBalancerPoliciesForBackendServerInput *)request {
+- (AWSTask *)setLoadBalancerPoliciesForBackendServer:(AWSElasticLoadBalancingSetLoadBalancerPoliciesForBackendServerInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""
@@ -513,7 +511,7 @@ static AWSSynchronizedMutableDictionary *_serviceClients = nil;
                    outputClass:[AWSElasticLoadBalancingSetLoadBalancerPoliciesForBackendServerOutput class]];
 }
 
-- (BFTask *)setLoadBalancerPoliciesOfListener:(AWSElasticLoadBalancingSetLoadBalancerPoliciesOfListenerInput *)request {
+- (AWSTask *)setLoadBalancerPoliciesOfListener:(AWSElasticLoadBalancingSetLoadBalancerPoliciesOfListenerInput *)request {
     return [self invokeRequest:request
                     HTTPMethod:AWSHTTPMethodPOST
                      URLString:@""

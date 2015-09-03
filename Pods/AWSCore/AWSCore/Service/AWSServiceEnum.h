@@ -1,4 +1,4 @@
-/**
+/*
  Copyright 2010-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License").
@@ -28,10 +28,12 @@ typedef NS_ENUM(NSInteger, AWSRegionType) {
     AWSRegionAPSoutheast2,
     AWSRegionSAEast1,
     AWSRegionCNNorth1,
+    AWSRegionUSGovWest1,
 };
 
 typedef NS_ENUM(NSInteger, AWSServiceType) {
     AWSServiceUnknown,
+    AWSServiceAPIGateway,
     AWSServiceAutoScaling,
     AWSServiceCloudWatch,
     AWSServiceCognitoIdentityBroker,
