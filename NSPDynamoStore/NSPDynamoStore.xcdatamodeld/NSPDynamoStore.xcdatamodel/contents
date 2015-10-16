@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D131" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="8195" systemVersion="14F27" minimumToolsVersion="Automatic">
     <entity name="Category" representedClassName="NSPExampleCategory" syncable="YES">
         <attribute name="itemIds" optional="YES" attributeType="Transformable" syncable="YES">
             <userInfo>
@@ -10,12 +10,13 @@
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Item" inverseName="category" inverseEntity="Item" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="categoryItems"/>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="{&quot;ITEM_IDS&quot;:&quot;itemIds&quot;}"/>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="categoryItems"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;ITEM_IDS&quot;:&quot;itemIds&quot;}"/>
             </userInfo>
         </relationship>
         <userInfo>
             <entry key="NSPDynamoPrimaryKeys" value="[&quot;objectId&quot;]"/>
+            <entry key="NSPDynamoSyncFetchRequest" value="categories"/>
         </userInfo>
     </entity>
     <entity name="Item" representedClassName="NSPExampleItem" syncable="YES">
@@ -42,18 +43,19 @@
         <attribute name="url" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="items" inverseEntity="Category" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemCategory"/>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="{&quot;CATEGORY_ID&quot;:&quot;categoryId&quot;}"/>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="itemCategory"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;CATEGORY_ID&quot;:&quot;categoryId&quot;}"/>
             </userInfo>
         </relationship>
         <relationship name="person" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Person" syncable="YES">
             <userInfo>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestName" value="itemPerson"/>
-                <entry key="NSPDynamoStoreRelationshipFetchRequestVariableMap" value="{&quot;PERSON_ID&quot;:&quot;personId&quot;}"/>
+                <entry key="NSPDynamoRelationshipFetchRequest" value="itemPerson"/>
+                <entry key="NSPDynamoRelationshipVariableMap" value="{&quot;PERSON_ID&quot;:&quot;personId&quot;}"/>
             </userInfo>
         </relationship>
         <userInfo>
             <entry key="NSPDynamoPrimaryKeys" value="[&quot;objectId&quot;]"/>
+            <entry key="NSPDynamoSyncFetchRequest" value="items"/>
         </userInfo>
     </entity>
     <entity name="Person" representedClassName="NSPExamplePerson" syncable="YES">
@@ -61,11 +63,15 @@
         <attribute name="objectId" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <userInfo>
             <entry key="NSPDynamoPrimaryKeys" value="[&quot;objectId&quot;]"/>
+            <entry key="NSPDynamoSyncFetchRequest" value="persons"/>
         </userInfo>
     </entity>
+    <fetchRequest name="categories" entity="Category"/>
     <fetchRequest name="categoryItems" entity="Item" predicateString="objectId IN $ITEM_IDS"/>
     <fetchRequest name="itemCategory" entity="Category" predicateString="objectId == $CATEGORY_ID"/>
     <fetchRequest name="itemPerson" entity="Person" predicateString="objectId == $PERSON_ID"/>
+    <fetchRequest name="items" entity="Item"/>
+    <fetchRequest name="persons" entity="Person"/>
     <elements>
         <element name="Category" positionX="-45" positionY="81" width="128" height="105"/>
         <element name="Item" positionX="-63" positionY="-18" width="128" height="270"/>

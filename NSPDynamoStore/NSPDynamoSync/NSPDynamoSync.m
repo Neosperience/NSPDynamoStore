@@ -436,6 +436,10 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
     NSFetchRequest* fetchRequest = [self.managedObjectModel fetchRequestFromTemplateWithName:fetchRequestTemplateName
                                                                        substitutionVariables:fetchRequestParams];
 
+    NSAssert(fetchRequest,
+             @"NSPDynamoSync: Can not instantiate fetch request for template name %@ in the userInfo of entity %@",
+             fetchRequestTemplateName, entity.name);
+
     fetchRequest.includesSubentities = NO;
     fetchRequest.includesPropertyValues = YES;
 
