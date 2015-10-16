@@ -7,20 +7,18 @@
 //
 
 #import "AppDelegate.h"
-#import "NSPDynamoStore.h"
+
 #import "NSPExampleItem.h"
 #import "NSPExamplePerson.h"
 #import "NSPExampleCategory.h"
-#import "NSManagedObjectModel+NSPUtils.h"
-#import "NSEntityDescription+NSPDynamoStore.h"
-#import "NSPDynamoSync.h"
 
 #import <AWSDynamoDB/AWSDynamoDB.h>
 #import <Bolts/Bolts.h>
+#import <NSPDynamoStore/NSPDynamoStore.h>
+#import <NSPDynamoStore/NSPDynamoSync.h>
 
-NSString* const kAWSAccountID = @"[AWS account ID here]";
 NSString* const kCognitoPoolID = @"[AWS cognito pool ID here]";
-NSString* const kCognitoRoleUnauth = @"[AWS unauthenticated role ARN here]";
+const AWSRegionType kExampleRegionType = AWSRegionUSEast1;  // change AWS region if needed
 
 NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
@@ -62,14 +60,11 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 -(void)setupDynamoDB
 {
-    AWSCognitoCredentialsProvider *credentialsProvider = [AWSCognitoCredentialsProvider credentialsWithRegionType:AWSRegionUSEast1
-                                                                                                        accountId:kAWSAccountID
-                                                                                                   identityPoolId:kCognitoPoolID
-                                                                                                    unauthRoleArn:kCognitoRoleUnauth
-                                                                                                      authRoleArn:nil];
+    AWSCognitoCredentialsProvider *credentialsProvider =
+        [[AWSCognitoCredentialsProvider alloc] initWithRegionType:kExampleRegionType identityPoolId:kCognitoPoolID];
 
-    AWSServiceConfiguration* serviceConfiguration = [AWSServiceConfiguration configurationWithRegion:AWSRegionUSEast1
-                                                                                 credentialsProvider:credentialsProvider];
+    AWSServiceConfiguration* serviceConfiguration = [[AWSServiceConfiguration alloc] initWithRegion:AWSRegionUSEast1
+                                                                                credentialsProvider:credentialsProvider];
 
     [AWSServiceManager defaultServiceManager].defaultServiceConfiguration = serviceConfiguration;
 
