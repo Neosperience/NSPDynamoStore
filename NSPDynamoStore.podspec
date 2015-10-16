@@ -38,8 +38,8 @@ Pod::Spec.new do |s|
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'
 		sm.dependency 'NSPCoreUtils/NSPTypeCheck'
 		sm.dependency 'NSPCoreUtils/NSPBoltsUtils'
-		sm.source_files  = 'NSPDynamoStore/NSPDynamoStore/**/*.{h,m}'
-		sm.public_header_files = 'NSPDynamoStore/NSPDynamoStore/**/*.h'
+		sm.source_files  = 'NSPDynamoStore/**/*.{h,m}'
+		sm.public_header_files = 'NSPDynamoStore/**/*.h'
 	end
 
 	# NSPDynamoSync
@@ -51,8 +51,8 @@ Pod::Spec.new do |s|
 		sm.dependency 'NSPCoreUtils/NSPCollectionUtils'
 		sm.dependency 'NSPCoreUtils/NSPTypeCheck'
 		sm.dependency 'NSPCoreUtils/NSPBoltsUtils'
-		sm.source_files  = 'NSPDynamoStore/NSPDynamoSync/**/*.{h,m}'
-		sm.public_header_files = 'NSPDynamoStore/NSPDynamoSync/**/*.h'
+		sm.source_files  = 'NSPDynamoSync/**/*.{h,m}'
+		sm.public_header_files = 'NSPDynamoSync/**/*.h'
 	end
 	
 end

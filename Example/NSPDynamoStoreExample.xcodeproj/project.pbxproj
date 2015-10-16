@@ -47,7 +47,9 @@
 		1B59FA951BD13C0F00399271 /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1B59FA971BD13C0F00399271 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1B59FA981BD13C0F00399271 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		1F80FA4B0F29189247BE102A /* Pods-NSPDynamoStoreExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStoreExample.release.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStoreExample/Pods-NSPDynamoStoreExample.release.xcconfig"; sourceTree = "<group>"; };
 		759A69F70796E524398F8E2E /* libPods-NSPDynamoStoreExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NSPDynamoStoreExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A38C5D0EDDFC6E4E045CFF2 /* Pods-NSPDynamoStoreExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NSPDynamoStoreExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NSPDynamoStoreExample/Pods-NSPDynamoStoreExample.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 				1B59FA5A1BD136F500399271 /* Products */,
 				1B59FA5C1BD136F500399271 /* Supporting Files */,
 				FB59D64A7C6712D42DCE9234 /* Frameworks */,
+				D65EE2E03D8A08AB7DF569F8 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -130,6 +133,15 @@
 				1B59FA981BD13C0F00399271 /* Main.storyboard */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		D65EE2E03D8A08AB7DF569F8 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7A38C5D0EDDFC6E4E045CFF2 /* Pods-NSPDynamoStoreExample.debug.xcconfig */,
+				1F80FA4B0F29189247BE102A /* Pods-NSPDynamoStoreExample.release.xcconfig */,
+			);
+			name = Pods;
 			sourceTree = "<group>";
 		};
 		FB59D64A7C6712D42DCE9234 /* Frameworks */ = {
@@ -343,6 +355,7 @@
 		};
 		1B59FA711BD136F500399271 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7A38C5D0EDDFC6E4E045CFF2 /* Pods-NSPDynamoStoreExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
@@ -354,6 +367,7 @@
 		};
 		1B59FA721BD136F500399271 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1F80FA4B0F29189247BE102A /* Pods-NSPDynamoStoreExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
