@@ -33,6 +33,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
+    NSAssert(![kCognitoPoolID isEqualToString:@"[AWS cognito pool ID here]"], @"You must set kCognitoPoolID in AppDelegate.m");
+
     [self setupDynamoDB];
 
     self.syncManager = [[NSPDynamoSync alloc] initWithManagedObjectModel:self.managedObjectModel
