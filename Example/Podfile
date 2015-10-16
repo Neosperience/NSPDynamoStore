@@ -1,0 +1,10 @@
+source 'https://bitbucket.org/neosperience/ios-private-pods.git'
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'NSPDynamoStoreExample' do
+
+pod 'NSPDynamoStore'
+pod 'Bolts'
+pod 'AWSDynamoDB'
+
+end

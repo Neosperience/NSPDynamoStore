@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1B4EBD9C1ACAAD2B00BCC188 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBD9B1ACAAD2B00BCC188 /* main.m */; };
-		1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBD9E1ACAAD2B00BCC188 /* AppDelegate.m */; };
 		1B4EBDA21ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA01ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodeld */; };
-		1B4EBDA51ACAAD2B00BCC188 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA41ACAAD2B00BCC188 /* ViewController.m */; };
 		1B4EBDA81ACAAD2B00BCC188 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA61ACAAD2B00BCC188 /* Main.storyboard */; };
 		1B4EBDAA1ACAAD2B00BCC188 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */; };
 		1B4EBDAD1ACAAD2B00BCC188 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */; };
@@ -34,11 +32,7 @@
 		1B4EBD961ACAAD2A00BCC188 /* NSPDynamoStore.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NSPDynamoStore.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B4EBD9A1ACAAD2B00BCC188 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1B4EBD9B1ACAAD2B00BCC188 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		1B4EBD9D1ACAAD2B00BCC188 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		1B4EBD9E1ACAAD2B00BCC188 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		1B4EBDA11ACAAD2B00BCC188 /* NSPDynamoStore.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = NSPDynamoStore.xcdatamodel; sourceTree = "<group>"; };
-		1B4EBDA31ACAAD2B00BCC188 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		1B4EBDA41ACAAD2B00BCC188 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		1B4EBDA71ACAAD2B00BCC188 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		1B4EBDAC1ACAAD2B00BCC188 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
@@ -109,10 +103,6 @@
 				1B71403D1B0E0BC200457C9E /* NSPDynamoSync */,
 				1BE406671AE5461700EE4F4B /* NSPExampleModel */,
 				1B6B750B1ACD928F00F3EE2E /* NSPDynamoStore */,
-				1B4EBD9D1ACAAD2B00BCC188 /* AppDelegate.h */,
-				1B4EBD9E1ACAAD2B00BCC188 /* AppDelegate.m */,
-				1B4EBDA31ACAAD2B00BCC188 /* ViewController.h */,
-				1B4EBDA41ACAAD2B00BCC188 /* ViewController.m */,
 				1B4EBDA61ACAAD2B00BCC188 /* Main.storyboard */,
 				1B4EBDA91ACAAD2B00BCC188 /* Images.xcassets */,
 				1B4EBDAB1ACAAD2B00BCC188 /* LaunchScreen.xib */,
@@ -302,7 +292,6 @@
 			files = (
 				1B8E26591ADE9BFE00D33906 /* NSRelationshipDescription+NSPDynamoStore.m in Sources */,
 				1B6B751A1ACD928F00F3EE2E /* NSPropertyDescription+NSPDynamoStore.m in Sources */,
-				1B4EBD9F1ACAAD2B00BCC188 /* AppDelegate.m in Sources */,
 				1B6B75161ACD928F00F3EE2E /* AWSDynamoDBAttributeValue+NSPDynamoStore.m in Sources */,
 				1BE4066E1AE5461700EE4F4B /* NSPExampleCategory.m in Sources */,
 				1B6B75401ACE8C6D00F3EE2E /* NSPDynamoStoreErrors.m in Sources */,
@@ -313,7 +302,6 @@
 				1BE406661AE1375600EE4F4B /* NSPDynamoStoreKeyPair.m in Sources */,
 				1B6B75181ACD928F00F3EE2E /* NSPDynamoStore.m in Sources */,
 				1B8E26531ADE6E3900D33906 /* NSAttributeDescription+NSPDynamoStore.m in Sources */,
-				1B4EBDA51ACAAD2B00BCC188 /* ViewController.m in Sources */,
 				1B4EBD9C1ACAAD2B00BCC188 /* main.m in Sources */,
 				1B6B75171ACD928F00F3EE2E /* NSEntityDescription+NSPDynamoStore.m in Sources */,
 				1B6B75191ACD928F00F3EE2E /* NSPDynamoStoreExpression.m in Sources */,
