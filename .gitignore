@@ -1,6 +1,4 @@
-NSPDynamoStore.xcodeproj/xcuserdata
-NSPDynamoStore.xcworkspace/xcuserdata
+**/xcuserdata
 *.xccheckout
-Pods/Pods.xcodeproj/xcuserdata
 Example/Pods
 Podfile.lock
