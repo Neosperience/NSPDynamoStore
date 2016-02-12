@@ -102,11 +102,13 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
 
 @interface NSPDynamoSync ()
 
-@property (nonatomic, strong) NSManagedObjectContext* sourceContext;
-@property (nonatomic, strong) NSManagedObjectContext* destinationContext;
+@property (nonatomic, strong) NSManagedObjectContext* sourceParentContext;
+@property (nonatomic, strong) NSManagedObjectContext* destinationParentContext;
 
-@property (nonatomic, strong) NSPersistentStoreCoordinator* sourceCoordinator;
-@property (nonatomic, strong) NSPersistentStoreCoordinator* destinationCoordinator;
+@property (nonatomic, strong) NSManagedObjectContext* sourceChildContext;
+@property (nonatomic, strong) NSManagedObjectContext* destinationChildContext;
+
+@property (nonatomic, weak) NSManagedObjectModel* managedObjectModel;
 
 @property (nonatomic, assign) BOOL stacksSetupCompleted;
 
@@ -116,116 +118,50 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
 
 #pragma mark - Init and setup
 
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel*)managedObjectModel
+- (instancetype)init
 {
-    self = [self init];
+    self = [super init];
     if (self) {
-        self.managedObjectModel = managedObjectModel;
         self.stacksSetupCompleted = NO;
     }
     return self;
 }
 
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
-                            sourceStoreURL:(NSURL*)sourceStoreURL
-                           sourceStoreType:(NSString*)sourceStoreType
-                        sourceStoreOptions:(NSDictionary*)sourceStoreOptions
-                       destinationStoreURL:(NSURL*)destinationStoreURL
-                      destinationStoreType:(NSString*)destinationStoreType
-                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions
+
+-(instancetype)initWithSourceContext:(NSManagedObjectContext *)sourceParentContext
+                  destinationContext:(NSManagedObjectContext *)destinationParentContext
 {
-    self = [self initWithManagedObjectModel:managedObjectModel];
+    NSAssert([sourceParentContext.persistentStoreCoordinator.managedObjectModel isEqual:destinationParentContext.persistentStoreCoordinator.managedObjectModel],
+             @"NSPDynamoSync: The managed object model of the source and destionation persistent store coordinator must be the same");
+    self = [self init];
     if (self) {
-        self.sourceStoreURL = sourceStoreURL;
-        self.sourceStoreType = sourceStoreType;
-        self.sourceStoreOptions = sourceStoreOptions;
-        self.destinationStoreURL = destinationStoreURL;
-        self.destinationStoreType = destinationStoreType;
-        self.destinationStoreOptions = destinationStoreOptions;
+        self.sourceParentContext = sourceParentContext;
+        self.destinationParentContext = destinationParentContext;
+
+        self.managedObjectModel = sourceParentContext.persistentStoreCoordinator.managedObjectModel;
+
+        self.sourceChildContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        [self.sourceChildContext setParentContext:sourceParentContext];
+
+        self.destinationChildContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        [self.destinationChildContext setParentContext:destinationParentContext];
     }
     return self;
-}
-
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
-                               dynamoDBKey:(NSString *)dynamoDBKey
-                       destinationStoreURL:(NSURL *)destinationStoreURL
-                      destinationStoreType:(NSString *)destinationStoreType
-                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions
-{
-    return [self initWithManagedObjectModel:managedObjectModel
-                             sourceStoreURL:nil
-                            sourceStoreType:NSPDynamoStoreType
-                         sourceStoreOptions:@{ NSPDynamoStoreDynamoDBKey : dynamoDBKey }
-                        destinationStoreURL:destinationStoreURL
-                       destinationStoreType:destinationStoreType
-                    destinationStoreOptions:destinationStoreOptions];
-}
-
--(BOOL)setupStacksWithError:(NSError* __autoreleasing *)error
-{
-    self.sourceCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-    self.destinationCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-
-    NSError* sourceError = nil;
-    [self.sourceCoordinator addPersistentStoreWithType:self.sourceStoreType
-                                         configuration:nil
-                                                   URL:self.sourceStoreURL
-                                               options:self.sourceStoreOptions
-                                                 error:&sourceError];
-
-    if (sourceError) {
-        if (error) *error = [NSPDynamoSync errorWithCode:NSPDynamoSyncErrorAddingSourceStore
-                                               underlyingError:sourceError
-                                                      userInfo:nil];
-        return NO;
-    }
-
-    NSError* destinationError = nil;
-    [self.destinationCoordinator addPersistentStoreWithType:self.destinationStoreType
-                                              configuration:nil
-                                                        URL:self.destinationStoreURL
-                                                    options:self.destinationStoreOptions
-                                                      error:&destinationError];
-
-    if (destinationError) {
-        if (error) *error = [NSPDynamoSync errorWithCode:NSPDynamoSyncErrorAddingDestinationStore
-                                               underlyingError:destinationError
-                                                      userInfo:nil];
-        return NO;
-    }
-
-    // TODO: do automatic migration of stores if necessary
-
-    self.sourceContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    [self.sourceContext setPersistentStoreCoordinator:self.sourceCoordinator];
-
-    self.destinationContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    [self.destinationContext setPersistentStoreCoordinator:self.destinationCoordinator];
-
-    return YES;
 }
 
 #pragma mark - Synchronization logic - Public methods
 
 -(BFTask *)synchronizeWithFetchRequestParams:(NSDictionary *)fetchRequestParams progressInfo:(NSPDynamoSyncProgressInfo*)progressInfo
 {
-    if (!self.stacksSetupCompleted) {
-        NSError* stacksSetupError = nil;
-        self.stacksSetupCompleted = [self setupStacksWithError:&stacksSetupError];
-        if (!self.stacksSetupCompleted) {
-            return [BFTask taskWithError:stacksSetupError];
-        }
-    }
-
     NSArray* progressInfos = [progressInfo progressInfoDividedIntoParts:2];
     BFTask* synchronizeAttributesTask = [self synchronizeAttributesWithFetchRequestParams:fetchRequestParams progressInfo:progressInfos[0]];
     return [[synchronizeAttributesTask continueWithSuccessBlock:^id(BFTask *task) {
         return [self reconstructRelationshipsWithFetchRequestParams:fetchRequestParams progressInfo:progressInfos[1]];
     }] continueWithSuccessBlock:^id(BFTask *task) {
         [progressInfo setAbsoluteProgress:1.0];
-        return [self.destinationContext performBlockInBackground:^id(NSError *__autoreleasing *error) {
+        return [self.destinationChildContext performBlockInBackground:^id(NSError *__autoreleasing *error) {
             NSError* saveError = nil;
-            if ([self.destinationContext save:&saveError]) {
+            if ([self.destinationChildContext save:&saveError]) {
                 return [BFTask taskWithDelay:0];
             } else {
                 return [BFTask taskWithError:saveError];
@@ -257,9 +193,9 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
         wipeFetchRequest.includesSubentities = NO;
         wipeFetchRequest.includesPropertyValues = NO;
         wipeFetchRequest.resultType = NSManagedObjectResultType;
-        wipeOutTask = [[self.destinationContext executeFetchRequestInBackground:wipeFetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
+        wipeOutTask = [[self.destinationChildContext executeFetchRequestInBackground:wipeFetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
             for (NSManagedObject* objectToWipe in wipeOutTask.result) {
-                [self.destinationContext deleteObject:objectToWipe];
+                [self.destinationChildContext deleteObject:objectToWipe];
             }
             return [BFTask taskWithDelay:0];
         }];
@@ -295,7 +231,7 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
         NSFetchRequest* fetchRequest = [self fetchRequestForEntity:entity fetchRequestParams:fetchRequestParams];
         fetchRequest.resultType = NSDictionaryResultType;
 
-        return [self.sourceContext executeFetchRequestInBackground:fetchRequest];
+        return [self.sourceChildContext executeFetchRequestInBackground:fetchRequest];
 
     }] continueWithSuccessBlock:^id(BFTask *task) {
 
@@ -328,11 +264,11 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
     destinationFetchRequest.includesSubentities = NO;
     destinationFetchRequest.resultType = NSManagedObjectResultType;
 
-    return [[self.destinationContext executeFetchRequestInBackground:destinationFetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
+    return [[self.destinationChildContext executeFetchRequestInBackground:destinationFetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
         NSArray* results = task.result;
         NSManagedObject* destinationInstance = [results lastObject];
         if (!destinationInstance) {
-            destinationInstance = [[NSManagedObject alloc] initWithEntity:entity insertIntoManagedObjectContext:self.destinationContext];
+            destinationInstance = [[NSManagedObject alloc] initWithEntity:entity insertIntoManagedObjectContext:self.destinationChildContext];
         }
         return [BFTask taskWithResult:destinationInstance];
     }];
@@ -360,7 +296,7 @@ float NSPScaleProgress(float absoluteProgress, float startRange, float endRange)
                          fetchRequestParams:(NSDictionary*)fetchRequestParams
 {
     NSFetchRequest* fetchRequest = [self fetchRequestForEntity:entity fetchRequestParams:fetchRequestParams];
-    return [[self.destinationContext executeFetchRequestInBackground:fetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
+    return [[self.destinationChildContext executeFetchRequestInBackground:fetchRequest] continueWithSuccessBlock:^id(BFTask *task) {
 
         NSArray* sourceInstances = task.result;
 

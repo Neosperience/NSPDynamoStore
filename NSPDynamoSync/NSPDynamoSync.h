@@ -24,29 +24,8 @@ typedef enum : NSUInteger {
 
 @interface NSPDynamoSync : NSObject
 
-@property (nonatomic, strong) NSManagedObjectModel* managedObjectModel;
-
-@property (nonatomic, strong) NSURL* sourceStoreURL;
-@property (nonatomic, strong) NSString* sourceStoreType;
-@property (nonatomic, strong) NSDictionary* sourceStoreOptions;
-
-@property (nonatomic, strong) NSURL* destinationStoreURL;
-@property (nonatomic, strong) NSString* destinationStoreType;
-@property (nonatomic, strong) NSDictionary* destinationStoreOptions;
-
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
-                            sourceStoreURL:(NSURL*)sourceStoreURL
-                           sourceStoreType:(NSString*)sourceStoreType
-                        sourceStoreOptions:(NSDictionary*)sourceStoreOptions
-                       destinationStoreURL:(NSURL*)destinationStoreURL
-                      destinationStoreType:(NSString*)destinationStoreType
-                   destinationStoreOptions:(NSDictionary*)destinationStoreOptions;
-
-- (instancetype)initWithManagedObjectModel:(NSManagedObjectModel *)managedObjectModel
-                               dynamoDBKey:(NSString *)dynamoDBKey
-                       destinationStoreURL:(NSURL *)destinationStoreURL
-                      destinationStoreType:(NSString *)destinationStoreType
-                   destinationStoreOptions:(NSDictionary *)destinationStoreOptions;
+-(instancetype)initWithSourceContext:(NSManagedObjectContext *)sourceParentContext
+                  destinationContext:(NSManagedObjectContext *)destinationParentContext;
 
 - (BFTask*)synchronizeWithFetchRequestParams:(NSDictionary*)fetchRequestParams progressBlock:(void (^)(float progress))progressBlock;
 - (BFTask*)synchronizeWithFetchRequestParams:(NSDictionary*)fetchRequestParams;
