@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
 	s.name         = "NSPDynamoStore"
-	s.version      = "0.0.3"
+	s.version      = "0.0.4"
 	s.summary      = "NSPDynamoStore - Core data store for Amazon Dynamo DB"
 	s.description  = <<-DESC
 						This library allow to use DynamoDB as a backing store for core data contexts, also handling the sync process.
@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
 	s.author       = { "Janos Tolgyesi" => "janos.tolgyesi@neosperience.com" }
 
 	s.platform     = :ios, '7.0'
-	s.source       = { :git => "https://github.com/Neosperience/NSPDynamoStore.git", :tag => "0.0.3" }
+	s.source       = { :git => "https://github.com/Neosperience/NSPDynamoStore.git", :tag => "0.0.4" }
 
 	s.requires_arc = true
 	s.dependency 'NSPCoreUtils'
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
 		sm.dependency 'NSPDynamoStore/Core'
 		sm.dependency 'NSPDynamoStore/NSPDynamoSync'
 	end
-	
+
 	#Core - NSPDynamoStore
 	s.subspec 'Core' do |sm|
 		sm.frameworks = 'CoreData'
@@ -54,5 +54,5 @@ Pod::Spec.new do |s|
 		sm.source_files  = 'NSPDynamoSync/**/*.{h,m}'
 		sm.public_header_files = 'NSPDynamoSync/**/*.h'
 	end
-	
+
 end
