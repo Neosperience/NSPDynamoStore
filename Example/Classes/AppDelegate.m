@@ -24,6 +24,18 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
 @interface AppDelegate ()
 
+@property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
+
+@property (readonly, strong, nonatomic) NSManagedObjectContext *dynamoManagedObjectContext;
+@property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *dynamoPersistentStoreCoordinator;
+
+@property (readonly, strong, nonatomic) NSManagedObjectContext *localManagedObjectContext;
+@property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *localPersistentStoreCoordinator;
+
+
+- (NSURL *)applicationDocumentsDirectory;
+
+
 @property (nonatomic, strong) NSPDynamoSync* syncManager;
 
 @end
@@ -37,11 +49,8 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
 
     [self setupDynamoDB];
 
-    self.syncManager = [[NSPDynamoSync alloc] initWithManagedObjectModel:self.managedObjectModel
-                                                             dynamoDBKey:kDynamoDBKey
-                                                     destinationStoreURL:[self cacheURL]
-                                                    destinationStoreType:NSSQLiteStoreType
-                                                 destinationStoreOptions:nil];
+    self.syncManager = [[NSPDynamoSync alloc] initWithSourceContext:self.dynamoManagedObjectContext
+                                                 destinationContext:self.localManagedObjectContext];
     
     [[self.syncManager synchronizeWithFetchRequestParams:@{}
                                            progressBlock:^(float progress) {
@@ -94,10 +103,10 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     //    fetchRequest.predicate = predicate;
     fetchRequest.resultType = NSManagedObjectResultType;
 
-    [self.managedObjectContext performBlock:^{
+    [self.dynamoManagedObjectContext performBlock:^{
         NSError* error = nil;
 
-        NSArray* results = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+        NSArray* results = [self.dynamoManagedObjectContext executeFetchRequest:fetchRequest error:&error];
 
         if (error) {
             NSLog(@"ERROR: %@", error);
@@ -114,15 +123,9 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     }];
 }
 
-#pragma mark - Core Data stack
+#pragma mark - Shared object model
 
-@synthesize managedObjectContext = _managedObjectContext;
 @synthesize managedObjectModel = _managedObjectModel;
-@synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
-
-- (NSURL *)applicationDocumentsDirectory {
-    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
-}
 
 - (NSManagedObjectModel *)managedObjectModel {
     if (_managedObjectModel != nil) {
@@ -133,23 +136,80 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
     return _managedObjectModel;
 }
 
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator {
-    if (_persistentStoreCoordinator != nil) {
-        return _persistentStoreCoordinator;
+#pragma mark - Dynamo Core Data stack
+
+@synthesize dynamoManagedObjectContext = _dynamoManagedObjectContext;
+@synthesize dynamoPersistentStoreCoordinator = _dynamoPersistentStoreCoordinator;
+
+- (NSPersistentStoreCoordinator *)dynamoPersistentStoreCoordinator {
+    if (_dynamoPersistentStoreCoordinator != nil) {
+        return _dynamoPersistentStoreCoordinator;
     }
     
-    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    _dynamoPersistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
 
     NSString* storeType = NSPDynamoStoreType;
     NSURL* storeURL = nil;
 
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:storeType
-                                                   configuration:nil
-                                                             URL:storeURL
-                                                         options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
-                                                           error:&error]) {
+    if (![_dynamoPersistentStoreCoordinator addPersistentStoreWithType:storeType
+                                                         configuration:nil
+                                                                   URL:storeURL
+                                                               options:@{ NSPDynamoStoreDynamoDBKey : kDynamoDBKey }
+                                                                 error:&error]) {
+        // Report any error we got.
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        dict[NSLocalizedDescriptionKey] = @"Failed to initialize the dynamo store persistent coordinator";
+        dict[NSLocalizedFailureReasonErrorKey] = failureReason;
+        dict[NSUnderlyingErrorKey] = error;
+        error = [NSError errorWithDomain:@"YOUR_ERROR_DOMAIN" code:9999 userInfo:dict];
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+        abort();
+    }
+    
+    return _dynamoPersistentStoreCoordinator;
+}
+
+
+- (NSManagedObjectContext *)dynamoManagedObjectContext {
+    // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.)
+    if (_dynamoManagedObjectContext != nil) {
+        return _dynamoManagedObjectContext;
+    }
+    
+    NSPersistentStoreCoordinator *coordinator = [self dynamoPersistentStoreCoordinator];
+    if (!coordinator) {
+        return nil;
+    }
+    _dynamoManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    [_dynamoManagedObjectContext setPersistentStoreCoordinator:coordinator];
+    return _dynamoManagedObjectContext;
+}
+
+#pragma mark - Local Core Data stack
+
+@synthesize localManagedObjectContext = _localManagedObjectContext;
+@synthesize localPersistentStoreCoordinator = _localPersistentStoreCoordinator;
+
+-(NSPersistentStoreCoordinator *)localPersistentStoreCoordinator {
+    if (_localPersistentStoreCoordinator) {
+        return _localPersistentStoreCoordinator;
+    }
+
+    _localPersistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+
+    NSError *error = nil;
+    NSString *failureReason = @"There was an error creating or loading the application's saved data.";
+
+    NSString* storeType = NSSQLiteStoreType;
+    NSURL* storeURL = [self localStoreURL];
+
+    if (![_localPersistentStoreCoordinator addPersistentStoreWithType:storeType
+                                                        configuration:nil
+                                                                  URL:storeURL
+                                                              options:nil
+                                                                error:&error]) {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         dict[NSLocalizedDescriptionKey] = @"Failed to initialize the application's saved data";
@@ -159,44 +219,35 @@ NSString* const kDynamoDBKey = @"NSPDynamoStoreExample";
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
     }
-    
-    return _persistentStoreCoordinator;
+
+    return _localPersistentStoreCoordinator;
 }
 
-
-- (NSManagedObjectContext *)managedObjectContext {
-    // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.)
-    if (_managedObjectContext != nil) {
-        return _managedObjectContext;
+-(NSManagedObjectContext *)localManagedObjectContext
+{
+    if (_localManagedObjectContext != nil) {
+        return _localManagedObjectContext;
     }
-    
-    NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
+
+    NSPersistentStoreCoordinator *coordinator = [self localPersistentStoreCoordinator];
     if (!coordinator) {
         return nil;
     }
-    _managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    [_managedObjectContext setPersistentStoreCoordinator:coordinator];
-    return _managedObjectContext;
+    _localManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    [_localManagedObjectContext setPersistentStoreCoordinator:coordinator];
+
+    return _localManagedObjectContext;
 }
 
--(NSURL*)cacheURL
+- (NSURL *)applicationDocumentsDirectory {
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
+-(NSURL*)localStoreURL
 {
-    NSURL* cacheURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"cache.sqlite"];
-    NSLog(@"cache URL: %@", cacheURL);
-    return cacheURL;
-}
-
-#pragma mark - Core Data Saving support
-
-- (void)saveContext {
-    NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-    if (managedObjectContext != nil) {
-        NSError *error = nil;
-        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
+    NSURL* localStoreURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"cache.sqlite"];
+    NSLog(@"local store URL: %@", localStoreURL);
+    return localStoreURL;
 }
 
 @end

@@ -9,17 +9,17 @@
 /* Begin PBXBuildFile section */
 		1B59FA5E1BD136F500399271 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA5D1BD136F500399271 /* main.m */; };
 		1B59FA691BD136F500399271 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B59FA681BD136F500399271 /* Assets.xcassets */; };
-		1B59FA7C1BD1398800399271 /* NSPDynamoStoreExample.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA7A1BD1398800399271 /* NSPDynamoStoreExample.xcdatamodeld */; settings = {ASSET_TAGS = (); }; };
-		1B59FA891BD139DE00399271 /* NSPExampleCategory+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA7E1BD139DE00399271 /* NSPExampleCategory+CoreDataProperties.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA8A1BD139DE00399271 /* NSPExampleCategory.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA801BD139DE00399271 /* NSPExampleCategory.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA8B1BD139DE00399271 /* NSPExampleItem+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA821BD139DE00399271 /* NSPExampleItem+CoreDataProperties.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA8C1BD139DE00399271 /* NSPExampleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA841BD139DE00399271 /* NSPExampleItem.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA8D1BD139DE00399271 /* NSPExamplePerson+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA861BD139DE00399271 /* NSPExamplePerson+CoreDataProperties.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA8E1BD139DE00399271 /* NSPExamplePerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA881BD139DE00399271 /* NSPExamplePerson.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA991BD13C0F00399271 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA931BD13C0F00399271 /* AppDelegate.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA9A1BD13C0F00399271 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA951BD13C0F00399271 /* ViewController.m */; settings = {ASSET_TAGS = (); }; };
-		1B59FA9B1BD13C0F00399271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B59FA971BD13C0F00399271 /* LaunchScreen.storyboard */; settings = {ASSET_TAGS = (); }; };
-		1B59FA9C1BD13C0F00399271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B59FA981BD13C0F00399271 /* Main.storyboard */; settings = {ASSET_TAGS = (); }; };
+		1B59FA7C1BD1398800399271 /* NSPDynamoStoreExample.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA7A1BD1398800399271 /* NSPDynamoStoreExample.xcdatamodeld */; };
+		1B59FA891BD139DE00399271 /* NSPExampleCategory+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA7E1BD139DE00399271 /* NSPExampleCategory+CoreDataProperties.m */; };
+		1B59FA8A1BD139DE00399271 /* NSPExampleCategory.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA801BD139DE00399271 /* NSPExampleCategory.m */; };
+		1B59FA8B1BD139DE00399271 /* NSPExampleItem+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA821BD139DE00399271 /* NSPExampleItem+CoreDataProperties.m */; };
+		1B59FA8C1BD139DE00399271 /* NSPExampleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA841BD139DE00399271 /* NSPExampleItem.m */; };
+		1B59FA8D1BD139DE00399271 /* NSPExamplePerson+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA861BD139DE00399271 /* NSPExamplePerson+CoreDataProperties.m */; };
+		1B59FA8E1BD139DE00399271 /* NSPExamplePerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA881BD139DE00399271 /* NSPExamplePerson.m */; };
+		1B59FA991BD13C0F00399271 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA931BD13C0F00399271 /* AppDelegate.m */; };
+		1B59FA9A1BD13C0F00399271 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B59FA951BD13C0F00399271 /* ViewController.m */; };
+		1B59FA9B1BD13C0F00399271 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B59FA971BD13C0F00399271 /* LaunchScreen.storyboard */; };
+		1B59FA9C1BD13C0F00399271 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B59FA981BD13C0F00399271 /* Main.storyboard */; };
 		1FABEF5A30F8F0BB612278BF /* libPods-NSPDynamoStoreExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 759A69F70796E524398F8E2E /* libPods-NSPDynamoStoreExample.a */; };
 /* End PBXBuildFile section */
 
@@ -164,6 +164,7 @@
 				1B59FA561BD136F500399271 /* Frameworks */,
 				1B59FA571BD136F500399271 /* Resources */,
 				670C9ED52287806E660AFBE2 /* Copy Pods Resources */,
+				4634E544DEDC09D4FD7848DE /* Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -220,6 +221,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4634E544DEDC09D4FD7848DE /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-NSPDynamoStoreExample/Pods-NSPDynamoStoreExample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		670C9ED52287806E660AFBE2 /* Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
