@@ -44,7 +44,7 @@ Once you successfully created a `AWSServiceConfiguration` register a `AWSDynamoD
 
 ### Create a Core Data Managed Object Model ###
 
-Create the *Core Data Managed Object Model* in the *Managed Object Model Editor* of XCode. If you are unsure how to do this, follow one of the numerous tutorials available online, for example that one on the site of [Ray Wenderlich](http://www.raywenderlich.com/934/core-data-tutorial-for-ios-getting-started "Core Data Tutorial for iOS on Ray Wenderlich's site"). 
+Create the *Core Data Managed Object Model* in the *Managed Object Model Editor* of Xcode. If you are unsure how to do this, follow one of the numerous tutorials available online, for example that one on the site of [Ray Wenderlich](http://www.raywenderlich.com/934/core-data-tutorial-for-ios-getting-started "Core Data Tutorial for iOS on Ray Wenderlich's site"). 
 
 We suggest that you use the *DynamoDB Table names* as *Core Data Entity names* but this is not obligatory. However if you use different names you should configure the DynamoDB Table names in the Managed Object Model as described later. The same is true for the Attribute names of your Core Data entity: if they match the column keys of your DynamoDB table then `NSPDynamoStore` will recognize them automatically, otherwise you should define the DynamoDB table keys in the Managed Object Model.
 
@@ -81,11 +81,11 @@ This step is not necessary if you used the same name for your Core Data property
 
 ### Create Managed Object subclasses ###
 
-Create Managed Object subclasses for your model with XCode selecting Editor -> Create NSManagedObject subclass or with [mogenerator](https://github.com/rentzsch/mogenerator) as you would do for a standard SQLite backed Core Data stack.
+Create Managed Object subclasses for your model with Xcode selecting Editor -> Create NSManagedObject subclass or with [mogenerator](https://github.com/rentzsch/mogenerator) as you would do for a standard SQLite backed Core Data stack.
 
 ### Set up Core Data stack ###
 
-Set up the `NSManagedObjectModel`, `NSPersistentStoreCoordinator` and `NSManagedObjectContext` instances for your application. This is automatically done for you in your `AppDelegate.m` file if you choosed "Use Core Data" when creating your XCode project. Initialize your `NSManagedObjectContext` with `NSPrivateQueueConcurrencyType`:
+Set up the `NSManagedObjectModel`, `NSPersistentStoreCoordinator` and `NSManagedObjectContext` instances for your application. This is automatically done for you in your `AppDelegate.m` file if you choosed "Use Core Data" when creating your Xcode project. Initialize your `NSManagedObjectContext` with `NSPrivateQueueConcurrencyType`:
 
     self.managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
 
