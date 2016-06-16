@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Neosperience SpA. All rights reserved.
 //
 
-#import "AWSDynamoDBModel.h"
+#import <AWSDynamoDB/AWSDynamoDBModel.h>
 
 @interface AWSDynamoDBAttributeValue (NSPDynamoStore)
 
